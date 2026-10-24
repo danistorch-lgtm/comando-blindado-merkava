@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Comando Blindado: Operação Global</title>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Orbitron:wght@700;900&display=swap');
 
@@ -858,6 +859,103 @@
       flex: 1;
       min-width: 220px;
     }
+
+    /* ==================== PAINEL MULTIPLAYER ONLINE (P2P VIA CÓDIGO) ==================== */
+    .mp-bar {
+      background: linear-gradient(90deg, rgba(15, 23, 42, 0.96) 0%, rgba(30, 27, 75, 0.92) 50%, rgba(15, 23, 42, 0.96) 100%);
+      border: 2px solid #8b5cf6;
+      border-radius: 12px;
+      padding: 8px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      box-shadow: 0 0 22px rgba(139, 92, 246, 0.25);
+    }
+
+    .mp-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12.5px;
+      font-weight: 900;
+      color: #e9d5ff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mp-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mp-btn {
+      background: linear-gradient(135deg, #7c3aed, #5b21b6);
+      border: 1.5px solid #c4b5fd;
+      color: #fff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .mp-btn:hover { transform: translateY(-1px); background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+    .mp-btn.join-btn {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      border-color: #7dd3fc;
+    }
+    .mp-btn.copy-btn {
+      background: #1e293b;
+      border-color: #facc15;
+      color: #fef08a;
+      font-family: 'Chakra Petch', sans-serif;
+      padding: 5px 10px;
+    }
+
+    .mp-code-input {
+      background: #090d16;
+      border: 2px solid #64748b;
+      color: #facc15;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      font-weight: 900;
+      padding: 5px 10px;
+      border-radius: 8px;
+      width: 110px;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .mp-room-badge {
+      background: rgba(250, 204, 21, 0.15);
+      border: 2px dashed #facc15;
+      color: #fef08a;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      padding: 4px 12px;
+      border-radius: 8px;
+      letter-spacing: 2px;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .mp-status {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #cbd5e1;
+    }
+    .mp-status.connected {
+      color: #4ade80;
+    }
   </style>
 </head>
 <body>
@@ -980,7 +1078,7 @@
       <div class="top-header-bar">
         <div>
           <div class="game-main-title">🛡️ COMANDO BLINDADO: OPERAÇÃO GLOBAL</div>
-          <div style="font-size:12px; color:#94a3b8;">26 Blindados Reais • Drones Teleguiados (1-3) • Defesa Reativa APS (2 Usos) • Metralhadora de Longo Alcance</div>
+          <div style="font-size:12px; color:#94a3b8;">26 Blindados Reais • Multiplayer Online P2P • Drones Teleguiados (1-3) • Defesa Reativa APS (2 Usos)</div>
         </div>
 
         <div class="profile-bar">
@@ -1003,6 +1101,29 @@
             <div class="stat-pill loss" id="stat-losses">💥 0 Derrotas</div>
             <div class="stat-pill rate" id="stat-rate">📊 0% Vitórias</div>
           </div>
+        </div>
+      </div>
+
+      <!-- ==================== MULTIPLAYER ONLINE (OPÇÃO 1: SALA POR CÓDIGO P2P) ==================== -->
+      <div class="mp-bar">
+        <div class="mp-title">
+          <span>🌐 MULTIPLAYER ONLINE (1v1 EM TEMPO REAL):</span>
+          <span class="mp-status" id="mp-status-text">Modo Solo (vs IA) ou Crie/Entre em uma Sala Online!</span>
+        </div>
+
+        <div class="mp-controls">
+          <button class="mp-btn" id="btn-create-room" onclick="createOnlineRoom()">📡 Criar Sala Online</button>
+          <span id="mp-room-display" style="display:none; align-items:center; gap:6px;">
+            <span style="font-size:11px; color:#cbd5e1;">Código:</span>
+            <span class="mp-room-badge" id="mp-room-code-badge">----</span>
+            <button class="mp-btn copy-btn" onclick="copyRoomLink()">📋 Copiar Link/Código</button>
+          </span>
+
+          <span style="color:#475569; font-weight:700;">|</span>
+
+          <input type="text" id="mp-join-input" class="mp-code-input" placeholder="CÓDIGO" maxlength="8" />
+          <button class="mp-btn join-btn" id="btn-join-room" onclick="joinOnlineRoom()">🔗 Entrar na Sala</button>
+          <button class="mp-btn copy-btn" id="btn-leave-room" style="display:none; border-color:#f87171; color:#fca5a5;" onclick="disconnectOnlineRoom()">✖ Sair da Sala</button>
         </div>
       </div>
 
@@ -1033,8 +1154,8 @@
 
       <!-- Rodapé -->
       <div class="bottom-launch-row">
-        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-          <span style="font-size:12px; font-weight:700; color:#38bdf8; margin-right:4px;">DIFICULDADE:</span>
+        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;" id="difficulty-selector-box">
+          <span style="font-size:12px; font-weight:700; color:#38bdf8; margin-right:4px;">DIFICULDADE (IA):</span>
           <button class="choice-btn" onclick="setDifficulty('easy', this)">🟢 Cadete</button>
           <button class="choice-btn selected" onclick="setDifficulty('normal', this)">🟡 Comandante</button>
           <button class="choice-btn" onclick="setDifficulty('hard', this)">🔴 General</button>
@@ -1044,7 +1165,7 @@
           📋 Registro de Combate salvo automaticamente...
         </div>
 
-        <button class="start-btn" onclick="startGame()">🚀 INICIAR MISSÃO!</button>
+        <button class="start-btn" id="main-start-btn" onclick="startGame()">🚀 INICIAR MISSÃO!</button>
       </div>
     </div>
   </div>
@@ -2233,6 +2354,282 @@ let apsEffects = []; // Anéis visuais de interceptação da Defesa Reativa Trop
 let screenShake = 0;
 
 // ============================================================================
+// 7B. SISTEMA MULTIPLAYER ONLINE P2P (PeerJS WebRTC - Sala por Código)
+// ============================================================================
+const PEER_PREFIX = 'cmd-blindado-v1-';
+let mpState = {
+  active: false,
+  isHost: false,
+  roomCode: '',
+  peer: null,
+  conn: null,
+  remoteCommander: 'Oponente Online',
+  remoteUnitId: 'ru_guards',
+  remoteVehicleId: 'armata',
+  remoteRankCode: 'E-1',
+  lastSyncSent: 0
+};
+
+function generateShortCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 5; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+function setMpStatus(msg, isConnected = false) {
+  const el = document.getElementById('mp-status-text');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.toggle('connected', isConnected);
+}
+
+function sendNet(data) {
+  if (mpState.active && mpState.conn && mpState.conn.open) {
+    try { mpState.conn.send(data); } catch (e) {}
+  }
+}
+
+function broadcastProfileToPeer() {
+  if (!mpState.active) return;
+  const rankObj = getRankByWins(playerProfile.wins).current;
+  sendNet({
+    type: 'hello_profile',
+    commanderName: playerProfile.commanderName,
+    unitId: playerProfile.unitId,
+    vehicleId: playerProfile.selectedVehicleId,
+    rankCode: rankObj.code,
+    scenarioIdx: currentScenarioIdx
+  });
+}
+
+function createOnlineRoom() {
+  if (typeof Peer === 'undefined') {
+    setMpStatus('⚠️ Carregando biblioteca PeerJS... tente novamente em 2s.');
+    return;
+  }
+  disconnectOnlineRoom(true);
+  const code = generateShortCode();
+  mpState.roomCode = code;
+  mpState.isHost = true;
+  setMpStatus(`⏳ Criando sala ${code}...`);
+
+  const peer = new Peer(PEER_PREFIX + code);
+  mpState.peer = peer;
+
+  peer.on('open', () => {
+    document.getElementById('mp-room-display').style.display = 'inline-flex';
+    document.getElementById('mp-room-code-badge').textContent = code;
+    document.getElementById('btn-create-room').style.display = 'none';
+    document.getElementById('btn-join-room').style.display = 'none';
+    document.getElementById('mp-join-input').style.display = 'none';
+    document.getElementById('btn-leave-room').style.display = 'inline-block';
+    setMpStatus(`📡 Sala criada! Passe o código [${code}] para o outro jogador entrar!`, true);
+  });
+
+  peer.on('connection', (conn) => {
+    mpState.conn = conn;
+    setupPeerConnection(conn);
+  });
+
+  peer.on('error', (err) => {
+    setMpStatus(`⚠️ Erro na conexão (${err.type || 'rede'}). Tente criar novamente.`);
+  });
+}
+
+function joinOnlineRoom(customCode) {
+  if (typeof Peer === 'undefined') {
+    setMpStatus('⚠️ Carregando biblioteca PeerJS... tente novamente em 2s.');
+    return;
+  }
+  const inputEl = document.getElementById('mp-join-input');
+  const code = (customCode || (inputEl ? inputEl.value : '')).trim().toUpperCase();
+  if (!code || code.length < 3) {
+    setMpStatus('⚠️ Digite o código da sala para entrar!');
+    return;
+  }
+
+  disconnectOnlineRoom(true);
+  mpState.roomCode = code;
+  mpState.isHost = false;
+  setMpStatus(`⏳ Conectando à sala ${code}...`);
+
+  const peer = new Peer();
+  mpState.peer = peer;
+
+  peer.on('open', () => {
+    const conn = peer.connect(PEER_PREFIX + code, { reliable: true });
+    mpState.conn = conn;
+    setupPeerConnection(conn);
+  });
+
+  peer.on('error', (err) => {
+    setMpStatus(`⚠️ Não foi possível encontrar a sala ${code} (${err.type || 'erro'}).`);
+  });
+}
+
+function setupPeerConnection(conn) {
+  conn.on('open', () => {
+    mpState.active = true;
+    document.getElementById('btn-create-room').style.display = 'none';
+    document.getElementById('btn-join-room').style.display = 'none';
+    document.getElementById('mp-join-input').style.display = 'none';
+    document.getElementById('btn-leave-room').style.display = 'inline-block';
+    document.getElementById('difficulty-selector-box').style.display = 'none';
+
+    const startBtn = document.getElementById('main-start-btn');
+    if (mpState.isHost) {
+      startBtn.textContent = '⚔️ INICIAR DUELO ONLINE (1v1)!';
+    } else {
+      startBtn.textContent = '✅ PRONTO! (OU INICIAR DUELO)';
+    }
+
+    broadcastProfileToPeer();
+    setMpStatus(`🟢 Conectado na Sala [${mpState.roomCode}]! Escolha seu tanque e inicie!`, true);
+  });
+
+  conn.on('data', (data) => {
+    handleNetworkData(data);
+  });
+
+  conn.on('close', () => {
+    setMpStatus('🔴 Oponente desconectou da sala.');
+    disconnectOnlineRoom();
+  });
+}
+
+function disconnectOnlineRoom(silent = false) {
+  if (mpState.conn) {
+    try { mpState.conn.close(); } catch (e) {}
+  }
+  if (mpState.peer) {
+    try { mpState.peer.destroy(); } catch (e) {}
+  }
+  mpState.active = false;
+  mpState.conn = null;
+  mpState.peer = null;
+  mpState.roomCode = '';
+
+  const roomDisp = document.getElementById('mp-room-display');
+  if (roomDisp) roomDisp.style.display = 'none';
+  const btnCreate = document.getElementById('btn-create-room');
+  if (btnCreate) btnCreate.style.display = 'inline-block';
+  const btnJoin = document.getElementById('btn-join-room');
+  if (btnJoin) btnJoin.style.display = 'inline-block';
+  const inpJoin = document.getElementById('mp-join-input');
+  if (inpJoin) inpJoin.style.display = 'inline-block';
+  const btnLeave = document.getElementById('btn-leave-room');
+  if (btnLeave) btnLeave.style.display = 'none';
+  const diffBox = document.getElementById('difficulty-selector-box');
+  if (diffBox) diffBox.style.display = 'flex';
+  const startBtn = document.getElementById('main-start-btn');
+  if (startBtn) startBtn.textContent = '🚀 INICIAR MISSÃO!';
+
+  if (!silent) {
+    setMpStatus('Modo Solo (vs IA) ou Crie/Entre em uma Sala Online!', false);
+  }
+}
+
+function copyRoomLink() {
+  if (!mpState.roomCode) return;
+  const shareUrl = `${window.location.origin}${window.location.pathname}?sala=${mpState.roomCode}`;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setMpStatus(`📋 Link e Código [${mpState.roomCode}] copiados! Envie para seu filho/amigo!`, true);
+    }).catch(() => {
+      setMpStatus(`📋 Código da Sala: ${mpState.roomCode}`, true);
+    });
+  } else {
+    setMpStatus(`📋 Código da Sala: ${mpState.roomCode}`, true);
+  }
+}
+
+function handleNetworkData(data) {
+  if (!data || !data.type) return;
+
+  if (data.type === 'hello_profile') {
+    mpState.remoteCommander = data.commanderName || 'Oponente Online';
+    mpState.remoteUnitId = data.unitId || 'ru_guards';
+    mpState.remoteVehicleId = data.vehicleId || 'armata';
+    mpState.remoteRankCode = data.rankCode || 'E-1';
+    if (!mpState.isHost && typeof data.scenarioIdx === 'number') {
+      currentScenarioIdx = data.scenarioIdx;
+      document.querySelectorAll('.scenario-card').forEach((c, i) => c.classList.toggle('selected', i === currentScenarioIdx));
+    }
+    const vName = (VEHICLE_MAP[mpState.remoteVehicleId] || VEHICLES[0]).name;
+    setMpStatus(`🟢 VS ${mpState.remoteCommander} (${vName}) na Sala [${mpState.roomCode}]!`, true);
+  } else if (data.type === 'start_match') {
+    mpState.remoteCommander = data.hostCommander || mpState.remoteCommander;
+    mpState.remoteUnitId = data.hostUnitId || mpState.remoteUnitId;
+    mpState.remoteVehicleId = data.hostVehicleId || mpState.remoteVehicleId;
+    currentScenarioIdx = data.scenarioIdx;
+    startOnlineMatchClient(data);
+  } else if (data.type === 'request_start_from_guest') {
+    mpState.remoteCommander = data.guestCommander || mpState.remoteCommander;
+    mpState.remoteUnitId = data.guestUnitId || mpState.remoteUnitId;
+    mpState.remoteVehicleId = data.guestVehicleId || mpState.remoteVehicleId;
+    if (mpState.isHost) {
+      startGame();
+    }
+  } else if (data.type === 'sync_state') {
+    if (!enemy || gameState !== 'playing') return;
+    // Espelha horizontalmente (nx = 1 - rx) para que ambos os jogadores joguem da esquerda para a direita ou veja o oponente no lado oposto com precisão!
+    enemy.x = (1 - data.nx) * W;
+    enemy.y = getTerrainY(enemy.x);
+    enemy.slope = getTerrainAngle(enemy.x);
+    enemy.vx = -data.vx;
+    enemy.facing = -data.facing;
+    enemy.turretAngle = Math.PI - data.turretAngle;
+    if (typeof data.myHp === 'number') {
+      enemy.hp = data.myHp;
+    }
+    if (typeof data.apsArmed === 'boolean') {
+      enemy.apsArmed = data.apsArmed;
+      enemy.apsLeft = data.apsLeft;
+    }
+    if (typeof data.dronesLeft === 'number') {
+      enemy.dronesLeft = data.dronesLeft;
+    }
+    updateHUD();
+  } else if (data.type === 'fire_cannon') {
+    if (!enemy || gameState !== 'playing') return;
+    enemy.x = (1 - data.nx) * W;
+    enemy.y = getTerrainY(enemy.x);
+    enemy.turretAngle = Math.PI - data.turretAngle;
+    fireCannon(enemy, false, data.chargeRatio, true);
+  } else if (data.type === 'fire_mg') {
+    if (!enemy || gameState !== 'playing') return;
+    enemy.x = (1 - data.nx) * W;
+    enemy.y = getTerrainY(enemy.x);
+    enemy.turretAngle = Math.PI - data.turretAngle;
+    fireMG(enemy, false, true, Math.PI - data.exactAngle, data.powerBoost);
+  } else if (data.type === 'launch_drone') {
+    if (!enemy || gameState !== 'playing') return;
+    launchDrone(enemy, false, true);
+  } else if (data.type === 'toggle_aps') {
+    if (!enemy || gameState !== 'playing') return;
+    enemy.apsArmed = data.apsArmed;
+    enemy.apsLeft = data.apsLeft;
+    addFloatingText(
+      enemy.x,
+      enemy.y - 60,
+      enemy.apsArmed ? `🛡️ APS OPONENTE ARMADO (${enemy.apsLeft})` : '🛡️ APS OPONENTE OFF',
+      enemy.apsArmed ? '#4ade80' : '#94a3b8'
+    );
+    updateHUD();
+  } else if (data.type === 'deploy_smoke') {
+    if (!enemy || gameState !== 'playing') return;
+    deploySmoke(enemy, true);
+  } else if (data.type === 'match_over') {
+    if (gameState === 'playing') {
+      endMatch(data.winnerIsReceiver, true);
+    }
+  }
+}
+
+// ============================================================================
 // 8. CONSTRUÇÃO DO MENU QUARTEL GENERAL
 // ============================================================================
 function initMenus() {
@@ -2248,6 +2645,7 @@ function initMenus() {
       saveProfile();
       document.querySelectorAll('.unit-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
+      broadcastProfileToPeer();
     };
     const unitImgSrc = transparentUnitUrls[u.img] || encodeURI(u.img);
     card.innerHTML = `
@@ -2271,6 +2669,7 @@ function initMenus() {
       currentScenarioIdx = idx;
       document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
+      broadcastProfileToPeer();
     };
     card.innerHTML = `
       <div class="scen-name">${sc.name}</div>
@@ -2301,6 +2700,7 @@ function renderVehicleGrid() {
       saveProfile();
       document.querySelectorAll('.tank-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
+      broadcastProfileToPeer();
     };
 
     const catTagClass = tank.category === 'MBT' ? 'class-mbt' : tank.category === 'SPG' ? 'class-spg' : tank.category === 'IFV' ? 'class-ifv' : 'class-td';
@@ -2358,18 +2758,24 @@ function openGarage() {
 // ============================================================================
 // 9. GERAÇÃO DE TERRENO E CENÁRIOS MULTICAMADAS (PARALLAX + GRÁFICOS RICOS)
 // ============================================================================
-function generateTerrain(scen) {
+let lastSeed1 = 42.5;
+let lastSeed2 = 17.8;
+
+function generateTerrain(scen, customSeed1, customSeed2, mirrorX = false) {
   terrain = new Float32Array(W + 1);
   farHills = new Float32Array(W + 1);
   midHills = new Float32Array(W + 1);
 
   const baseGround = H * 0.79;
   const ridgeH = H * scen.ridgeHeight;
-  const seed1 = Math.random() * 100;
-  const seed2 = Math.random() * 100;
+  const seed1 = typeof customSeed1 === 'number' ? customSeed1 : Math.random() * 100;
+  const seed2 = typeof customSeed2 === 'number' ? customSeed2 : Math.random() * 100;
+  lastSeed1 = seed1;
+  lastSeed2 = seed2;
 
   for (let x = 0; x <= W; x++) {
-    const nx = x / W;
+    const rawNx = x / W;
+    const nx = mirrorX ? (1 - rawNx) : rawNx;
     // Montanhas distantes (Parallax Camada 1)
     farHills[x] = H * 0.58 - Math.sin(nx * 5 + seed1) * (H * 0.12) - Math.cos(nx * 13) * (H * 0.05);
     // Colinas médias (Parallax Camada 2)
@@ -2393,7 +2799,7 @@ function generateTerrain(scen) {
     for (let i = 0; i < 12; i++) {
       const bx = (i / 12) * W + 35;
       if (Math.abs(bx - W * 0.5) > 85 && Math.abs(bx - W * 0.24) > 70) {
-        sceneryProps.push({ type: 'euro_bldg', x: bx, w: 45 + Math.random() * 35, h: 75 + Math.random() * 95 });
+        sceneryProps.push({ type: 'euro_bldg', x: bx, w: 45 + ((i * 13) % 30), h: 75 + ((i * 29) % 85) });
       }
     }
   } else if (scen.decorType === 'brazil_urban') {
@@ -2401,30 +2807,30 @@ function generateTerrain(scen) {
       const bx = (i / 18) * W + 25;
       sceneryProps.push({
         type: 'br_bldg', x: bx,
-        w: 34 + Math.random() * 32, h: 48 + Math.random() * 90,
+        w: 34 + ((i * 11) % 28), h: 48 + ((i * 23) % 80),
         color: ['#b45309', '#be123c', '#0369a1', '#4d7c0f', '#6d28d9'][i % 5]
       });
     }
   } else if (scen.decorType === 'amazon') {
     for (let i = 0; i < 26; i++) {
       const tx = 30 + (i / 26) * (W - 60);
-      sceneryProps.push({ type: 'jungle_tree', x: tx, size: 30 + Math.random() * 28 });
+      sceneryProps.push({ type: 'jungle_tree', x: tx, size: 30 + ((i * 17) % 26) });
     }
   } else if (scen.decorType === 'siberia') {
     for (let i = 0; i < 20; i++) {
       const tx = 40 + (i / 20) * (W - 80);
-      sceneryProps.push({ type: 'pine_tree', x: tx, size: 34 + Math.random() * 26 });
+      sceneryProps.push({ type: 'pine_tree', x: tx, size: 34 + ((i * 19) % 24) });
     }
   } else if (scen.decorType === 'sahara') {
     sceneryProps.push({ type: 'pyramid', x: W * 0.32, size: 110 });
     sceneryProps.push({ type: 'pyramid', x: W * 0.68, size: 85 });
     for (let i = 0; i < 8; i++) {
-      sceneryProps.push({ type: 'palm_tree', x: 80 + (i / 8) * (W - 160), size: 36 + Math.random() * 15 });
+      sceneryProps.push({ type: 'palm_tree', x: 80 + (i / 8) * (W - 160), size: 36 + ((i * 7) % 14) });
     }
   } else if (scen.decorType === 'golan') {
     for (let i = 0; i < 12; i++) {
       const rx = 60 + (i / 12) * (W - 120);
-      sceneryProps.push({ type: 'bunker_rock', x: rx, size: 18 + Math.random() * 16, hasRadar: i % 4 === 0 });
+      sceneryProps.push({ type: 'bunker_rock', x: rx, size: 18 + ((i * 9) % 15), hasRadar: i % 4 === 0 });
     }
   }
 }
@@ -2460,17 +2866,19 @@ function createFighter(vehicleId, x, facing, isAI) {
   let cannonHitsMax = spec.cannonResist;
   let mgHitsMax = spec.mgResist;
 
-  if (isAI) {
-    if (selectedDifficulty === 'easy') {
-      cannonHitsMax = Math.max(3, cannonHitsMax - 1);
-      mgHitsMax = Math.max(25, mgHitsMax - 12);
-    } else if (selectedDifficulty === 'hard') {
-      cannonHitsMax += 1;
-      mgHitsMax += 15;
+  if (!mpState.active) {
+    if (isAI) {
+      if (selectedDifficulty === 'easy') {
+        cannonHitsMax = Math.max(3, cannonHitsMax - 1);
+        mgHitsMax = Math.max(25, mgHitsMax - 12);
+      } else if (selectedDifficulty === 'hard') {
+        cannonHitsMax += 1;
+        mgHitsMax += 15;
+      }
+    } else if (selectedDifficulty === 'easy') {
+      cannonHitsMax += 2;
+      mgHitsMax += 20;
     }
-  } else if (selectedDifficulty === 'easy') {
-    cannonHitsMax += 2;
-    mgHitsMax += 20;
   }
 
   return {
@@ -2503,16 +2911,64 @@ function createFighter(vehicleId, x, facing, isAI) {
 
 function startGame() {
   sfx.init();
+
+  if (mpState.active && !mpState.isHost) {
+    // Se o convidado clicar em iniciar, avisa o Host para dar a largada sincronizada!
+    sendNet({
+      type: 'request_start_from_guest',
+      guestCommander: playerProfile.commanderName,
+      guestUnitId: playerProfile.unitId,
+      guestVehicleId: playerProfile.selectedVehicleId
+    });
+    return;
+  }
+
   document.getElementById('menu-overlay').classList.add('hidden');
   document.getElementById('result-overlay').classList.add('hidden');
 
   const scen = SCENARIOS[currentScenarioIdx];
-  generateTerrain(scen);
+  const seed1 = Math.random() * 100;
+  const seed2 = Math.random() * 100;
+  generateTerrain(scen, seed1, seed2, false);
   wind = (Math.random() * 2 - 1) * scen.windRange;
 
+  const oppVehicleId = mpState.active ? mpState.remoteVehicleId : scen.enemyId;
   player = createFighter(playerProfile.selectedVehicleId, W * 0.14, 1, false);
-  enemy = createFighter(scen.enemyId, W * 0.86, -1, true);
+  enemy = createFighter(oppVehicleId, W * 0.86, -1, !mpState.active);
 
+  if (mpState.active && mpState.isHost) {
+    sendNet({
+      type: 'start_match',
+      scenarioIdx: currentScenarioIdx,
+      seed1,
+      seed2,
+      wind: -wind, // Espelhado para o oponente
+      hostCommander: playerProfile.commanderName,
+      hostUnitId: playerProfile.unitId,
+      hostVehicleId: playerProfile.selectedVehicleId
+    });
+  }
+
+  setupMatchWeaponsAndReset(scen);
+}
+
+function startOnlineMatchClient(data) {
+  sfx.init();
+  document.getElementById('menu-overlay').classList.add('hidden');
+  document.getElementById('result-overlay').classList.add('hidden');
+
+  const scen = SCENARIOS[currentScenarioIdx];
+  // Terreno espelhado horizontalmente para que cada jogador controle seu tanque na esquerda mirando para a direita!
+  generateTerrain(scen, data.seed1, data.seed2, true);
+  wind = data.wind || 0;
+
+  player = createFighter(playerProfile.selectedVehicleId, W * 0.14, 1, false);
+  enemy = createFighter(mpState.remoteVehicleId, W * 0.86, -1, false);
+
+  setupMatchWeaponsAndReset(scen);
+}
+
+function setupMatchWeaponsAndReset(scen) {
   const cannonBtn = document.getElementById('btn-w-cannon');
   const touchCannonBtn = document.getElementById('t-cannon');
   if (!player.spec.hasCannon) {
@@ -2579,7 +3035,7 @@ function updateHUD() {
   const unitObj = MILITARY_UNITS.find(u => u.id === playerProfile.unitId) || MILITARY_UNITS[0];
   const rankObj = getRankByWins(playerProfile.wins).current;
 
-  document.getElementById('hud-level').textContent = scen.name;
+  document.getElementById('hud-level').textContent = mpState.active ? `🌐 ONLINE (${mpState.roomCode}) • ${scen.name}` : scen.name;
   const windDir = wind > 0.005 ? `Vento ▶ ${Math.round(Math.abs(wind) * 1000)}` : wind < -0.005 ? `Vento ◀ ${Math.round(Math.abs(wind) * 1000)}` : 'Vento: Calmo';
   document.getElementById('hud-env').textContent = `${scen.desc} • ${windDir}`;
 
@@ -2612,10 +3068,14 @@ function updateHUD() {
   btnAps.classList.toggle('disabled', player.apsLeft <= 0);
   document.getElementById('t-aps-span').textContent = player.apsLeft > 0 ? (player.apsArmed ? `${player.apsLeft} ON` : `${player.apsLeft} OFF`) : '0 Usos';
 
-  // Inimigo
-  document.getElementById('e-unit-img').src = transparentUnitUrls[scen.enemyUnitImg] || encodeURI(scen.enemyUnitImg);
+  // Inimigo / Oponente Online
+  const oppUnitObj = mpState.active ? (MILITARY_UNITS.find(u => u.id === mpState.remoteUnitId) || MILITARY_UNITS[0]) : null;
+  const oppInsigniaFile = oppUnitObj ? oppUnitObj.img : scen.enemyUnitImg;
+  document.getElementById('e-unit-img').src = transparentUnitUrls[oppInsigniaFile] || encodeURI(oppInsigniaFile);
   document.getElementById('e-name').textContent = `${enemy.spec.flag} ${enemy.spec.name}`;
-  document.getElementById('e-unit-name').textContent = enemy.spec.caliberDesc;
+  document.getElementById('e-unit-name').textContent = mpState.active
+    ? `🌐 ${mpState.remoteCommander} • ${oppUnitObj ? oppUnitObj.name : enemy.spec.caliberDesc}`
+    : enemy.spec.caliberDesc;
 
   const eHp = Math.max(0, enemy.hp);
   document.getElementById('e-hp-bar').style.width = `${eHp}%`;
@@ -2633,22 +3093,29 @@ function updateHUD() {
 // ============================================================================
 // 11. BALÍSTICA LONGA DA METRALHADORA, CANHÃO, DRONES TELEGUIADOS E DEFESA REATIVA (APS)
 // ============================================================================
-// Metralhadora agora tem alcance muito mais longo (velocidade maior, menor arrasto e gravidade suave),
-// mantendo a trajetória curva descendente no longo prazo!
 const MG_INITIAL_SPEED = 22.8;
 const MG_GRAVITY = 0.105;
 const MG_AIR_DRAG = 0.9965;
 
-function fireCannon(shooter, isPlayer, chargeRatio = 0.72) {
+function fireCannon(shooter, isPlayer, chargeRatio = 0.72, fromNetwork = false) {
   if (!shooter.spec.hasCannon) {
-    fireMG(shooter, isPlayer);
+    fireMG(shooter, isPlayer, fromNetwork);
     return;
   }
 
   const now = performance.now();
-  if (now - shooter.lastCannonShot < shooter.spec.reloadTime) return;
+  if (!fromNetwork && now - shooter.lastCannonShot < shooter.spec.reloadTime) return;
   shooter.lastCannonShot = now;
   shooter.recoil = 13 * shooter.spec.cannonPower;
+
+  if (isPlayer && mpState.active && !fromNetwork) {
+    sendNet({
+      type: 'fire_cannon',
+      nx: shooter.x / W,
+      turretAngle: shooter.turretAngle,
+      chargeRatio
+    });
+  }
 
   sfx.playCannon(shooter.spec.cannonPower);
   screenShake = Math.max(screenShake, 7 * shooter.spec.cannonPower);
@@ -2689,9 +3156,9 @@ function fireCannon(shooter, isPlayer, chargeRatio = 0.72) {
   }
 }
 
-function fireMG(shooter, isPlayer) {
+function fireMG(shooter, isPlayer, fromNetwork = false, overrideAngle = null, overrideBoost = null) {
   const now = performance.now();
-  if (now - shooter.lastMgShot < shooter.spec.mgRate) return;
+  if (!fromNetwork && now - shooter.lastMgShot < shooter.spec.mgRate) return;
   shooter.lastMgShot = now;
 
   sfx.playMG();
@@ -2701,12 +3168,24 @@ function fireMG(shooter, isPlayer) {
   const turretY = shooter.y - (isAutocannon ? 26 : 33);
   const barrelLen = isAutocannon ? 44 : 32;
   const spread = (Math.random() - 0.5) * (isAutocannon ? 0.024 : 0.035);
-  const angle = shooter.turretAngle + spread;
+  const angle = typeof overrideAngle === 'number' ? overrideAngle : (shooter.turretAngle + spread);
   const mx = turretX + Math.cos(angle) * barrelLen;
   const my = turretY + Math.sin(angle) * barrelLen;
 
-  const powerBoost = (isPlayer && isAutocannon) ? (0.75 + lastChosenPowerRatio * 0.4) : 1.0;
+  const powerBoost = typeof overrideBoost === 'number'
+    ? overrideBoost
+    : ((isPlayer && isAutocannon) ? (0.75 + lastChosenPowerRatio * 0.4) : 1.0);
   const speed = MG_INITIAL_SPEED * powerBoost;
+
+  if (isPlayer && mpState.active && !fromNetwork) {
+    sendNet({
+      type: 'fire_mg',
+      nx: shooter.x / W,
+      turretAngle: shooter.turretAngle,
+      exactAngle: angle,
+      powerBoost
+    });
+  }
 
   projectiles.push({
     type: 'mg',
@@ -2729,19 +3208,23 @@ function fireMG(shooter, isPlayer) {
 }
 
 // ✈️ LANÇAR DRONE KAMIKAZE TELEGUIADO (1 a 3 por tanque moderno - Pode ser abatido com metralhadora!)
-function launchDrone(shooter, isPlayer) {
+function launchDrone(shooter, isPlayer, fromNetwork = false) {
   if (!shooter || gameState !== 'playing') return;
-  if (shooter.dronesLeft <= 0) {
+  if (!fromNetwork && shooter.dronesLeft <= 0) {
     if (isPlayer) addFloatingText(shooter.x, shooter.y - 60, '⚠️ Sem Drones disponíveis neste veículo!', '#f87171');
     return;
   }
   const now = performance.now();
-  if (now - shooter.lastDroneTime < 2800) return;
+  if (!fromNetwork && now - shooter.lastDroneTime < 2800) return;
 
-  shooter.dronesLeft--;
+  shooter.dronesLeft = Math.max(0, shooter.dronesLeft - 1);
   shooter.lastDroneTime = now;
   sfx.playDroneLaunch();
   updateHUD();
+
+  if (isPlayer && mpState.active && !fromNetwork) {
+    sendNet({ type: 'launch_drone' });
+  }
 
   const target = isPlayer ? enemy : player;
   drones.push({
@@ -2749,9 +3232,9 @@ function launchDrone(shooter, isPlayer) {
     x: shooter.x,
     y: shooter.y - 42,
     vx: shooter.facing * 3.5,
-    vy: -4.8, // Sobe primeiro para ganhar altitude sobre a montanha e depois mergulha no alvo!
+    vy: -4.8,
     angle: -Math.PI / 2,
-    hp: 3, // Aguenta 3 tiros de metralhadora antes de ser abatido no ar!
+    hp: 3,
     age: 0,
     target,
     trail: []
@@ -2768,6 +3251,13 @@ function toggleAPS(shooter) {
     return;
   }
   shooter.apsArmed = !shooter.apsArmed;
+  if (shooter === player && mpState.active) {
+    sendNet({
+      type: 'toggle_aps',
+      apsArmed: shooter.apsArmed,
+      apsLeft: shooter.apsLeft
+    });
+  }
   addFloatingText(
     shooter.x,
     shooter.y - 60,
@@ -2777,10 +3267,13 @@ function toggleAPS(shooter) {
   updateHUD();
 }
 
-function deploySmoke(shooter) {
+function deploySmoke(shooter, fromNetwork = false) {
   const now = performance.now();
-  if (now - shooter.lastSmokeTime < 9000) return;
+  if (!fromNetwork && now - shooter.lastSmokeTime < 9000) return;
   shooter.lastSmokeTime = now;
+  if (shooter === player && mpState.active && !fromNetwork) {
+    sendNet({ type: 'deploy_smoke' });
+  }
   smokes.push({
     x: shooter.x + shooter.facing * 45,
     y: shooter.y - 25,
@@ -2795,9 +3288,10 @@ function addFloatingText(x, y, text, color) {
 }
 
 // ============================================================================
-// 12. INTELIGÊNCIA ARTIFICIAL DO INIMIGO (Lança Drones e tenta abater Drones do Jogador com Metralhadora!)
+// 12. INTELIGÊNCIA ARTIFICIAL DO INIMIGO (Desativada quando em Duelo Multiplayer Online!)
 // ============================================================================
 function updateEnemyAI() {
+  if (mpState.active) return; // Em modo Multiplayer Online, o tanque oponente é controlado pelo outro jogador real!
   const diffMult = selectedDifficulty === 'easy' ? 0.65 : selectedDifficulty === 'hard' ? 1.28 : 1.0;
 
   enemy.facing = player.x <= enemy.x ? -1 : 1;
@@ -2993,8 +3487,26 @@ function update() {
   player.recoil *= 0.84;
   enemy.recoil *= 0.84;
 
-  // 4. IA Inimiga
-  updateEnemyAI();
+  // 4. Sincronização em Tempo Real P2P (Multiplayer Online) ou IA Inimiga (Solo)
+  if (mpState.active) {
+    const nowSync = performance.now();
+    if (nowSync - mpState.lastSyncSent > 38) {
+      mpState.lastSyncSent = nowSync;
+      sendNet({
+        type: 'sync_state',
+        nx: player.x / W,
+        vx: player.vx,
+        facing: player.facing,
+        turretAngle: player.turretAngle,
+        myHp: player.hp,
+        apsArmed: player.apsArmed,
+        apsLeft: player.apsLeft,
+        dronesLeft: player.dronesLeft
+      });
+    }
+  } else {
+    updateEnemyAI();
+  }
 
   // 5. ATUALIZAR DRONES KAMIKAZE TELEGUIADOS
   for (let i = drones.length - 1; i >= 0; i--) {
@@ -3226,13 +3738,21 @@ function spawnExplosion(x, y, count, mainColor) {
   }
 }
 
-function endMatch(playerWon) {
+function endMatch(playerWon, fromNetwork = false) {
   if (gameState === 'gameover') return;
   gameState = 'gameover';
   isChargingCannon = false;
 
+  if (mpState.active && !fromNetwork) {
+    sendNet({
+      type: 'match_over',
+      winnerIsReceiver: !playerWon
+    });
+  }
+
   const scen = SCENARIOS[currentScenarioIdx];
-  const { promoted, newRank } = recordMatchResult(playerWon, scen.name, player.spec.name, enemy.spec.name);
+  const oppTitle = mpState.active ? `${mpState.remoteCommander} (${enemy.spec.name})` : enemy.spec.name;
+  const { promoted, newRank } = recordMatchResult(playerWon, scen.name, player.spec.name, oppTitle);
 
   const overlay = document.getElementById('result-overlay');
   const title = document.getElementById('res-title');
@@ -3249,12 +3769,12 @@ function endMatch(playerWon) {
   if (playerWon) {
     title.textContent = `🏆 VITÓRIA DE ${playerProfile.commanderName.toUpperCase()}!`;
     title.style.color = '#facc15';
-    desc.textContent = `Seu ${player.spec.name} destruiu o ${enemy.spec.name} em ${scen.name}! Seu histórico foi salvo.`;
+    desc.textContent = `Seu ${player.spec.name} venceu ${oppTitle} em ${scen.name}! Seu histórico foi salvo.`;
     nextBtn.style.display = currentScenarioIdx < SCENARIOS.length - 1 ? 'inline-block' : 'none';
   } else {
     title.textContent = '💥 SEU BLINDADO FOI DESTRUÍDO!';
     title.style.color = '#f87171';
-    desc.textContent = `O ${enemy.spec.name} venceu em ${scen.name}. Use seus Drones (Q), ative a Defesa Reativa APS (R) e abata os drones inimigos com a metralhadora!`;
+    desc.textContent = `${oppTitle} venceu em ${scen.name}. Use seus Drones (Q), ative a Defesa Reativa APS (R) e abata os drones inimigos com a metralhadora!`;
     nextBtn.style.display = 'none';
   }
 }
@@ -3875,7 +4395,9 @@ window.addEventListener('resize', () => {
   H = window.innerHeight;
   canvas.width = W;
   canvas.height = H;
-  if (SCENARIOS[currentScenarioIdx]) generateTerrain(SCENARIOS[currentScenarioIdx]);
+  if (SCENARIOS[currentScenarioIdx]) {
+    generateTerrain(SCENARIOS[currentScenarioIdx], lastSeed1, lastSeed2, mpState.active && !mpState.isHost);
+  }
 });
 
 function loop() {
@@ -3887,6 +4409,20 @@ function loop() {
 loadProfile();
 generateTerrain(SCENARIOS[0]);
 initMenus();
+
+// Se o jogador abrir um link de convite (?sala=CODIGO), conecta automaticamente na sala!
+window.addEventListener('load', () => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const roomParam = params.get('sala');
+    if (roomParam) {
+      const inp = document.getElementById('mp-join-input');
+      if (inp) inp.value = roomParam.toUpperCase();
+      setTimeout(() => joinOnlineRoom(roomParam.toUpperCase()), 600);
+    }
+  } catch (e) {}
+});
+
 loop();
 </script>
 </body>

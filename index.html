@@ -6,7 +6,14 @@
   <title>Comando Blindado: Operação Global</title>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Orbitron:wght@700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Chakra+Petch:wght@500;600;700&family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&family=Russo+One&family=Share+Tech+Mono&display=swap');
+
+    :root {
+      --font-stencil: 'Black Ops One', 'Orbitron', sans-serif;
+      --font-armor: 'Russo One', 'Orbitron', sans-serif;
+      --font-hud: 'Share Tech Mono', monospace;
+      --font-body: 'Rajdhani', 'Chakra Petch', sans-serif;
+    }
 
     * {
       box-sizing: border-box;
@@ -20,7 +27,7 @@
     body {
       background: #060911;
       color: #f0f6fc;
-      font-family: 'Chakra Petch', sans-serif;
+      font-family: var(--font-body);
       overflow: hidden;
       width: 100vw;
       height: 100vh;
@@ -56,22 +63,27 @@
       gap: 8px;
       pointer-events: none;
       z-index: 15;
-      background: linear-gradient(to bottom, rgba(2,6,23,0.92) 0%, rgba(2,6,23,0) 100%);
+      background: linear-gradient(to bottom, rgba(2,6,23,0.94) 0%, rgba(2,6,23,0) 100%);
     }
 
     .tank-hud {
-      background: rgba(15, 23, 42, 0.9);
+      background: rgba(10, 15, 29, 0.92);
       border: 2px solid #334155;
       border-radius: 10px;
       padding: 8px 12px;
-      width: 335px;
+      width: 340px;
       max-width: 33vw;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.65);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.75);
       backdrop-filter: blur(8px);
+      transition: border-color 0.25s, box-shadow 0.25s;
     }
 
     .tank-hud.player { border-color: #38bdf8; }
     .tank-hud.enemy { border-color: #f87171; }
+    .tank-hud.active-turn {
+      border-color: #facc15 !important;
+      box-shadow: 0 0 24px rgba(250, 204, 21, 0.55);
+    }
 
     .hud-top-row {
       display: flex;
@@ -102,17 +114,19 @@
     }
 
     .tank-name {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 12.5px;
-      font-weight: 900;
+      font-family: var(--font-armor);
+      font-size: 13px;
+      letter-spacing: 0.6px;
       color: #fff;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
     }
 
     .commander-sub {
-      font-size: 10.5px;
+      font-family: var(--font-hud);
+      font-size: 11px;
       color: #facc15;
       font-weight: 700;
       white-space: nowrap;
@@ -153,13 +167,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 10px;
+      font-family: var(--font-hud);
+      font-size: 10.5px;
       font-weight: 700;
       text-shadow: 1px 1px 2px #000;
       color: #fff;
     }
 
     .hits-info {
+      font-family: var(--font-hud);
       font-size: 10px;
       color: #cbd5e1;
       display: flex;
@@ -184,31 +200,75 @@
     /* Centro do HUD */
     .center-hud {
       text-align: center;
-      background: rgba(15, 23, 42, 0.92);
+      background: rgba(10, 15, 29, 0.94);
       border: 2px solid #eab308;
       border-radius: 10px;
       padding: 6px 12px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.65);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.75);
       pointer-events: auto;
-      min-width: 340px;
-      max-width: 38vw;
+      min-width: 360px;
+      max-width: 40vw;
     }
 
     .level-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 13px;
+      font-family: var(--font-stencil);
+      font-size: 14.5px;
       color: #facc15;
       text-transform: uppercase;
-      letter-spacing: 0.6px;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 8px rgba(250, 204, 21, 0.35);
     }
 
     .env-subtitle {
+      font-family: var(--font-hud);
       font-size: 10.5px;
       color: #cbd5e1;
       margin-bottom: 5px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    /* Banner do Modo por Turnos (Estilo Worms!) */
+    .worms-turn-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: linear-gradient(90deg, #1e1b4b, #312e81, #1e1b4b);
+      border: 1.5px solid #facc15;
+      border-radius: 6px;
+      padding: 3px 10px;
+      margin-bottom: 5px;
+      font-family: var(--font-armor);
+      font-size: 11.5px;
+      color: #fef08a;
+    }
+    .worms-turn-banner.active {
+      display: flex;
+    }
+    .worms-timer-badge {
+      background: #dc2626;
+      color: #fff;
+      font-family: var(--font-hud);
+      font-weight: 900;
+      padding: 1px 7px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .worms-fuel-wrap {
+      flex: 1;
+      max-width: 110px;
+      height: 8px;
+      background: #090d16;
+      border: 1px solid #64748b;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .worms-fuel-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #f97316, #22c55e);
     }
 
     .weapon-selector {
@@ -225,9 +285,9 @@
       color: #cbd5e1;
       padding: 4px 7px;
       border-radius: 6px;
-      font-family: 'Chakra Petch', sans-serif;
+      font-family: var(--font-body);
       font-weight: 700;
-      font-size: 10.5px;
+      font-size: 11px;
       cursor: pointer;
       transition: all 0.15s;
     }
@@ -268,9 +328,9 @@
       border: 1px solid #64748b;
       border-radius: 6px;
       padding: 4px 7px;
-      font-family: inherit;
+      font-family: var(--font-body);
       font-weight: 700;
-      font-size: 10.5px;
+      font-size: 11px;
       cursor: pointer;
     }
     .top-btn:hover { background: #475569; }
@@ -303,7 +363,8 @@
     .power-bar-label {
       position: absolute;
       inset: 0;
-      font-size: 9.5px;
+      font-family: var(--font-hud);
+      font-size: 10px;
       font-weight: 700;
       color: #fff;
       text-shadow: 1px 1px 2px #000;
@@ -332,13 +393,14 @@
       bottom: 8px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.9);
+      background: rgba(10, 15, 29, 0.92);
       border: 1px solid #334155;
       border-radius: 999px;
       padding: 5px 16px;
       display: flex;
       gap: 12px;
       align-items: center;
+      font-family: var(--font-hud);
       font-size: 11px;
       color: #e2e8f0;
       z-index: 14;
@@ -389,7 +451,7 @@
       border: 2px solid #475569;
       color: #f8fafc;
       border-radius: 12px;
-      font-family: 'Orbitron', sans-serif;
+      font-family: var(--font-armor);
       font-weight: 900;
       font-size: 14px;
       display: flex;
@@ -410,8 +472,8 @@
     }
 
     .touch-btn span {
-      font-family: 'Chakra Petch', sans-serif;
-      font-size: 8.5px;
+      font-family: var(--font-body);
+      font-size: 9px;
       font-weight: 700;
       color: #cbd5e1;
       margin-top: 1px;
@@ -483,13 +545,13 @@
     .overlay {
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.99) 100%);
+      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.96) 0%, rgba(2, 6, 23, 0.99) 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
       z-index: 50;
-      padding: 14px 18px;
+      padding: 12px 16px;
       overflow-y: auto;
       touch-action: pan-y;
     }
@@ -497,13 +559,13 @@
     .overlay.hidden { display: none; }
 
     .menu-box {
-      background: rgba(15, 23, 42, 0.95);
+      background: rgba(11, 17, 32, 0.96);
       border: 2px solid #475569;
       border-radius: 16px;
-      padding: 16px 20px;
-      max-width: 1360px;
+      padding: 14px 18px;
+      max-width: 1400px;
       width: 100%;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.85);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.88);
     }
 
     .top-header-bar {
@@ -518,11 +580,12 @@
     }
 
     .game-main-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 22px;
-      font-weight: 900;
+      font-family: var(--font-stencil);
+      font-size: 25px;
+      font-weight: 400;
+      letter-spacing: 1.5px;
       color: #facc15;
-      text-shadow: 0 2px 12px rgba(250, 204, 21, 0.35);
+      text-shadow: 0 3px 14px rgba(250, 204, 21, 0.4), 2px 2px 0px #000;
     }
 
     .profile-bar {
@@ -557,9 +620,8 @@
       color: #fff;
       padding: 6px 10px;
       border-radius: 6px;
-      font-family: 'Orbitron', sans-serif;
+      font-family: var(--font-armor);
       font-size: 12px;
-      font-weight: 700;
       width: 155px;
       user-select: text;
       -webkit-user-select: text;
@@ -568,6 +630,7 @@
     .stats-pills {
       display: flex;
       gap: 6px;
+      font-family: var(--font-hud);
       font-size: 11.5px;
       font-weight: 700;
       flex-wrap: wrap;
@@ -584,12 +647,12 @@
     .stat-pill.rate { color: #38bdf8; border-color: #0369a1; }
 
     .section-label {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 12.5px;
+      font-family: var(--font-armor);
+      font-size: 13px;
       color: #38bdf8;
       text-transform: uppercase;
-      letter-spacing: 0.7px;
-      margin: 10px 0 8px;
+      letter-spacing: 1px;
+      margin: 8px 0 6px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -601,7 +664,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
       gap: 8px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .unit-card {
@@ -638,8 +701,8 @@
     }
 
     .unit-card-name {
-      font-weight: 700;
-      font-size: 11.5px;
+      font-family: var(--font-armor);
+      font-size: 11px;
       color: #fff;
       white-space: nowrap;
       overflow: hidden;
@@ -647,7 +710,7 @@
     }
 
     .unit-card-country {
-      font-size: 10.5px;
+      font-size: 11px;
       color: #94a3b8;
     }
 
@@ -663,7 +726,8 @@
       color: #cbd5e1;
       padding: 4px 11px;
       border-radius: 999px;
-      font-size: 11.5px;
+      font-family: var(--font-body);
+      font-size: 12px;
       font-weight: 700;
       cursor: pointer;
     }
@@ -676,12 +740,12 @@
 
     .tank-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 10px;
-      max-height: 320px;
+      grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+      gap: 8px;
+      max-height: 270px;
       overflow-y: auto;
       padding-right: 6px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       touch-action: pan-y;
     }
 
@@ -713,7 +777,8 @@
       position: absolute;
       top: 6px;
       right: 6px;
-      font-size: 9px;
+      font-family: var(--font-hud);
+      font-size: 9.5px;
       font-weight: 700;
       padding: 2px 6px;
       border-radius: 4px;
@@ -727,10 +792,10 @@
 
     .tank-card-preview {
       width: 200px;
-      height: 82px;
+      height: 76px;
       background: transparent;
       border-radius: 6px;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -738,22 +803,22 @@
     }
 
     .tank-card-title {
-      font-family: 'Orbitron', sans-serif;
+      font-family: var(--font-armor);
       font-size: 12px;
-      font-weight: 700;
       color: #fff;
       text-align: center;
     }
 
     .tank-card-origin {
-      font-size: 10px;
+      font-size: 11px;
       color: #94a3b8;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
       text-align: center;
     }
 
     .tank-stats {
       width: 100%;
+      font-family: var(--font-hud);
       font-size: 10px;
       color: #cbd5e1;
       display: flex;
@@ -774,35 +839,70 @@
 
     .scenarios-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(245px, 1fr));
       gap: 8px;
+      max-height: 195px;
+      overflow-y: auto;
+      padding-right: 6px;
       margin-bottom: 10px;
+      touch-action: pan-y;
     }
 
     .scenario-card {
-      background: #0f172a;
+      background: linear-gradient(145deg, #0f172a 0%, #15203b 100%);
       border: 2px solid #334155;
-      border-radius: 8px;
-      padding: 7px 10px;
+      border-radius: 9px;
+      padding: 8px 11px;
       cursor: pointer;
       text-align: left;
       transition: all 0.15s;
+      position: relative;
     }
-    .scenario-card:hover { border-color: #64748b; }
+    .scenario-card:hover { border-color: #64748b; transform: translateY(-1px); }
     .scenario-card.selected {
-      border-color: #38bdf8;
-      background: rgba(56, 189, 248, 0.12);
+      border-color: #facc15;
+      background: linear-gradient(145deg, rgba(250, 204, 21, 0.14) 0%, rgba(15, 23, 42, 0.95) 100%);
+      box-shadow: 0 0 15px rgba(250, 204, 21, 0.25);
+    }
+
+    .scen-year-badge {
+      display: inline-block;
+      background: #dc2626;
+      color: #fff;
+      font-family: var(--font-stencil);
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-right: 5px;
+      letter-spacing: 0.5px;
     }
 
     .scen-name {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 11px;
-      font-weight: 700;
+      font-family: var(--font-armor);
+      font-size: 12px;
       color: #facc15;
+      margin-bottom: 2px;
+    }
+    .scen-factions {
+      font-family: var(--font-hud);
+      font-size: 10.5px;
+      color: #38bdf8;
+      font-weight: 700;
+      margin-bottom: 3px;
     }
     .scen-desc {
-      font-size: 10px;
+      font-size: 11px;
+      line-height: 1.25;
       color: #cbd5e1;
+    }
+    .scen-hazards {
+      margin-top: 4px;
+      font-family: var(--font-hud);
+      font-size: 9.5px;
+      color: #fde047;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
     .bottom-launch-row {
@@ -821,24 +921,31 @@
       color: #cbd5e1;
       padding: 7px 12px;
       border-radius: 8px;
-      font-family: 'Chakra Petch', sans-serif;
-      font-weight: 700;
-      font-size: 12px;
+      font-family: var(--font-armor);
+      font-size: 11.5px;
       cursor: pointer;
+      transition: all 0.15s;
     }
     .choice-btn.selected {
       background: #0284c7;
       border-color: #38bdf8;
       color: #fff;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+    }
+    .choice-btn.mode-worms.selected {
+      background: #7c3aed;
+      border-color: #c084fc;
+      color: #fff;
+      box-shadow: 0 0 14px rgba(192, 132, 252, 0.45);
     }
 
     .start-btn {
       background: linear-gradient(135deg, #eab308, #ca8a04);
       border: 2px solid #fef08a;
       color: #0f172a;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 15px;
-      font-weight: 900;
+      font-family: var(--font-stencil);
+      font-size: 16px;
+      letter-spacing: 1px;
       padding: 10px 26px;
       border-radius: 10px;
       cursor: pointer;
@@ -848,6 +955,7 @@
     .start-btn:hover { transform: scale(1.03); }
 
     .history-log {
+      font-family: var(--font-hud);
       font-size: 11px;
       color: #94a3b8;
       max-height: 54px;
@@ -857,7 +965,7 @@
       border-radius: 6px;
       border: 1px solid #1e293b;
       flex: 1;
-      min-width: 220px;
+      min-width: 200px;
     }
 
     /* ==================== PAINEL MULTIPLAYER ONLINE (P2P VIA CÓDIGO) ==================== */
@@ -866,7 +974,7 @@
       border: 2px solid #8b5cf6;
       border-radius: 12px;
       padding: 8px 14px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -876,9 +984,8 @@
     }
 
     .mp-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 12.5px;
-      font-weight: 900;
+      font-family: var(--font-armor);
+      font-size: 12px;
       color: #e9d5ff;
       display: flex;
       align-items: center;
@@ -896,9 +1003,8 @@
       background: linear-gradient(135deg, #7c3aed, #5b21b6);
       border: 1.5px solid #c4b5fd;
       color: #fff;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 11.5px;
-      font-weight: 700;
+      font-family: var(--font-armor);
+      font-size: 11px;
       padding: 6px 12px;
       border-radius: 8px;
       cursor: pointer;
@@ -913,7 +1019,7 @@
       background: #1e293b;
       border-color: #facc15;
       color: #fef08a;
-      font-family: 'Chakra Petch', sans-serif;
+      font-family: var(--font-body);
       padding: 5px 10px;
     }
 
@@ -921,8 +1027,8 @@
       background: #090d16;
       border: 2px solid #64748b;
       color: #facc15;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 13px;
+      font-family: var(--font-hud);
+      font-size: 14px;
       font-weight: 900;
       padding: 5px 10px;
       border-radius: 8px;
@@ -938,7 +1044,7 @@
       background: rgba(250, 204, 21, 0.15);
       border: 2px dashed #facc15;
       color: #fef08a;
-      font-family: 'Orbitron', sans-serif;
+      font-family: var(--font-hud);
       font-size: 14px;
       font-weight: 900;
       padding: 4px 12px;
@@ -949,7 +1055,8 @@
     }
 
     .mp-status {
-      font-size: 11.5px;
+      font-family: var(--font-body);
+      font-size: 12px;
       font-weight: 700;
       color: #cbd5e1;
     }
@@ -964,7 +1071,7 @@
   <!-- ==================== HUD DE BATALHA ==================== -->
   <div id="hud">
     <!-- Jogador -->
-    <div class="tank-hud player">
+    <div class="tank-hud player" id="hud-card-player">
       <div class="hud-top-row">
         <img id="p-unit-img" class="unit-insignia-hud" src="Hativa188.png" alt="Unidade" />
         <div class="hud-title-block">
@@ -984,10 +1091,21 @@
       </div>
     </div>
 
-    <!-- Centro: Cenário, Armas, Drones, Defesa Reativa e Calibragem -->
+    <!-- Centro: Cenário, Turno Worms, Armas, Drones, Defesa Reativa e Calibragem -->
     <div class="center-hud">
-      <div class="level-title" id="hud-level">COLINAS DE GOLÃ</div>
-      <div class="env-subtitle" id="hud-env">Movimento Livre • Drones Teleguiados e Defesa Reativa APS</div>
+      <div class="level-title" id="hud-level">VALE DAS LÁGRIMAS — 1973</div>
+      <div class="env-subtitle" id="hud-env">Penhascos com Dano de Queda • Água Profunda • Modo Worms ou Tempo Real</div>
+
+      <!-- Barra de Turno estilo WORMS -->
+      <div class="worms-turn-banner" id="worms-turn-banner">
+        <span id="worms-turn-owner">🎯 SEU TURNO DE ATIRAR!</span>
+        <div style="display:flex; align-items:center; gap:5px;" title="Combustível de movimento neste turno">
+          <span style="font-size:10px; color:#cbd5e1;">⛽ Move:</span>
+          <div class="worms-fuel-wrap"><div class="worms-fuel-fill" id="worms-fuel-fill"></div></div>
+        </div>
+        <span class="worms-timer-badge" id="worms-timer-badge">⏱️ 25s</span>
+      </div>
+
       <div class="weapon-selector">
         <button class="weapon-btn active" id="btn-w-cannon" onclick="selectWeapon('cannon')">
           [1] 💥 CANHÃO
@@ -1015,7 +1133,7 @@
     </div>
 
     <!-- Inimigo -->
-    <div class="tank-hud enemy">
+    <div class="tank-hud enemy" id="hud-card-enemy">
       <div class="hud-top-row">
         <img id="e-unit-img" class="unit-insignia-hud" src="russia tank insignia.png" alt="Inimigo" />
         <div class="hud-title-block">
@@ -1063,12 +1181,12 @@
 
   <!-- Barra de Comandos (PC) -->
   <div id="controls-bar">
-    <div><span class="key-badge">A</span><span class="key-badge">D</span> ou <span class="key-badge">◀</span><span class="key-badge">▶</span> Mover Livre</div>
+    <div><span class="key-badge">A</span><span class="key-badge">D</span> ou <span class="key-badge">◀</span><span class="key-badge">▶</span> Mover (Cuidado c/ Penhascos e Água!)</div>
     <div><span class="key-badge">Mouse</span>Mirar</div>
     <div><span class="key-badge">Segurar Espaço</span>Calibrar Canhão</div>
     <div><span class="key-badge">E</span> ou <span class="key-badge">Clique Dir</span>Metralhadora Longa (Abate Drones!)</div>
-    <div><span class="key-badge">Q</span>Lançar Drone Teleguiado</div>
-    <div><span class="key-badge">R</span>Defesa Reativa APS</div>
+    <div><span class="key-badge">Q</span>Drone Teleguiado</div>
+    <div><span class="key-badge">R</span>Defesa APS</div>
     <div><span class="key-badge">F</span>Fumaça</div>
   </div>
 
@@ -1077,8 +1195,8 @@
     <div class="menu-box">
       <div class="top-header-bar">
         <div>
-          <div class="game-main-title">🛡️ COMANDO BLINDADO: OPERAÇÃO GLOBAL</div>
-          <div style="font-size:12px; color:#94a3b8;">26 Blindados Reais • Multiplayer Online P2P • Drones Teleguiados (1-3) • Defesa Reativa APS (2 Usos)</div>
+          <div class="game-main-title">🛡️ COMANDO BLINDADO: GRANDES BATALHAS HISTÓRICAS</div>
+          <div style="font-size:12.5px; color:#94a3b8; font-weight:600;">10 Batalhas Reais (1965–2023) • Modo Turnos (Estilo Worms) & Tempo Real • Penhascos com Dano de Queda & Rios/Canais</div>
         </div>
 
         <div class="profile-bar">
@@ -1091,7 +1209,7 @@
             <canvas id="rank-badge-canvas" class="rank-chevron-canvas" width="44" height="44"></canvas>
             <div style="text-align:left;">
               <div style="font-size:10px; color:#94a3b8;">PATENTE ATUAL</div>
-              <div id="rank-title-display" style="font-family:'Orbitron'; font-size:12px; color:#facc15; font-weight:700;">Soldado (PVT)</div>
+              <div id="rank-title-display" style="font-family:var(--font-armor); font-size:12px; color:#facc15;">Soldado (PVT)</div>
               <div id="rank-next-display" style="font-size:10px; color:#cbd5e1;">Próxima: 1 vitória</div>
             </div>
           </div>
@@ -1107,8 +1225,8 @@
       <!-- ==================== MULTIPLAYER ONLINE (OPÇÃO 1: SALA POR CÓDIGO P2P) ==================== -->
       <div class="mp-bar">
         <div class="mp-title">
-          <span>🌐 MULTIPLAYER ONLINE (1v1 EM TEMPO REAL):</span>
-          <span class="mp-status" id="mp-status-text">Modo Solo (vs IA) ou Crie/Entre em uma Sala Online!</span>
+          <span>🌐 MULTIPLAYER ONLINE (1v1):</span>
+          <span class="mp-status" id="mp-status-text">Jogue Solo (vs IA) ou Crie/Entre em uma Sala Online!</span>
         </div>
 
         <div class="mp-controls">
@@ -1129,13 +1247,13 @@
 
       <!-- 1. Escolha da Unidade e Insígnia Militar -->
       <div class="section-label">
-        <span>1. Escolha sua Unidade Blindada & Insígnia Histórica:</span>
+        <span>1. Escolha sua Unidade Blindada & Insígnia Militar:</span>
       </div>
       <div class="units-row" id="units-grid"></div>
 
       <!-- 2. Escolha do Tanque -->
       <div class="section-label">
-        <span>2. Escolha seu Veículo Blindado (Tanques modernos têm Drones Teleguiados e Defesa Reativa APS!):</span>
+        <span>2. Escolha seu Veículo Blindado (26 Blindados c/ Fundo Transparente, Drones e Defesa Reativa APS):</span>
         <div class="filter-tabs">
           <button class="filter-tab active" onclick="filterVehicles('ALL', this)">Todos (26)</button>
           <button class="filter-tab" onclick="filterVehicles('MBT', this)">🛡️ Tanques (MBT)</button>
@@ -1146,16 +1264,22 @@
       </div>
       <div class="tank-grid" id="tank-selection-grid"></div>
 
-      <!-- 3. Escolha do Cenário de Guerra -->
+      <!-- 3. Escolha da Batalha Histórica -->
       <div class="section-label">
-        <span>3. Escolha o Teatro de Operações (Cenários Gráficos Detalhados):</span>
+        <span>3. Escolha a Batalha Histórica (10 Teatros Reais com Penhascos, Rios/Canais e Elementos dos Países):</span>
       </div>
       <div class="scenarios-grid" id="scenarios-grid"></div>
 
-      <!-- Rodapé -->
+      <!-- Rodapé: Modo de Partida (Worms vs Tempo Real) + Dificuldade -->
       <div class="bottom-launch-row">
+        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+          <span style="font-family:var(--font-armor); font-size:11.5px; color:#c084fc; margin-right:2px;">MODO DE JOGO:</span>
+          <button class="choice-btn mode-worms selected" id="btn-mode-turns" onclick="setBattleMode('turns', this)">🎯 Por Turnos (Estilo Worms)</button>
+          <button class="choice-btn" id="btn-mode-realtime" onclick="setBattleMode('realtime', this)">⚡ Tempo Real (Ação Livre)</button>
+        </div>
+
         <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;" id="difficulty-selector-box">
-          <span style="font-size:12px; font-weight:700; color:#38bdf8; margin-right:4px;">DIFICULDADE (IA):</span>
+          <span style="font-family:var(--font-armor); font-size:11.5px; color:#38bdf8; margin-right:2px;">IA:</span>
           <button class="choice-btn" onclick="setDifficulty('easy', this)">🟢 Cadete</button>
           <button class="choice-btn selected" onclick="setDifficulty('normal', this)">🟡 Comandante</button>
           <button class="choice-btn" onclick="setDifficulty('hard', this)">🔴 General</button>
@@ -1165,7 +1289,7 @@
           📋 Registro de Combate salvo automaticamente...
         </div>
 
-        <button class="start-btn" id="main-start-btn" onclick="startGame()">🚀 INICIAR MISSÃO!</button>
+        <button class="start-btn" id="main-start-btn" onclick="startGame()">🚀 INICIAR BATALHA!</button>
       </div>
     </div>
   </div>
@@ -2034,99 +2158,199 @@ MILITARY_UNITS.forEach(u => {
 });
 
 // ============================================================================
-// 4. CENÁRIOS COM GRÁFICOS PARALLAX MELHORADOS
+// 4. AS 10 GRANDES BATALHAS HISTÓRICAS DE BLINDADOS (1965–2023)
+//    Com Modelos de Penhasco (Dano de Queda), Rios/Canais de Água e Elementos dos Países!
 // ============================================================================
 const SCENARIOS = [
   {
-    id: 'golan',
-    name: '1. Colinas de Golã (Golan Heights)',
-    desc: 'Monte Hermon ao fundo, Bunkers e Antenas • Contra Karrar / T-72',
-    enemyId: 'karrar',
-    enemyUnitImg: 'russia tank insignia.png',
-    skyTop: '#0b132b', skyMid: '#1d3557', skyBottom: '#60a5fa',
-    celestial: { type: 'sun', color: '#fef08a', glow: 'rgba(250, 204, 21, 0.35)', x: 0.78, y: 0.2 },
+    id: 'chawinda_1965',
+    year: '1965',
+    name: '1. Batalha de Chawinda — 1965',
+    factions: '🇮🇳 Índia × Paquistão 🇵🇰 · Guerra Indo-Paquistanesa',
+    flags: ['🇮🇳', '🇵🇰'],
+    desc: 'Maior concentração de blindados desde a 2ª Guerra! Centurion/Sherman indianos vs Patton M47/M48 paquistaneses no setor de Sialkot.',
+    hazardsLabel: '🌊 Canal do Ravi (Água) • ⛰️ Barrancos de Monção',
+    enemyId: 'm60a1_era',
+    enemyUnitImg: 'uk inina.png',
+    skyTop: '#0f172a', skyMid: '#1e3a8a', skyBottom: '#93c5fd',
+    celestial: { type: 'sun', color: '#fef08a', glow: 'rgba(250, 204, 21, 0.35)', x: 0.76, y: 0.22 },
     farHillsColor: '#1e293b', midHillsColor: '#334155',
-    groundTop: '#65a30d', groundMid: '#3f6212', groundBottom: '#1c1917', rockColor: '#4d7c0f',
-    ridgeHeight: 0.23, roughness: 0.06, windRange: 0.03,
-    weather: 'clouds', decorType: 'golan'
+    groundTop: '#4d7c0f', groundMid: '#365314', groundBottom: '#1a2e05', rockColor: '#65a30d',
+    ridgeHeight: 0.22, roughness: 0.06, windRange: 0.04,
+    cliffModel: 'canyon_step', // Penhascos laterais com degrau de queda
+    hasWater: true, waterStart: 0.43, waterEnd: 0.57, waterColor: 'rgba(14, 116, 144, 0.78)',
+    weather: 'rain', decorType: 'chawinda'
   },
   {
-    id: 'sahara',
-    name: '2. Deserto do Saara',
-    desc: 'Sol Escaldante, Pirâmides/Oásis e Dunas • Contra M-84 Deserto',
+    id: 'abu_ageila_1967',
+    year: '1967',
+    name: '2. Batalha de Abu-Ageila — 1967',
+    factions: '🇮🇱 Israel × Egito 🇪🇬 · Guerra dos Seis Dias',
+    flags: ['🇮🇱', '🇪🇬'],
+    desc: 'Operação combinada de blindados, artilharia e paraquedistas israelenses contra as fortificações egípcias de Um-Katef no Sinai.',
+    hazardsLabel: '⛰️ Escarpas Rochosas do Sinai (Alto Dano de Queda!)',
     enemyId: 'm84_kuwait',
     enemyUnitImg: 'images.png',
-    skyTop: '#7c2d12', skyMid: '#d97706', skyBottom: '#fde047',
-    celestial: { type: 'sun', color: '#fffbeb', glow: 'rgba(251, 191, 36, 0.55)', x: 0.25, y: 0.22 },
-    farHillsColor: '#b45309', midHillsColor: '#d97706',
-    groundTop: '#f59e0b', groundMid: '#b45309', groundBottom: '#451a03', rockColor: '#fbbf24',
-    ridgeHeight: 0.26, roughness: 0.05, windRange: 0.06,
-    weather: 'sand', decorType: 'sahara'
+    skyTop: '#451a03', skyMid: '#b45309', skyBottom: '#fde047',
+    celestial: { type: 'sun', color: '#fffbeb', glow: 'rgba(251, 191, 36, 0.55)', x: 0.24, y: 0.18 },
+    farHillsColor: '#78350f', midHillsColor: '#92400e',
+    groundTop: '#d97706', groundMid: '#92400e', groundBottom: '#451a03', rockColor: '#f59e0b',
+    ridgeHeight: 0.30, roughness: 0.07, windRange: 0.05,
+    cliffModel: 'twin_cliffs', // Penhascos escarpados duplos
+    hasWater: false,
+    weather: 'sand', decorType: 'abu_ageila'
   },
   {
-    id: 'siberia',
-    name: '3. Tundra da Sibéria',
-    desc: 'Montanhas de Gelo, Nevasca e Pinheiros • Contra T-90M Russo',
+    id: 'vale_lagrimas_1973',
+    year: '1973',
+    name: '3. Vale das Lágrimas — 1973',
+    factions: '🇮🇱 Israel × Síria 🇸🇾 · Guerra do Yom Kippur',
+    flags: ['🇮🇱', '🇸🇾'],
+    desc: 'Lendária defesa nas Colinas de Golã! A 7ª Brigada e Hativa 188 israelenses seguraram centenas de T-55 e T-62 sírios à beira do abismo.',
+    hazardsLabel: '⛰️ Penhasco de Basalto de Golã • 🕳️ Fosso Antitanque',
+    enemyId: 'karrar',
+    enemyUnitImg: 'russia tank insignia.png',
+    skyTop: '#090d16', skyMid: '#1e293b', skyBottom: '#64748b',
+    celestial: { type: 'sun', color: '#fde047', glow: 'rgba(234, 179, 8, 0.3)', x: 0.80, y: 0.20 },
+    farHillsColor: '#0f172a', midHillsColor: '#1e293b',
+    groundTop: '#57534e', groundMid: '#292524', groundBottom: '#0c0a09', rockColor: '#78716c',
+    ridgeHeight: 0.34, roughness: 0.08, windRange: 0.04,
+    cliffModel: 'central_mesa', // Grande Penhasco/Platô central com paredes verticais!
+    hasWater: false,
+    weather: 'embers', decorType: 'vale_lagrimas'
+  },
+  {
+    id: 'fazenda_chinesa_1973',
+    year: '1973',
+    name: '4. Batalha da Fazenda Chinesa — 1973',
+    factions: '🇮🇱 Israel × Egito 🇪🇬 · Travessia do Canal de Suez',
+    flags: ['🇮🇱', '🇪🇬'],
+    desc: 'Combates ferozes à queima-roupa junto ao Canal de Suez e canais de irrigação agrícolas para abrir a travessia israelense no Sinai.',
+    hazardsLabel: '🌊 Canal de Suez & Grande Lago Amargo (Água Profunda!)',
+    enemyId: 'm84_kuwait',
+    enemyUnitImg: 'images.png',
+    skyTop: '#1e1b4b', skyMid: '#7c2d12', skyBottom: '#fdba74',
+    celestial: { type: 'sun', color: '#fed7aa', glow: 'rgba(249, 115, 22, 0.48)', x: 0.50, y: 0.24 },
+    farHillsColor: '#431407', midHillsColor: '#7c2d12',
+    groundTop: '#ca8a04', groundMid: '#854d0e', groundBottom: '#3f2305', rockColor: '#eab308',
+    ridgeHeight: 0.20, roughness: 0.05, windRange: 0.04,
+    cliffModel: 'canal_banks', // Margens abruptas de concreto/areia do Canal de Suez
+    hasWater: true, waterStart: 0.39, waterEnd: 0.61, waterColor: 'rgba(2, 132, 199, 0.82)',
+    weather: 'embers', decorType: 'fazenda_chinesa'
+  },
+  {
+    id: 'outubro_14_1973',
+    year: '1973',
+    name: '5. Batalha de 14 de Outubro — 1973',
+    factions: '🇪🇬 Egito × Israel 🇮🇱 · Guerra do Yom Kippur',
+    flags: ['🇪🇬', '🇮🇱'],
+    desc: 'Uma das maiores batalhas de tanques pós-1945! Grandes formações blindadas avançaram pelos desfiladeiros do Sinai.',
+    hazardsLabel: '⛰️ Desfiladeiros de Gidi e Mitla (Quedas Severas!)',
+    enemyId: 'magach6b',
+    enemyUnitImg: 'Hativa188.png',
+    skyTop: '#450a0a', skyMid: '#9a3412', skyBottom: '#fef08a',
+    celestial: { type: 'sun', color: '#fef9c3', glow: 'rgba(250, 204, 21, 0.55)', x: 0.30, y: 0.19 },
+    farHillsColor: '#451a03', midHillsColor: '#78350f',
+    groundTop: '#ea580c', groundMid: '#9a3412', groundBottom: '#431407', rockColor: '#fb923c',
+    ridgeHeight: 0.33, roughness: 0.07, windRange: 0.06,
+    cliffModel: 'twin_cliffs',
+    hasWater: false,
+    weather: 'sand', decorType: 'outubro_14'
+  },
+  {
+    id: 'dezful_1981',
+    year: '1981',
+    name: '6. Batalha de Dezful (Op. Nasr) — 1981',
+    factions: '🇮🇷 Irã × Iraque 🇮🇶 · Guerra Irã-Iraque',
+    flags: ['🇮🇷', '🇮🇶'],
+    desc: 'Chieftains e M60 iranianos enfrentaram T-62 iraquianos nos pântanos e rios inundados do Khuzistão (Vale do Rio Karkheh).',
+    hazardsLabel: '🌊 Rio Karkheh & Pântanos Inundados • ⛰️ Barrancos de Lama',
+    enemyId: 'karrar',
+    enemyUnitImg: 'images.png',
+    skyTop: '#064e3b', skyMid: '#115e59', skyBottom: '#99f6e4',
+    celestial: { type: 'sun', color: '#ccfbf1', glow: 'rgba(45, 212, 191, 0.35)', x: 0.70, y: 0.22 },
+    farHillsColor: '#134e4a', midHillsColor: '#115e59',
+    groundTop: '#3f6212', groundMid: '#365314', groundBottom: '#14532d', rockColor: '#65a30d',
+    ridgeHeight: 0.21, roughness: 0.06, windRange: 0.05,
+    cliffModel: 'canyon_step',
+    hasWater: true, waterStart: 0.36, waterEnd: 0.64, waterColor: 'rgba(13, 148, 136, 0.80)',
+    weather: 'rain', decorType: 'dezful'
+  },
+  {
+    id: 'easting_73_1991',
+    year: '1991',
+    name: '7. Batalha de 73 Easting — 1991',
+    factions: '🇺🇸 Estados Unidos × Iraque 🇮🇶 · Guerra do Golfo',
+    flags: ['🇺🇸', '🇮🇶'],
+    desc: 'M1A1 Abrams e Bradleys avançaram na tempestade de areia contra os T-72 da Guarda Republicana usando visores térmicos.',
+    hazardsLabel: '⛰️ Wadi Al-Batin (Ravina Escarpada no Deserto)',
     enemyId: 't90m',
-    enemyUnitImg: 'russia tank insignia.png',
-    skyTop: '#090d16', skyMid: '#1e293b', skyBottom: '#cbd5e1',
-    celestial: { type: 'moon', color: '#f8fafc', glow: 'rgba(226, 232, 240, 0.3)', x: 0.82, y: 0.18 },
-    farHillsColor: '#334155', midHillsColor: '#64748b',
-    groundTop: '#f8fafc', groundMid: '#94a3b8', groundBottom: '#1e293b', rockColor: '#e2e8f0',
-    ridgeHeight: 0.28, roughness: 0.07, windRange: 0.07,
-    weather: 'snow', decorType: 'siberia'
-  },
-  {
-    id: 'france_urban',
-    name: '4. Guerra Urbana na França',
-    desc: 'Paris Histórica, Torre Eiffel, Arco do Triunfo e Ruínas • Contra Leopard 2A6',
-    enemyId: 'leopard2a6',
-    enemyUnitImg: 'uk inina.png',
-    skyTop: '#0f172a', skyMid: '#312e81', skyBottom: '#94a3b8',
-    celestial: { type: 'moon', color: '#fef9c3', glow: 'rgba(254, 249, 195, 0.25)', x: 0.18, y: 0.18 },
-    farHillsColor: '#1e1b4b', midHillsColor: '#312e81',
-    groundTop: '#52525b', groundMid: '#3f3f46', groundBottom: '#09090b', rockColor: '#71717a',
-    ridgeHeight: 0.19, roughness: 0.05, windRange: 0.04,
-    weather: 'embers', decorType: 'france'
-  },
-  {
-    id: 'brazil_urban',
-    name: '5. Guerra Urbana no Brasil',
-    desc: 'Pôr do Sol Tropical, Morros Urbanos e Viadutos • Contra EE-11 Urutu',
-    enemyId: 'ee11_urutu',
     enemyUnitImg: 'usa insina.jpeg',
-    skyTop: '#0c4a6e', skyMid: '#c2410c', skyBottom: '#fdba74',
-    celestial: { type: 'sun', color: '#fed7aa', glow: 'rgba(251, 146, 60, 0.45)', x: 0.72, y: 0.26 },
-    farHillsColor: '#1e293b', midHillsColor: '#334155',
-    groundTop: '#57534e', groundMid: '#44403c', groundBottom: '#1c1917', rockColor: '#78716c',
-    ridgeHeight: 0.29, roughness: 0.06, windRange: 0.04,
-    weather: 'clouds', decorType: 'brazil_urban'
+    skyTop: '#422006', skyMid: '#854d0e', skyBottom: '#fde047',
+    celestial: { type: 'sun', color: '#fef08a', glow: 'rgba(234, 179, 8, 0.45)', x: 0.22, y: 0.25 },
+    farHillsColor: '#422006', midHillsColor: '#713f12',
+    groundTop: '#eab308', groundMid: '#a16207', groundBottom: '#422006', rockColor: '#facc15',
+    ridgeHeight: 0.27, roughness: 0.06, windRange: 0.08,
+    cliffModel: 'central_mesa',
+    hasWater: false,
+    weather: 'sand', decorType: 'easting_73'
   },
   {
-    id: 'amazon',
-    name: '6. Selva na Amazônia',
-    desc: 'Floresta Densa Multicamadas, Rio e Chuva Tropical • Contra Panzerhaubitze 2000',
-    enemyId: 'pzh2000',
-    enemyUnitImg: 'Insignia of 47th Separate Mechanized Brigade Ukr 47.png',
-    skyTop: '#022c22', skyMid: '#064e3b', skyBottom: '#34d399',
-    celestial: { type: 'sun', color: '#a7f3d0', glow: 'rgba(52, 211, 153, 0.25)', x: 0.3, y: 0.2 },
-    farHillsColor: '#064e3b', midHillsColor: '#047857',
-    groundTop: '#15803d', groundMid: '#166534', groundBottom: '#052e16', rockColor: '#22c55e',
-    ridgeHeight: 0.31, roughness: 0.08, windRange: 0.05,
-    weather: 'rain', decorType: 'amazon'
+    id: 'medina_ridge_1991',
+    year: '1991',
+    name: '8. Batalha de Medina Ridge — 1991',
+    factions: '🇺🇸 Estados Unidos × Iraque 🇮🇶 · Guerra do Golfo',
+    flags: ['🇺🇸', '🇮🇶'],
+    desc: 'Confronto maciço contra a Divisão Medina da Guarda Republicana sob céus em chamas dos poços de petróleo e cristas rochosas.',
+    hazardsLabel: '⛰️ Crista de Medina (Penhasco Alto) • 🔥 Poços em Chamas',
+    enemyId: 'm1a2_tusk',
+    enemyUnitImg: 'usa insina.jpeg',
+    skyTop: '#09090b', skyMid: '#7f1d1d', skyBottom: '#f97316',
+    celestial: { type: 'sun', color: '#fca5a5', glow: 'rgba(239, 68, 68, 0.5)', x: 0.55, y: 0.18 },
+    farHillsColor: '#18181b', midHillsColor: '#3f3f46',
+    groundTop: '#b45309', groundMid: '#78350f', groundBottom: '#1c1917', rockColor: '#f59e0b',
+    ridgeHeight: 0.36, roughness: 0.08, windRange: 0.06,
+    cliffModel: 'twin_cliffs',
+    hasWater: false,
+    weather: 'embers', decorType: 'medina_ridge'
   },
   {
-    id: 'canyon_boss',
-    name: '7. Desfiladeiro Final (Chefe Armata)',
-    desc: 'A Grande Montanha Vulcânica! • Contra T-14 Armata Elite',
+    id: 'baghdad_2003',
+    year: '2003',
+    name: '9. Thunder Runs de Bagdá — 2003',
+    factions: '🇺🇸 Estados Unidos × Iraque 🇮🇶 · Invasão de Bagdá',
+    flags: ['🇺🇸', '🇮🇶'],
+    desc: 'Incursão blindada audaciosa pelo centro de Bagdá! Monumento Espadas de Qādisīyah, palácios, viadutos e as margens do Rio Tigre.',
+    hazardsLabel: '🌊 Rio Tigre Profundo • ⛰️ Viadutos & Cais de Concreto',
+    enemyId: 'm1a2_tusk',
+    enemyUnitImg: 'usa insina.jpeg',
+    skyTop: '#0f172a', skyMid: '#4c1d95', skyBottom: '#fb923c',
+    celestial: { type: 'moon', color: '#fef3c7', glow: 'rgba(251, 191, 36, 0.35)', x: 0.82, y: 0.17 },
+    farHillsColor: '#1e1b4b', midHillsColor: '#312e81',
+    groundTop: '#52525b', groundMid: '#27272a', groundBottom: '#09090b', rockColor: '#a1a1aa',
+    ridgeHeight: 0.22, roughness: 0.05, windRange: 0.04,
+    cliffModel: 'canal_banks',
+    hasWater: true, waterStart: 0.42, waterEnd: 0.58, waterColor: 'rgba(3, 105, 161, 0.82)',
+    weather: 'embers', decorType: 'baghdad'
+  },
+  {
+    id: 'vuhledar_2023',
+    year: '2022–2023',
+    name: '10. Batalhas de Brovary e Vuhledar',
+    factions: '🇷🇺 Rússia × Ucrânia 🇺🇦 · Guerra da Ucrânia',
+    flags: ['🇺🇦', '🇷🇺'],
+    desc: 'Duelos intensos de blindados, drones teleguiados, artilharia e emboscadas entre rios congelados, blocos soviéticos e crateras.',
+    hazardsLabel: '🌊 Rio Kashlahach Gelado • ⛰️ Escarpas de Minas de Carvão',
     enemyId: 'armata',
-    enemyUnitImg: 'russia tank insignia.png',
-    skyTop: '#18041c', skyMid: '#7f1d1d', skyBottom: '#f97316',
-    celestial: { type: 'sun', color: '#fca5a5', glow: 'rgba(239, 68, 68, 0.45)', x: 0.5, y: 0.16 },
-    farHillsColor: '#27121b', midHillsColor: '#451a1c',
-    groundTop: '#7c2d12', groundMid: '#431407', groundBottom: '#09090b', rockColor: '#ea580c',
-    ridgeHeight: 0.37, roughness: 0.08, windRange: 0.08,
-    weather: 'embers', decorType: 'golan'
+    enemyUnitImg: 'Insignia of 47th Separate Mechanized Brigade Ukr 47.png',
+    skyTop: '#090d16', skyMid: '#1e293b', skyBottom: '#cbd5e1',
+    celestial: { type: 'moon', color: '#f8fafc', glow: 'rgba(148, 163, 184, 0.35)', x: 0.20, y: 0.18 },
+    farHillsColor: '#1e293b', midHillsColor: '#475569',
+    groundTop: '#e2e8f0', groundMid: '#64748b', groundBottom: '#0f172a', rockColor: '#f8fafc',
+    ridgeHeight: 0.29, roughness: 0.07, windRange: 0.06,
+    cliffModel: 'canyon_step',
+    hasWater: true, waterStart: 0.44, waterEnd: 0.56, waterColor: 'rgba(14, 165, 233, 0.78)',
+    weather: 'snow', decorType: 'vuhledar'
   }
 ];
 
@@ -2324,6 +2548,7 @@ canvas.height = H;
 let currentCategoryFilter = 'ALL';
 let currentScenarioIdx = 0;
 let selectedDifficulty = 'normal';
+let battleMode = 'turns'; // 'turns' (Modo Worms por Turnos) | 'realtime' (Tempo Real Livre)
 let gameState = 'menu';
 
 let terrain = [];
@@ -2332,6 +2557,27 @@ let midHills = [];
 let sceneryProps = [];
 let wind = 0;
 let currentWeapon = 'cannon';
+
+// Geometria de Água e Penhascos do Cenário Atual
+let waterLevel = 0;
+let waterStartPx = -100;
+let waterEndPx = -100;
+
+// Estado do Modo por Turnos (Estilo Worms)
+let turnState = {
+  current: 'player', // 'player' | 'enemy'
+  phase: 'move_aim', // 'move_aim' | 'projectile_flying' | 'turn_ending'
+  timeLeft: 25,
+  lastTick: 0,
+  fuel: 100,
+  maxFuel: 100,
+  mgBurstLeft: 0,
+  mgBurstTimer: 0,
+  endDelayFrames: 0,
+  aiPhaseTimer: 0,
+  aiTargetMoveX: 0,
+  fuelWarned: false
+};
 
 let isChargingCannon = false;
 let chargeStartTime = 0;
@@ -2401,7 +2647,8 @@ function broadcastProfileToPeer() {
     unitId: playerProfile.unitId,
     vehicleId: playerProfile.selectedVehicleId,
     rankCode: rankObj.code,
-    scenarioIdx: currentScenarioIdx
+    scenarioIdx: currentScenarioIdx,
+    battleMode
   });
 }
 
@@ -2558,6 +2805,11 @@ function handleNetworkData(data) {
       currentScenarioIdx = data.scenarioIdx;
       document.querySelectorAll('.scenario-card').forEach((c, i) => c.classList.toggle('selected', i === currentScenarioIdx));
     }
+    if (!mpState.isHost && data.battleMode) {
+      battleMode = data.battleMode;
+      document.getElementById('btn-mode-turns')?.classList.toggle('selected', battleMode === 'turns');
+      document.getElementById('btn-mode-realtime')?.classList.toggle('selected', battleMode === 'realtime');
+    }
     const vName = (VEHICLE_MAP[mpState.remoteVehicleId] || VEHICLES[0]).name;
     setMpStatus(`🟢 VS ${mpState.remoteCommander} (${vName}) na Sala [${mpState.roomCode}]!`, true);
   } else if (data.type === 'start_match') {
@@ -2565,6 +2817,7 @@ function handleNetworkData(data) {
     mpState.remoteUnitId = data.hostUnitId || mpState.remoteUnitId;
     mpState.remoteVehicleId = data.hostVehicleId || mpState.remoteVehicleId;
     currentScenarioIdx = data.scenarioIdx;
+    if (data.battleMode) battleMode = data.battleMode;
     startOnlineMatchClient(data);
   } else if (data.type === 'request_start_from_guest') {
     mpState.remoteCommander = data.guestCommander || mpState.remoteCommander;
@@ -2575,9 +2828,12 @@ function handleNetworkData(data) {
     }
   } else if (data.type === 'sync_state') {
     if (!enemy || gameState !== 'playing') return;
-    // Espelha horizontalmente (nx = 1 - rx) para que ambos os jogadores joguem da esquerda para a direita ou veja o oponente no lado oposto com precisão!
     enemy.x = (1 - data.nx) * W;
-    enemy.y = getTerrainY(enemy.x);
+    if (typeof data.ny === 'number') {
+      enemy.y = data.ny * H;
+    } else {
+      enemy.y = getTerrainY(enemy.x);
+    }
     enemy.slope = getTerrainAngle(enemy.x);
     enemy.vx = -data.vx;
     enemy.facing = -data.facing;
@@ -2622,6 +2878,24 @@ function handleNetworkData(data) {
   } else if (data.type === 'deploy_smoke') {
     if (!enemy || gameState !== 'playing') return;
     deploySmoke(enemy, true);
+  } else if (data.type === 'worms_turn_sync') {
+    if (gameState !== 'playing' || battleMode !== 'turns') return;
+    turnState.current = data.nextOwnerIsReceiver ? 'player' : 'enemy';
+    turnState.phase = 'move_aim';
+    turnState.timeLeft = 25;
+    turnState.lastTick = performance.now();
+    turnState.fuel = 100;
+    turnState.mgBurstLeft = 0;
+    turnState.fuelWarned = false;
+    if (typeof data.mirroredWind === 'number') wind = data.mirroredWind;
+    addFloatingText(
+      turnState.current === 'player' ? player.x : enemy.x,
+      (turnState.current === 'player' ? player.y : enemy.y) - 70,
+      turnState.current === 'player' ? '🎯 SEU TURNO! MOVA E ATIRE!' : '⏳ TURNO DO OPONENTE!',
+      turnState.current === 'player' ? '#4ade80' : '#f87171'
+    );
+    updateWormsTurnHUD();
+    updateHUD();
   } else if (data.type === 'match_over') {
     if (gameState === 'playing') {
       endMatch(data.winnerIsReceiver, true);
@@ -2672,8 +2946,11 @@ function initMenus() {
       broadcastProfileToPeer();
     };
     card.innerHTML = `
-      <div class="scen-name">${sc.name}</div>
+      <div class="scen-year-badge">📅 ${sc.year || 'HISTÓRICO'}</div>
+      <div class="scen-name">${idx + 1}. ${sc.name}</div>
+      <div class="scen-factions">${sc.factions || ''}</div>
       <div class="scen-desc">${sc.desc}</div>
+      <div class="scen-hazards">${sc.hazardsLabel || '⛰️ Penhascos Táticos'}</div>
     `;
     scenGrid.appendChild(card);
   });
@@ -2731,9 +3008,16 @@ function renderVehicleGrid() {
   });
 }
 
+function setBattleMode(mode, btnEl) {
+  battleMode = mode;
+  document.getElementById('btn-mode-turns')?.classList.toggle('selected', mode === 'turns');
+  document.getElementById('btn-mode-realtime')?.classList.toggle('selected', mode === 'realtime');
+  broadcastProfileToPeer();
+}
+
 function setDifficulty(diff, btnEl) {
   selectedDifficulty = diff;
-  document.querySelectorAll('.bottom-launch-row .choice-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('#difficulty-selector-box .choice-btn').forEach(b => b.classList.remove('selected'));
   btnEl.classList.add('selected');
 }
 
@@ -2750,6 +3034,7 @@ function selectWeapon(w) {
 function openGarage() {
   gameState = 'menu';
   isChargingCannon = false;
+  document.getElementById('worms-turn-banner').style.display = 'none';
   document.getElementById('result-overlay').classList.add('hidden');
   document.getElementById('menu-overlay').classList.remove('hidden');
   initMenus();
@@ -2766,78 +3051,222 @@ function generateTerrain(scen, customSeed1, customSeed2, mirrorX = false) {
   farHills = new Float32Array(W + 1);
   midHills = new Float32Array(W + 1);
 
-  const baseGround = H * 0.79;
+  const baseGround = H * 0.78;
   const ridgeH = H * scen.ridgeHeight;
   const seed1 = typeof customSeed1 === 'number' ? customSeed1 : Math.random() * 100;
   const seed2 = typeof customSeed2 === 'number' ? customSeed2 : Math.random() * 100;
   lastSeed1 = seed1;
   lastSeed2 = seed2;
 
+  // Configurar nível de água e limites se o cenário tiver rio/canal/lago
+  if (scen.hasWater) {
+    waterLevel = H * 0.815;
+    const rawStart = scen.waterStart || 0.40;
+    const rawEnd = scen.waterEnd || 0.60;
+    const effStart = mirrorX ? (1 - rawEnd) : rawStart;
+    const effEnd = mirrorX ? (1 - rawStart) : rawEnd;
+    waterStartPx = effStart * W;
+    waterEndPx = effEnd * W;
+  } else {
+    waterLevel = H + 200;
+    waterStartPx = -100;
+    waterEndPx = -100;
+  }
+
   for (let x = 0; x <= W; x++) {
     const rawNx = x / W;
     const nx = mirrorX ? (1 - rawNx) : rawNx;
     // Montanhas distantes (Parallax Camada 1)
-    farHills[x] = H * 0.58 - Math.sin(nx * 5 + seed1) * (H * 0.12) - Math.cos(nx * 13) * (H * 0.05);
+    farHills[x] = H * 0.56 - Math.sin(nx * 5 + seed1) * (H * 0.12) - Math.cos(nx * 13) * (H * 0.05);
     // Colinas médias (Parallax Camada 2)
-    midHills[x] = H * 0.68 - Math.cos(nx * 7 + seed2) * (H * 0.08) - Math.sin(nx * 17) * (H * 0.03);
+    midHills[x] = H * 0.67 - Math.cos(nx * 7 + seed2) * (H * 0.08) - Math.sin(nx * 17) * (H * 0.03);
 
-    // Terreno Principal de Combate
+    // Terreno Principal de Combate + Modelos de Penhasco (Cliffs)
     const centerDist = (nx - 0.5) / 0.21;
     const centralMountain = Math.exp(-(centerDist * centerDist)) * ridgeH;
     const waves =
-      Math.sin(nx * 10 + seed1) * (H * scen.roughness * 0.42) +
-      Math.cos(nx * 22 + seed2) * (H * scen.roughness * 0.18);
+      Math.sin(nx * 10 + seed1) * (H * scen.roughness * 0.38) +
+      Math.cos(nx * 22 + seed2) * (H * scen.roughness * 0.16);
     const edgeFlatten = Math.sin(nx * Math.PI);
     let y = baseGround - centralMountain - waves * edgeFlatten;
-    terrain[x] = Math.max(H * 0.25, Math.min(H * 0.88, y));
-  }
 
-  sceneryProps = [];
-  if (scen.decorType === 'france') {
-    sceneryProps.push({ type: 'eiffel', x: W * 0.5, y: getTerrainY(W * 0.5) });
-    sceneryProps.push({ type: 'arc_triomphe', x: W * 0.24, y: getTerrainY(W * 0.24) });
-    for (let i = 0; i < 12; i++) {
-      const bx = (i / 12) * W + 35;
-      if (Math.abs(bx - W * 0.5) > 85 && Math.abs(bx - W * 0.24) > 70) {
-        sceneryProps.push({ type: 'euro_bldg', x: bx, w: 45 + ((i * 13) % 30), h: 75 + ((i * 29) % 85) });
+    // Aplicar Modelos de Penhasco (Cliff Models) para criar desníveis reais e dano de queda!
+    const cm = scen.cliffModel || 'canyon_step';
+    if (cm === 'twin_cliffs') {
+      // Dois altos penhascos nas laterais com escarpa vertical para o vale central
+      if (nx < 0.26) {
+        y = H * 0.58 - Math.sin(nx * 12 + seed1) * 14;
+      } else if (nx < 0.285) {
+        const t = (nx - 0.26) / 0.025;
+        y = (H * 0.58) * (1 - t) + (H * 0.77) * t;
+      } else if (nx > 0.74) {
+        y = H * 0.58 - Math.cos(nx * 12 + seed2) * 14;
+      } else if (nx > 0.715) {
+        const t = (0.74 - nx) / 0.025;
+        y = (H * 0.58) * (1 - t) + (H * 0.77) * t;
+      }
+    } else if (cm === 'central_mesa') {
+      // Platô rochoso elevado no centro com paredões verticais e terraços laterais
+      if (nx > 0.37 && nx < 0.63) {
+        y = Math.min(y, H * 0.50 + Math.cos(nx * 18 + seed1) * 10);
+      } else if (nx >= 0.35 && nx <= 0.37) {
+        const t = (nx - 0.35) / 0.02;
+        y = (H * 0.73) * (1 - t) + (H * 0.50) * t;
+      } else if (nx >= 0.63 && nx <= 0.65) {
+        const t = (0.65 - nx) / 0.02;
+        y = (H * 0.73) * (1 - t) + (H * 0.50) * t;
+      } else if (nx < 0.22 || nx > 0.78) {
+        y = H * 0.65 + Math.sin(nx * 14) * 8;
+      }
+    } else if (cm === 'canyon_step') {
+      // Degraus de penhasco escalonados (Escarpas táticas)
+      if (nx < 0.24) {
+        y = H * 0.63 + Math.sin(nx * 10 + seed1) * 9;
+      } else if (nx < 0.38) {
+        y = H * 0.73 + Math.cos(nx * 14 + seed2) * 8;
+      } else if (nx > 0.76) {
+        y = H * 0.63 + Math.cos(nx * 10 + seed2) * 9;
+      } else if (nx > 0.62) {
+        y = H * 0.73 + Math.sin(nx * 14 + seed1) * 8;
+      }
+    } else if (cm === 'canal_banks') {
+      // Margens elevadas fortificadas com barranco abrupto para o canal/rio
+      if (nx < 0.34) {
+        y = H * 0.66 + Math.sin(nx * 12 + seed1) * 10;
+      } else if (nx > 0.66) {
+        y = H * 0.66 + Math.cos(nx * 12 + seed2) * 10;
       }
     }
-  } else if (scen.decorType === 'brazil_urban') {
-    for (let i = 0; i < 18; i++) {
-      const bx = (i / 18) * W + 25;
-      sceneryProps.push({
-        type: 'br_bldg', x: bx,
-        w: 34 + ((i * 11) % 28), h: 48 + ((i * 23) % 80),
-        color: ['#b45309', '#be123c', '#0369a1', '#4d7c0f', '#6d28d9'][i % 5]
-      });
+
+    // Escavar leito profundo de Água (Rio / Canal / Lago) se hasWater === true
+    if (scen.hasWater) {
+      const wStart = scen.waterStart || 0.40;
+      const wEnd = scen.waterEnd || 0.60;
+      if (nx >= wStart && nx <= wEnd) {
+        const bankDist = Math.min(nx - wStart, wEnd - nx);
+        const dropFactor = Math.min(1, bankDist / 0.022);
+        const cliffEdgeY = H * 0.70;
+        const riverBedY = H * 0.895 + Math.sin(nx * 35) * 6;
+        y = cliffEdgeY * (1 - dropFactor) + riverBedY * dropFactor;
+      } else if (Math.abs(nx - wStart) < 0.025 || Math.abs(nx - wEnd) < 0.025) {
+        // Barranco de penhasco na borda da água
+        y = Math.min(y, H * 0.70);
+      }
     }
-  } else if (scen.decorType === 'amazon') {
-    for (let i = 0; i < 26; i++) {
-      const tx = 30 + (i / 26) * (W - 60);
-      sceneryProps.push({ type: 'jungle_tree', x: tx, size: 30 + ((i * 17) % 26) });
+
+    terrain[x] = Math.max(H * 0.24, Math.min(H * 0.91, y));
+  }
+
+  // Elementos Gráficos Históricos dos 10 Conflitos e Países Envolvidos
+  sceneryProps = [];
+  const leftFlag = (scen.flags && scen.flags[0]) ? scen.flags[0] : '🏳️';
+  const rightFlag = (scen.flags && scen.flags[1]) ? scen.flags[1] : '🏴';
+
+  // Postos de Comando Nacionais com as Bandeiras dos Países Envolvidos em todos os 10 cenários
+  sceneryProps.push({ type: 'command_outpost', x: W * 0.07, flag: mirrorX ? rightFlag : leftFlag, side: -1 });
+  sceneryProps.push({ type: 'command_outpost', x: W * 0.93, flag: mirrorX ? leftFlag : rightFlag, side: 1 });
+
+  const dt = scen.decorType;
+  if (dt === 'chawinda') {
+    // 1. Batalha de Chawinda 1965 (Índia x Paquistão - Ferrovia do Punjab, Minaretes, Bunkers)
+    sceneryProps.push({ type: 'minaret_dome', x: W * 0.29 });
+    sceneryProps.push({ type: 'minaret_dome', x: W * 0.73 });
+    sceneryProps.push({ type: 'rail_signal', x: W * 0.48 });
+    for (let i = 0; i < 6; i++) {
+      sceneryProps.push({ type: 'dragon_teeth', x: W * (0.33 + i * 0.06) });
     }
-  } else if (scen.decorType === 'siberia') {
-    for (let i = 0; i < 20; i++) {
-      const tx = 40 + (i / 20) * (W - 80);
-      sceneryProps.push({ type: 'pine_tree', x: tx, size: 34 + ((i * 19) % 24) });
-    }
-  } else if (scen.decorType === 'sahara') {
-    sceneryProps.push({ type: 'pyramid', x: W * 0.32, size: 110 });
-    sceneryProps.push({ type: 'pyramid', x: W * 0.68, size: 85 });
     for (let i = 0; i < 8; i++) {
-      sceneryProps.push({ type: 'palm_tree', x: 80 + (i / 8) * (W - 160), size: 36 + ((i * 7) % 14) });
+      sceneryProps.push({ type: 'jungle_tree', x: W * (0.10 + i * 0.11), size: 26 + (i % 3) * 8 });
     }
-  } else if (scen.decorType === 'golan') {
-    for (let i = 0; i < 12; i++) {
-      const rx = 60 + (i / 12) * (W - 120);
-      sceneryProps.push({ type: 'bunker_rock', x: rx, size: 18 + ((i * 9) % 15), hasRadar: i % 4 === 0 });
+  } else if (dt === 'abu_ageila') {
+    // 2. Batalha de Abu-Ageila 1967 (Israel x Egito - Casamatas de Um-Katef no Sinai, Trincheiras, Dunas)
+    sceneryProps.push({ type: 'pyramid', x: W * 0.25, size: 75 });
+    sceneryProps.push({ type: 'bunker_casemate', x: W * 0.42, flag: '🇪🇬' });
+    sceneryProps.push({ type: 'bunker_casemate', x: W * 0.58, flag: '🇮🇱' });
+    for (let i = 0; i < 7; i++) {
+      sceneryProps.push({ type: 'dragon_teeth', x: W * (0.30 + i * 0.065) });
+    }
+    for (let i = 0; i < 5; i++) {
+      sceneryProps.push({ type: 'palm_tree', x: W * (0.16 + i * 0.17), size: 34 + (i % 2) * 10 });
+    }
+  } else if (dt === 'vale_lagrimas') {
+    // 3. Vale das Lágrimas 1973 (Israel x Síria - Colinas de Golã, Bunkers de Basalto, Radar Monte Hermon)
+    for (let i = 0; i < 10; i++) {
+      const rx = W * (0.18 + i * 0.07);
+      sceneryProps.push({ type: 'bunker_rock', x: rx, size: 20 + (i % 3) * 6, hasRadar: i === 2 || i === 7 });
+    }
+    sceneryProps.push({ type: 'wrecked_hull', x: W * 0.36 });
+    sceneryProps.push({ type: 'wrecked_hull', x: W * 0.64 });
+  } else if (dt === 'fazenda_chinesa') {
+    // 4. Batalha da Fazenda Chinesa 1973 (Israel x Egito - Canal de Suez, Ponte Militar de Pontões, Estação Agrícola)
+    sceneryProps.push({ type: 'suez_bridge', xStart: waterStartPx, xEnd: waterEndPx });
+    sceneryProps.push({ type: 'chinese_farm_tower', x: W * 0.28 });
+    sceneryProps.push({ type: 'bunker_casemate', x: W * 0.72, flag: '🇪🇬' });
+    for (let i = 0; i < 6; i++) {
+      const px = i < 3 ? W * (0.10 + i * 0.08) : W * (0.68 + (i - 3) * 0.09);
+      sceneryProps.push({ type: 'palm_tree', x: px, size: 38 });
+    }
+  } else if (dt === 'outubro_14') {
+    // 5. Batalha de 14 de Outubro 1973 (Egito x Israel - Desfiladeiros Rochosos do Sinai, Monólitos, Casamatas)
+    sceneryProps.push({ type: 'desert_monolith', x: W * 0.45, h: 95 });
+    sceneryProps.push({ type: 'desert_monolith', x: W * 0.55, h: 80 });
+    sceneryProps.push({ type: 'bunker_casemate', x: W * 0.28, flag: '🇪🇬' });
+    sceneryProps.push({ type: 'bunker_casemate', x: W * 0.72, flag: '🇮🇱' });
+    sceneryProps.push({ type: 'wrecked_hull', x: W * 0.39 });
+  } else if (dt === 'dezful') {
+    // 6. Batalha de Dezful 1981 (Irã x Iraque - Pântanos do Khuzistão, Refinaria de Petróleo em Chamas, Chuva)
+    sceneryProps.push({ type: 'oil_refinery', x: W * 0.24 });
+    sceneryProps.push({ type: 'oil_refinery', x: W * 0.76 });
+    sceneryProps.push({ type: 'burning_oil_well', x: W * 0.31 });
+    sceneryProps.push({ type: 'burning_oil_well', x: W * 0.69 });
+  } else if (dt === 'easting_73') {
+    // 7. Batalha de 73 Easting 1991 (EUA x Iraque - Tempestade de Areia, Radares Iraquianos, Marco 73 Easting)
+    sceneryProps.push({ type: 'easting_marker', x: W * 0.50 });
+    sceneryProps.push({ type: 'bunker_rock', x: W * 0.32, size: 24, hasRadar: true });
+    sceneryProps.push({ type: 'bunker_rock', x: W * 0.68, size: 24, hasRadar: true });
+    sceneryProps.push({ type: 'burning_oil_well', x: W * 0.80 });
+    sceneryProps.push({ type: 'wrecked_hull', x: W * 0.42 });
+  } else if (dt === 'medina_ridge') {
+    // 8. Batalha de Medina Ridge 1991 (EUA x Iraque - Poços de Petróleo em Chamas no Horizonte, Torres de Perfuração)
+    for (let i = 0; i < 6; i++) {
+      sceneryProps.push({ type: 'burning_oil_well', x: W * (0.20 + i * 0.12) });
+    }
+    sceneryProps.push({ type: 'oil_refinery', x: W * 0.48 });
+    sceneryProps.push({ type: 'wrecked_hull', x: W * 0.35 });
+    sceneryProps.push({ type: 'wrecked_hull', x: W * 0.65 });
+  } else if (dt === 'baghdad') {
+    // 9. Thunder Runs de Bagdá 2003 (EUA x Iraque - Espadas de Qādisīyah, Mesquita Dourada, Prédios de Bagdá, Rio Tigre)
+    sceneryProps.push({ type: 'baghdad_swords', x: W * 0.31 });
+    sceneryProps.push({ type: 'golden_mosque', x: W * 0.70 });
+    for (let i = 0; i < 8; i++) {
+      const bx = W * (0.12 + i * 0.105);
+      if (Math.abs(bx - W * 0.51) > 95) {
+        sceneryProps.push({ type: 'euro_bldg', x: bx, w: 44 + (i % 3) * 12, h: 68 + (i % 4) * 22 });
+      }
+    }
+    for (let i = 0; i < 6; i++) {
+      const px = i < 3 ? W * (0.15 + i * 0.09) : W * (0.64 + (i - 3) * 0.09);
+      sceneryProps.push({ type: 'palm_tree', x: px, size: 40 });
+    }
+  } else if (dt === 'vuhledar') {
+    // 10. Batalhas de Brovary e Vuhledar 2022–2023 (Rússia x Ucrânia - Mina de Carvão Donbas, Blocos Soviéticos, Dentes de Dragão)
+    sceneryProps.push({ type: 'coal_mine_tower', x: W * 0.28 });
+    for (let i = 0; i < 6; i++) {
+      const bx = i < 3 ? W * (0.16 + i * 0.08) : W * (0.66 + (i - 3) * 0.08);
+      sceneryProps.push({ type: 'soviet_panelka', x: bx, w: 46, h: 82 + (i % 3) * 18 });
+    }
+    for (let i = 0; i < 8; i++) {
+      sceneryProps.push({ type: 'dragon_teeth', x: W * (0.24 + i * 0.07) });
+    }
+    for (let i = 0; i < 8; i++) {
+      sceneryProps.push({ type: 'pine_tree', x: W * (0.10 + i * 0.11), size: 34 });
     }
   }
 }
 
 function getTerrainY(x) {
   const ix = Math.max(0, Math.min(W, Math.round(x)));
-  return terrain[ix] || H * 0.79;
+  return terrain[ix] || H * 0.78;
 }
 
 function getTerrainAngle(x) {
@@ -2851,7 +3280,7 @@ function deformTerrain(cx, cy, radius) {
   const endX = Math.min(W, Math.ceil(cx + radius));
   for (let x = startX; x <= endX; x++) {
     const dx = x - cx;
-    const depth = Math.sqrt(Math.max(0, radius * radius - dx * dx)) * 0.45;
+    const depth = Math.sqrt(Math.max(0, radius * radius - dx * dx)) * 0.52;
     if (terrain[x] < cy + radius) {
       terrain[x] = Math.min(H * 0.92, Math.max(terrain[x], terrain[x] + depth));
     }
@@ -2859,7 +3288,7 @@ function deformTerrain(cx, cy, radius) {
 }
 
 // ============================================================================
-// 10. CRIAÇÃO DOS COMBATENTES (COM DRONES E DEFESA REATIVA APS!)
+// 10. CRIAÇÃO DOS COMBATENTES (COM QUEDA DE PENHASCOS, DRONES E DEFESA REATIVA APS!)
 // ============================================================================
 function createFighter(vehicleId, x, facing, isAI) {
   const spec = VEHICLE_MAP[vehicleId] || VEHICLES[0];
@@ -2881,12 +3310,17 @@ function createFighter(vehicleId, x, facing, isAI) {
     }
   }
 
+  const startY = getTerrainY(x);
   return {
     spec,
     x,
-    y: getTerrainY(x),
+    y: startY,
     vx: 0,
-    slope: 0,
+    vy: 0,
+    inAir: false,
+    fallStartY: startY,
+    waterDamageCooldown: 0,
+    slope: getTerrainAngle(x),
     facing,
     turretAngle: facing === 1 ? -0.35 : -Math.PI + 0.35,
     hp: 100,
@@ -2896,8 +3330,8 @@ function createFighter(vehicleId, x, facing, isAI) {
     mgHitsTaken: 0,
     dronesLeft: spec.dronesCount || 0,
     apsLeft: spec.apsCount || 0,
-    apsArmed: (spec.apsCount || 0) > 0, // Defesa Reativa armada para interceptar tiros de canhão!
-    lastCannonShot: 0,
+    apsArmed: (spec.apsCount || 0) > 0,
+    lastCannonShot: -10000,
     lastMgShot: 0,
     lastDroneTime: -10000,
     lastSmokeTime: -10000,
@@ -2913,7 +3347,6 @@ function startGame() {
   sfx.init();
 
   if (mpState.active && !mpState.isHost) {
-    // Se o convidado clicar em iniciar, avisa o Host para dar a largada sincronizada!
     sendNet({
       type: 'request_start_from_guest',
       guestCommander: playerProfile.commanderName,
@@ -2940,16 +3373,17 @@ function startGame() {
     sendNet({
       type: 'start_match',
       scenarioIdx: currentScenarioIdx,
+      battleMode,
       seed1,
       seed2,
-      wind: -wind, // Espelhado para o oponente
+      wind: -wind,
       hostCommander: playerProfile.commanderName,
       hostUnitId: playerProfile.unitId,
       hostVehicleId: playerProfile.selectedVehicleId
     });
   }
 
-  setupMatchWeaponsAndReset(scen);
+  setupMatchWeaponsAndReset(scen, true);
 }
 
 function startOnlineMatchClient(data) {
@@ -2958,17 +3392,16 @@ function startOnlineMatchClient(data) {
   document.getElementById('result-overlay').classList.add('hidden');
 
   const scen = SCENARIOS[currentScenarioIdx];
-  // Terreno espelhado horizontalmente para que cada jogador controle seu tanque na esquerda mirando para a direita!
   generateTerrain(scen, data.seed1, data.seed2, true);
   wind = data.wind || 0;
 
   player = createFighter(playerProfile.selectedVehicleId, W * 0.14, 1, false);
   enemy = createFighter(mpState.remoteVehicleId, W * 0.86, -1, false);
 
-  setupMatchWeaponsAndReset(scen);
+  setupMatchWeaponsAndReset(scen, false);
 }
 
-function setupMatchWeaponsAndReset(scen) {
+function setupMatchWeaponsAndReset(scen, playerStartsFirst = true) {
   const cannonBtn = document.getElementById('btn-w-cannon');
   const touchCannonBtn = document.getElementById('t-cannon');
   if (!player.spec.hasCannon) {
@@ -2993,9 +3426,119 @@ function setupMatchWeaponsAndReset(scen) {
   smokes = [];
   apsEffects = [];
   initWeather(scen);
-  updateHUD();
 
+  // Configurar Modo por Turnos (Estilo Worms) ou Tempo Real
+  const turnBanner = document.getElementById('worms-turn-banner');
+  if (battleMode === 'turns') {
+    turnBanner.style.display = 'flex';
+    turnState.current = playerStartsFirst ? 'player' : 'enemy';
+    turnState.phase = 'move_aim';
+    turnState.timeLeft = 25;
+    turnState.lastTick = performance.now();
+    turnState.fuel = 100;
+    turnState.maxFuel = 100;
+    turnState.mgBurstLeft = 0;
+    turnState.endDelayFrames = 0;
+    turnState.aiPhaseTimer = 0;
+    turnState.fuelWarned = false;
+    updateWormsTurnHUD();
+    addFloatingText(
+      player.x,
+      player.y - 68,
+      turnState.current === 'player' ? '🎯 MODO WORMS: SEU TURNO DE ATIRAR!' : '⏳ MODO WORMS: TURNO DO OPONENTE!',
+      turnState.current === 'player' ? '#4ade80' : '#facc15'
+    );
+  } else {
+    turnBanner.style.display = 'none';
+  }
+
+  updateHUD();
   gameState = 'playing';
+}
+
+function updateWormsTurnHUD() {
+  if (battleMode !== 'turns') return;
+  const ownerEl = document.getElementById('worms-turn-owner');
+  const fuelEl = document.getElementById('worms-fuel-fill');
+  const timerEl = document.getElementById('worms-timer-badge');
+  if (!ownerEl || !fuelEl || !timerEl) return;
+
+  const isPlayerTurn = turnState.current === 'player';
+  if (turnState.phase === 'projectile_flying' || turnState.phase === 'turn_ending') {
+    ownerEl.textContent = '💥 ACOMPANHANDO DISPARO...';
+    ownerEl.className = 'worms-turn-owner enemy-turn';
+  } else if (isPlayerTurn) {
+    ownerEl.textContent = `🎯 SEU TURNO (${playerProfile.commanderName})`;
+    ownerEl.className = 'worms-turn-owner player-turn';
+  } else {
+    const oppName = mpState.active ? mpState.remoteCommander : (enemy ? enemy.spec.name : 'Inimigo');
+    ownerEl.textContent = `⏳ TURNO DE ${oppName.toUpperCase()}`;
+    ownerEl.className = 'worms-turn-owner enemy-turn';
+  }
+
+  fuelEl.style.width = `${Math.max(0, Math.min(100, turnState.fuel))}%`;
+  timerEl.textContent = `${Math.max(0, Math.ceil(turnState.timeLeft))}s`;
+}
+
+function notifyWormsActionTaken() {
+  if (battleMode !== 'turns') return;
+  if (turnState.phase === 'move_aim') {
+    turnState.phase = 'projectile_flying';
+    turnState.endDelayFrames = 42;
+    isChargingCannon = false;
+    updateWormsTurnHUD();
+  }
+}
+
+function switchWormsTurn() {
+  if (battleMode !== 'turns' || gameState !== 'playing') return;
+  const scen = SCENARIOS[currentScenarioIdx];
+
+  // Em Multiplayer Online, o Host comanda a virada oficial do turno e sincroniza o vento
+  if (mpState.active && !mpState.isHost) return;
+
+  turnState.current = turnState.current === 'player' ? 'enemy' : 'player';
+  turnState.phase = 'move_aim';
+  turnState.timeLeft = 25;
+  turnState.lastTick = performance.now();
+  turnState.fuel = 100;
+  turnState.mgBurstLeft = 0;
+  turnState.endDelayFrames = 0;
+  turnState.aiPhaseTimer = 0;
+  turnState.fuelWarned = false;
+
+  // Variação tática do vento a cada turno (como no clássico Worms!)
+  wind = Math.max(-scen.windRange, Math.min(scen.windRange, wind + (Math.random() * 2 - 1) * scen.windRange * 0.55));
+
+  if (mpState.active && mpState.isHost) {
+    sendNet({
+      type: 'worms_turn_sync',
+      nextOwnerIsReceiver: turnState.current === 'enemy',
+      mirroredWind: -wind
+    });
+  }
+
+  if (turnState.current === 'enemy' && !mpState.active && enemy) {
+    // Escolher um movimento tático seguro para a IA neste turno (evitando cair na água ou penhasco)
+    const moveStep = (Math.random() > 0.45 ? -1 : 1) * (55 + Math.random() * 75);
+    let candidateX = Math.max(W * 0.58, Math.min(W * 0.93, enemy.x + moveStep));
+    if (scen.hasWater && candidateX >= waterStartPx - 35 && candidateX <= waterEndPx + 35) {
+      candidateX = Math.max(waterEndPx + 50, W * 0.78);
+    }
+    turnState.aiTargetMoveX = candidateX;
+  }
+
+  const activeTank = turnState.current === 'player' ? player : enemy;
+  if (activeTank) {
+    addFloatingText(
+      activeTank.x,
+      activeTank.y - 68,
+      turnState.current === 'player' ? '🎯 SEU TURNO! MOVA E ATIRE!' : '⏳ TURNO DO OPONENTE!',
+      turnState.current === 'player' ? '#4ade80' : '#f87171'
+    );
+  }
+  updateWormsTurnHUD();
+  updateHUD();
 }
 
 function retryLevel() { startGame(); }
@@ -3035,9 +3578,12 @@ function updateHUD() {
   const unitObj = MILITARY_UNITS.find(u => u.id === playerProfile.unitId) || MILITARY_UNITS[0];
   const rankObj = getRankByWins(playerProfile.wins).current;
 
-  document.getElementById('hud-level').textContent = mpState.active ? `🌐 ONLINE (${mpState.roomCode}) • ${scen.name}` : scen.name;
+  const modeTag = battleMode === 'turns' ? '🎯 POR TURNOS' : '⚡ TEMPO REAL';
+  document.getElementById('hud-level').textContent = mpState.active
+    ? `🌐 ONLINE (${mpState.roomCode}) • ${scen.name} (${scen.year || ''})`
+    : `${scen.name} (${scen.year || ''}) • ${modeTag}`;
   const windDir = wind > 0.005 ? `Vento ▶ ${Math.round(Math.abs(wind) * 1000)}` : wind < -0.005 ? `Vento ◀ ${Math.round(Math.abs(wind) * 1000)}` : 'Vento: Calmo';
-  document.getElementById('hud-env').textContent = `${scen.desc} • ${windDir}`;
+  document.getElementById('hud-env').textContent = `${scen.factions || scen.desc} • ${windDir}`;
 
   // Jogador
   document.getElementById('p-unit-img').src = transparentUnitUrls[unitObj.img] || encodeURI(unitObj.img);
@@ -3075,7 +3621,7 @@ function updateHUD() {
   document.getElementById('e-name').textContent = `${enemy.spec.flag} ${enemy.spec.name}`;
   document.getElementById('e-unit-name').textContent = mpState.active
     ? `🌐 ${mpState.remoteCommander} • ${oppUnitObj ? oppUnitObj.name : enemy.spec.caliberDesc}`
-    : enemy.spec.caliberDesc;
+    : `${scen.factions || ''} • ${enemy.spec.caliberDesc}`;
 
   const eHp = Math.max(0, enemy.hp);
   document.getElementById('e-hp-bar').style.width = `${eHp}%`;
@@ -3097,14 +3643,32 @@ const MG_INITIAL_SPEED = 22.8;
 const MG_GRAVITY = 0.105;
 const MG_AIR_DRAG = 0.9965;
 
+function canShooterActInWorms(isPlayer, fromNetwork) {
+  if (battleMode !== 'turns' || fromNetwork) return true;
+  const expectedOwner = isPlayer ? 'player' : 'enemy';
+  if (turnState.current !== expectedOwner || turnState.phase !== 'move_aim') {
+    if (isPlayer) {
+      addFloatingText(player.x, player.y - 62, '⏳ AGUARDE SEU TURNO PARA ATIRAR!', '#facc15');
+    }
+    return false;
+  }
+  return true;
+}
+
 function fireCannon(shooter, isPlayer, chargeRatio = 0.72, fromNetwork = false) {
+  if (!canShooterActInWorms(isPlayer, fromNetwork)) return;
+
   if (!shooter.spec.hasCannon) {
-    fireMG(shooter, isPlayer, fromNetwork);
+    if (battleMode === 'turns' && !fromNetwork) {
+      startWormsMgBurst(shooter, isPlayer);
+    } else {
+      fireMG(shooter, isPlayer, fromNetwork);
+    }
     return;
   }
 
   const now = performance.now();
-  if (!fromNetwork && now - shooter.lastCannonShot < shooter.spec.reloadTime) return;
+  if (!fromNetwork && battleMode !== 'turns' && now - shooter.lastCannonShot < shooter.spec.reloadTime) return;
   shooter.lastCannonShot = now;
   shooter.recoil = 13 * shooter.spec.cannonPower;
 
@@ -3154,11 +3718,31 @@ function fireCannon(shooter, isPlayer, chargeRatio = 0.72, fromNetwork = false) 
       color: i % 2 === 0 ? '#facc15' : '#ea580c'
     });
   }
+
+  notifyWormsActionTaken();
 }
 
-function fireMG(shooter, isPlayer, fromNetwork = false, overrideAngle = null, overrideBoost = null) {
+function startWormsMgBurst(shooter, isPlayer) {
+  if (!canShooterActInWorms(isPlayer, false)) return;
+  turnState.mgBurstLeft = shooter.spec.hasCannon ? 10 : 14;
+  turnState.mgBurstTimer = 0;
+  turnState.phase = 'projectile_flying';
+  turnState.endDelayFrames = 45;
+  updateWormsTurnHUD();
+}
+
+function fireMG(shooter, isPlayer, fromNetwork = false, overrideAngle = null, overrideBoost = null, isBurstShot = false) {
+  if (!fromNetwork && !isBurstShot && battleMode === 'turns') {
+    // No modo por turnos, permite abater um Drone inimigo a qualquer momento OU disparar uma rajada completa no seu turno!
+    const incomingDrone = drones.some(d => d.owner !== (isPlayer ? 'player' : 'enemy'));
+    if (!incomingDrone) {
+      startWormsMgBurst(shooter, isPlayer);
+      return;
+    }
+  }
+
   const now = performance.now();
-  if (!fromNetwork && now - shooter.lastMgShot < shooter.spec.mgRate) return;
+  if (!fromNetwork && !isBurstShot && now - shooter.lastMgShot < shooter.spec.mgRate) return;
   shooter.lastMgShot = now;
 
   sfx.playMG();
@@ -3205,17 +3789,24 @@ function fireMG(shooter, isPlayer, fromNetwork = false, overrideAngle = null, ov
     size: isAutocannon ? 4.5 : 3,
     color: isAutocannon ? '#fb923c' : '#fef08a'
   });
+
+  if (fromNetwork && battleMode === 'turns' && turnState.current === 'enemy') {
+    turnState.phase = 'projectile_flying';
+    turnState.endDelayFrames = 45;
+    updateWormsTurnHUD();
+  }
 }
 
 // ✈️ LANÇAR DRONE KAMIKAZE TELEGUIADO (1 a 3 por tanque moderno - Pode ser abatido com metralhadora!)
 function launchDrone(shooter, isPlayer, fromNetwork = false) {
   if (!shooter || gameState !== 'playing') return;
+  if (!canShooterActInWorms(isPlayer, fromNetwork)) return;
   if (!fromNetwork && shooter.dronesLeft <= 0) {
     if (isPlayer) addFloatingText(shooter.x, shooter.y - 60, '⚠️ Sem Drones disponíveis neste veículo!', '#f87171');
     return;
   }
   const now = performance.now();
-  if (!fromNetwork && now - shooter.lastDroneTime < 2800) return;
+  if (!fromNetwork && battleMode !== 'turns' && now - shooter.lastDroneTime < 2800) return;
 
   shooter.dronesLeft = Math.max(0, shooter.dronesLeft - 1);
   shooter.lastDroneTime = now;
@@ -3241,6 +3832,7 @@ function launchDrone(shooter, isPlayer, fromNetwork = false) {
   });
 
   addFloatingText(shooter.x, shooter.y - 62, '✈️ DRONE KAMIKAZE LANÇADO!', '#c084fc');
+  notifyWormsActionTaken();
 }
 
 // 🛡️ ATIVAR / DESATIVAR DEFESA REATIVA (Trophy / APS - 2 usos contra tiros de canhão)
@@ -3288,14 +3880,91 @@ function addFloatingText(x, y, text, color) {
 }
 
 // ============================================================================
-// 12. INTELIGÊNCIA ARTIFICIAL DO INIMIGO (Desativada quando em Duelo Multiplayer Online!)
+// 12. INTELIGÊNCIA ARTIFICIAL DO INIMIGO (Suporta Modo por Turnos Worms e Tempo Real!)
 // ============================================================================
 function updateEnemyAI() {
-  if (mpState.active) return; // Em modo Multiplayer Online, o tanque oponente é controlado pelo outro jogador real!
+  if (mpState.active) return;
   const diffMult = selectedDifficulty === 'easy' ? 0.65 : selectedDifficulty === 'hard' ? 1.28 : 1.0;
+  const scen = SCENARIOS[currentScenarioIdx];
 
   enemy.facing = player.x <= enemy.x ? -1 : 1;
 
+  // Defesa Antiaérea de Metralhadora caso um Drone do jogador esteja voando (funciona em ambos os modos!)
+  let playerDroneThreat = null;
+  for (const d of drones) {
+    if (d.owner === 'player') {
+      playerDroneThreat = d;
+      break;
+    }
+  }
+  if (playerDroneThreat && Math.random() < 0.62 * diffMult) {
+    const dAngle = Math.atan2(playerDroneThreat.y - (enemy.y - 26), playerDroneThreat.x - enemy.x);
+    enemy.turretAngle += (dAngle - enemy.turretAngle) * 0.16;
+    if (Math.random() < 0.32 * diffMult) {
+      fireMG(enemy, false, false, null, null, true);
+    }
+    return;
+  }
+
+  // MODO POR TURNOS (ESTILO WORMS): IA só age no turno dela (move um pouco, mira e dá 1 tiro!)
+  if (battleMode === 'turns') {
+    if (turnState.current !== 'enemy' || turnState.phase !== 'move_aim') {
+      enemy.vx = 0;
+      return;
+    }
+
+    turnState.aiPhaseTimer++;
+
+    // 1. Fase de Deslocamento Tático (primeiros 45 frames do turno da IA)
+    const distToMove = (turnState.aiTargetMoveX || enemy.x) - enemy.x;
+    if (turnState.aiPhaseTimer < 48 && Math.abs(distToMove) > 8 && turnState.fuel > 15) {
+      const dir = Math.sign(distToMove);
+      const nextX = enemy.x + dir * enemy.spec.speed * 0.8;
+      const intoWater = scen.hasWater && nextX >= waterStartPx - 28 && nextX <= waterEndPx + 28;
+      if (!intoWater) {
+        enemy.vx = dir * enemy.spec.speed * 0.8;
+        enemy.x += enemy.vx;
+        enemy.wheelRot += enemy.vx * 0.08;
+        turnState.fuel = Math.max(0, turnState.fuel - 0.55);
+        updateWormsTurnHUD();
+      } else {
+        enemy.vx = 0;
+      }
+    } else {
+      enemy.vx = 0;
+    }
+
+    // 2. Fase de Mira Balística Precisa
+    const dx = player.x - enemy.x;
+    const dy = (player.y - 20) - (enemy.y - 26);
+    const dist = Math.hypot(dx, dy);
+
+    const inaccuracy = 1.25 - 0.32 * diffMult;
+    if (turnState.aiPhaseTimer === 1) {
+      enemy.aiAimOffset = (Math.random() - 0.5) * 0.14 * inaccuracy;
+    }
+
+    const directAngle = Math.atan2(dy, dx);
+    const arcLift = Math.min(0.65, (Math.abs(dx) / W) * 0.72);
+    let idealAngle = dx < 0 ? (directAngle + arcLift) : (directAngle - arcLift);
+    idealAngle += enemy.aiAimOffset;
+    enemy.turretAngle += (idealAngle - enemy.turretAngle) * 0.11;
+
+    // 3. Momento do Disparo Único do Turno (após ~75 frames mirando)
+    if (turnState.aiPhaseTimer >= 75) {
+      if (enemy.dronesLeft > 0 && Math.random() < 0.25 * diffMult) {
+        launchDrone(enemy, false);
+      } else if (enemy.spec.hasCannon) {
+        const aiCharge = Math.max(0.25, Math.min(0.96, (dist / (W * 0.84)) + (Math.random() - 0.5) * 0.08 * inaccuracy));
+        fireCannon(enemy, false, aiCharge);
+      } else {
+        startWormsMgBurst(enemy, false);
+      }
+    }
+    return;
+  }
+
+  // MODO TEMPO REAL (CLÁSSICO)
   enemy.aiMoveTimer--;
   let incomingDanger = false;
   for (const p of projectiles) {
@@ -3307,16 +3976,17 @@ function updateEnemyAI() {
 
   if (enemy.aiMoveTimer <= 0 || incomingDanger) {
     enemy.aiMoveTimer = incomingDanger ? 35 : 65 + Math.random() * 75;
-    const minX = W * 0.15;
-    const maxX = W * 0.95;
-    enemy.aiTargetX = minX + Math.random() * (maxX - minX);
+    const minX = scen.hasWater ? Math.max(W * 0.58, waterEndPx + 45) : W * 0.18;
+    const maxX = W * 0.94;
+    enemy.aiTargetX = minX + Math.random() * Math.max(40, maxX - minX);
   }
 
   const distToTarget = enemy.aiTargetX - enemy.x;
   if (Math.abs(distToTarget) > 14) {
     const dir = Math.sign(distToTarget);
     const nextX = enemy.x + dir * enemy.spec.speed * 0.85;
-    if (Math.abs(nextX - player.x) > 55 || Math.abs(nextX - player.x) > Math.abs(enemy.x - player.x)) {
+    const intoWater = scen.hasWater && nextX >= waterStartPx - 25 && nextX <= waterEndPx + 25;
+    if (!intoWater && (Math.abs(nextX - player.x) > 55 || Math.abs(nextX - player.x) > Math.abs(enemy.x - player.x))) {
       enemy.vx = dir * enemy.spec.speed * 0.85;
       enemy.x += enemy.vx;
       enemy.wheelRot += enemy.vx * 0.08;
@@ -3327,29 +3997,6 @@ function updateEnemyAI() {
     enemy.vx = 0;
   }
 
-  enemy.x = Math.max(45, Math.min(W - 45, enemy.x));
-  enemy.y = getTerrainY(enemy.x);
-  enemy.slope = getTerrainAngle(enemy.x);
-
-  // Verificar se há um Drone do jogador vindo na direção do inimigo para tentar abater com a metralhadora!
-  let playerDroneThreat = null;
-  for (const d of drones) {
-    if (d.owner === 'player') {
-      playerDroneThreat = d;
-      break;
-    }
-  }
-
-  if (playerDroneThreat && Math.random() < 0.65 * diffMult) {
-    const dAngle = Math.atan2(playerDroneThreat.y - (enemy.y - 26), playerDroneThreat.x - enemy.x);
-    enemy.turretAngle += (dAngle - enemy.turretAngle) * 0.16;
-    if (Math.random() < 0.35 * diffMult) {
-      fireMG(enemy, false);
-    }
-    return;
-  }
-
-  // Lançar Drone Teleguiado inimigo ocasionalmente se tiver disponível
   if (enemy.dronesLeft > 0 && Math.random() < 0.0022 * diffMult) {
     launchDrone(enemy, false);
   }
@@ -3397,12 +4044,14 @@ function updateEnemyAI() {
 // ============================================================================
 function startChargingShot() {
   if (gameState !== 'playing' || !player) return;
+  if (!canShooterActInWorms(true, false)) return;
+
   if (currentWeapon === 'mg' || !player.spec.hasCannon) {
     fireMG(player, true);
     return;
   }
   const now = performance.now();
-  if (now - player.lastCannonShot < player.spec.reloadTime) return;
+  if (battleMode !== 'turns' && now - player.lastCannonShot < player.spec.reloadTime) return;
 
   if (!isChargingCannon) {
     isChargingCannon = true;
@@ -3418,27 +4067,172 @@ function releaseChargedShot() {
   fireCannon(player, true, lastChosenPowerRatio);
 }
 
+// Aplica gravidade vertical nos Penhascos (Dano de Queda!) e Submersão na Água
+function applyFighterGravityAndHazards(fighter, isPlayer, scen) {
+  if (!fighter || gameState !== 'playing') return;
+  fighter.x = Math.max(42, Math.min(W - 42, fighter.x));
+  const groundY = getTerrainY(fighter.x);
+
+  // 1. Verificar se o tanque está no ar (caiu de um penhasco ou cratera profunda!)
+  if (fighter.y < groundY - 3.5) {
+    if (!fighter.inAir) {
+      fighter.inAir = true;
+      fighter.fallStartY = fighter.y;
+    }
+    fighter.vy = Math.min(13.5, (fighter.vy || 0) + 0.44);
+    fighter.y += fighter.vy;
+    fighter.slope = Math.max(-0.55, Math.min(0.55, fighter.slope + fighter.facing * 0.015));
+  }
+
+  // 2. Aterrissagem no solo / fundo do penhasco
+  if (fighter.y >= groundY - 3.5) {
+    if (fighter.inAir) {
+      const fallHeight = groundY - (fighter.fallStartY || groundY);
+      fighter.inAir = false;
+      fighter.vy = 0;
+
+      // Se a queda do penhasco foi superior a 26 pixels, aplica DANO DE QUEDA!
+      if (fallHeight > 26) {
+        const fallDmg = Math.min(48, Math.round((fallHeight - 22) * 0.65));
+        if (fallDmg > 0 && (!mpState.active || isPlayer)) {
+          fighter.hp = Math.max(0, fighter.hp - fallDmg);
+          sfx.playExplosion(true);
+          screenShake = Math.max(screenShake, 11);
+          spawnExplosion(fighter.x, groundY, 22, '#a8a29e');
+          addFloatingText(fighter.x, groundY - 62, `⛰️ QUEDA DO PENHASCO! -${fallDmg}%`, '#fb923c');
+          updateHUD();
+          if (fighter.hp <= 0) {
+            spawnExplosion(fighter.x, groundY - 20, 75, '#ef4444');
+            endMatch(!isPlayer);
+            return;
+          }
+        }
+      }
+    }
+    fighter.y = groundY;
+    fighter.slope = getTerrainAngle(fighter.x);
+  }
+
+  // 3. Verificar Submersão em Água Profunda (Rios, Canal de Suez, Pântanos)
+  if (scen.hasWater && fighter.x >= waterStartPx + 8 && fighter.x <= waterEndPx - 8 && fighter.y >= waterLevel - 6) {
+    fighter.vx *= 0.45;
+    if (Math.random() < 0.35) {
+      particles.push({
+        x: fighter.x + (Math.random() - 0.5) * 48,
+        y: waterLevel,
+        vx: (Math.random() - 0.5) * 3.5,
+        vy: -1.8 - Math.random() * 2.8,
+        life: 1,
+        decay: 0.04,
+        size: 3 + Math.random() * 4,
+        color: Math.random() > 0.4 ? '#38bdf8' : '#e0f2fe'
+      });
+    }
+    if (fighter.waterDamageCooldown > 0) {
+      fighter.waterDamageCooldown--;
+    } else if (!mpState.active || isPlayer) {
+      fighter.waterDamageCooldown = 55; // ~1 segundo entre danos de inundação no motor
+      const waterDmg = 14;
+      fighter.hp = Math.max(0, fighter.hp - waterDmg);
+      sfx.playExplosion(false);
+      addFloatingText(fighter.x, fighter.y - 64, `🌊 AFUNDANDO NA ÁGUA! -${waterDmg}%`, '#38bdf8');
+      updateHUD();
+      if (fighter.hp <= 0) {
+        spawnExplosion(fighter.x, fighter.y - 20, 75, '#38bdf8');
+        endMatch(!isPlayer);
+      }
+    }
+  } else if (fighter.waterDamageCooldown > 0) {
+    fighter.waterDamageCooldown--;
+  }
+}
+
 function update() {
   if (gameState !== 'playing') return;
+  const scen = SCENARIOS[currentScenarioIdx];
+  const now = performance.now();
 
-  // 1. Movimento Livre do Jogador
+  // 0. Atualização do Relógio e Rajadas do Modo por Turnos (Estilo Worms)
+  if (battleMode === 'turns') {
+    if (turnState.phase === 'move_aim') {
+      const dtSec = (now - (turnState.lastTick || now)) / 1000;
+      turnState.lastTick = now;
+      turnState.timeLeft -= dtSec;
+      updateWormsTurnHUD();
+      if (turnState.timeLeft <= 0) {
+        turnState.timeLeft = 0;
+        addFloatingText(
+          turnState.current === 'player' ? player.x : enemy.x,
+          (turnState.current === 'player' ? player.y : enemy.y) - 65,
+          '⌛ TEMPO DO TURNO ESGOTADO!',
+          '#facc15'
+        );
+        switchWormsTurn();
+      }
+    } else {
+      turnState.lastTick = now;
+      // Executar rajada de metralhadora/autocanhão do turno, se ativa
+      if (turnState.mgBurstLeft > 0) {
+        turnState.mgBurstTimer--;
+        if (turnState.mgBurstTimer <= 0) {
+          turnState.mgBurstTimer = 4;
+          turnState.mgBurstLeft--;
+          const burstShooter = turnState.current === 'player' ? player : enemy;
+          fireMG(burstShooter, turnState.current === 'player', false, null, null, true);
+        }
+      }
+      // Quando todos os projéteis, drones e quedas terminarem, aguarda breve pausa e passa o turno!
+      if (
+        projectiles.length === 0 &&
+        drones.length === 0 &&
+        turnState.mgBurstLeft <= 0 &&
+        !player.inAir &&
+        !enemy.inAir
+      ) {
+        turnState.endDelayFrames--;
+        if (turnState.endDelayFrames <= 0) {
+          switchWormsTurn();
+        }
+      }
+    }
+  }
+
+  // 1. Movimento do Jogador (Livre em Tempo Real ou limitado pelo Combustível do Turno no Modo Worms)
   let moveDir = 0;
   if (keys['KeyA'] || keys['ArrowLeft'] || touchState.left) moveDir -= 1;
   if (keys['KeyD'] || keys['ArrowRight'] || touchState.right) moveDir += 1;
 
-  if (moveDir !== 0) {
+  const canPlayerMove =
+    battleMode !== 'turns' ||
+    (turnState.current === 'player' && turnState.phase === 'move_aim' && turnState.fuel > 0);
+
+  if (moveDir !== 0 && canPlayerMove) {
     const climbing = (moveDir > 0 && player.slope < -0.15) || (moveDir < 0 && player.slope > 0.15);
     const speedMult = climbing ? 0.72 : 1.0;
     player.vx = moveDir * player.spec.speed * speedMult;
     player.x += player.vx;
     player.wheelRot += player.vx * 0.09;
+
+    if (battleMode === 'turns') {
+      turnState.fuel = Math.max(0, turnState.fuel - 0.42);
+      updateWormsTurnHUD();
+      if (turnState.fuel <= 0 && !turnState.fuelWarned) {
+        turnState.fuelWarned = true;
+        addFloatingText(player.x, player.y - 58, '⛽ COMBUSTÍVEL DO TURNO ESGOTADO! MIRE E ATIRE!', '#facc15');
+      }
+    }
   } else {
     player.vx = 0;
+    if (moveDir !== 0 && battleMode === 'turns' && turnState.current !== 'player') {
+      if (Math.random() < 0.04) {
+        addFloatingText(player.x, player.y - 58, '⏳ AGUARDE SEU TURNO PARA MOVER!', '#f87171');
+      }
+    }
   }
 
-  player.x = Math.max(45, Math.min(W - 45, player.x));
-  player.y = getTerrainY(player.x);
-  player.slope = getTerrainAngle(player.x);
+  // Aplicar física de Penhasco (Gravidade + Dano de Queda) e Água ao Jogador
+  applyFighterGravityAndHazards(player, true, scen);
+  if (gameState !== 'playing') return;
 
   if (enemy) {
     player.facing = enemy.x >= player.x ? 1 : -1;
@@ -3465,7 +4259,7 @@ function update() {
     updatePowerBarUI(currentChargeRatio, true);
   }
 
-  // Disparo contínuo de Metralhadora / Autocanhão
+  // Disparo de Metralhadora / Autocanhão
   if (
     keys['KeyE'] ||
     mouse.rightDown ||
@@ -3479,7 +4273,9 @@ function update() {
 
   // Barra de recarga
   const cdElapsed = performance.now() - player.lastCannonShot;
-  const cdRatio = Math.min(1, cdElapsed / player.spec.reloadTime);
+  const cdRatio = battleMode === 'turns'
+    ? (turnState.current === 'player' && turnState.phase === 'move_aim' ? 1 : 0.25)
+    : Math.min(1, cdElapsed / player.spec.reloadTime);
   const cdBar = document.getElementById('cannon-cd-bar');
   cdBar.style.width = `${cdRatio * 100}%`;
   cdBar.style.background = cdRatio >= 1 ? '#22c55e' : '#38bdf8';
@@ -3495,6 +4291,7 @@ function update() {
       sendNet({
         type: 'sync_state',
         nx: player.x / W,
+        ny: player.y / H,
         vx: player.vx,
         facing: player.facing,
         turretAngle: player.turretAngle,
@@ -3506,6 +4303,8 @@ function update() {
     }
   } else {
     updateEnemyAI();
+    applyFighterGravityAndHazards(enemy, false, scen);
+    if (gameState !== 'playing') return;
   }
 
   // 5. ATUALIZAR DRONES KAMIKAZE TELEGUIADOS
@@ -3517,8 +4316,6 @@ function update() {
 
     const target = d.owner === 'player' ? enemy : player;
 
-    // Fase 1 (primeiros 45 frames): ganha altitude para cruzar montanhas
-    // Fase 2: guia automaticamente em direção ao tanque alvo como míssil teleguiado!
     let aimX = target.x;
     let aimY = target.y - 22;
     if (d.age < 50 || Math.abs(target.x - d.x) > 190) {
@@ -3536,7 +4333,7 @@ function update() {
 
     // Colisão do Drone com o Tanque Alvo
     if (Math.hypot(d.x - target.x, d.y - (target.y - 20)) < 38) {
-      const dmg = target.baseCannonDamageTaken * 1.15; // Dano potente de míssil teleguiado!
+      const dmg = target.baseCannonDamageTaken * 1.15;
       target.hp = Math.max(0, target.hp - dmg);
       sfx.playExplosion(true);
       screenShake = 13;
@@ -3561,7 +4358,7 @@ function update() {
     }
   }
 
-  // 6. ATUALIZAR PROJÉTEIS (COM INTERCEPTAÇÃO DE DRONES E DEFESA REATIVA APS!)
+  // 6. ATUALIZAR PROJÉTEIS (COM INTERCEPTAÇÃO DE DRONES, ÁGUA E DEFESA REATIVA APS!)
   for (let i = projectiles.length - 1; i >= 0; i--) {
     const p = projectiles[i];
     p.trail.push({ x: p.x, y: p.y });
@@ -3574,7 +4371,6 @@ function update() {
       p.vy += 0.24;
       p.vx += wind;
     } else {
-      // Balística longa da metralhadora: alcança longe e cai suavemente no longo prazo!
       p.vx *= MG_AIR_DRAG;
       p.vy = p.vy * MG_AIR_DRAG + MG_GRAVITY;
       p.vx += wind * 0.35;
@@ -3667,12 +4463,20 @@ function update() {
       continue;
     }
 
-    // D) Colisão com o terreno
+    // D) Impacto na superfície da Água (Gera coluna de espuma/splash!)
+    if (scen.hasWater && p.x >= waterStartPx && p.x <= waterEndPx && p.y >= waterLevel) {
+      sfx.playExplosion(false);
+      spawnExplosion(p.x, waterLevel, p.type === 'cannon' ? 24 : 6, '#38bdf8');
+      projectiles.splice(i, 1);
+      continue;
+    }
+
+    // E) Colisão com o terreno (Pode abrir cratera no penhasco e derrubar o tanque oponente!)
     const groundY = getTerrainY(p.x);
     if (p.y >= groundY) {
       if (p.type === 'cannon') {
         sfx.playExplosion(true);
-        const craterRadius = p.isArtillery ? 38 : 26;
+        const craterRadius = p.isArtillery ? 42 : 30;
         deformTerrain(p.x, groundY, craterRadius);
         spawnExplosion(p.x, groundY, p.isArtillery ? 34 : 22, '#d97706');
 
@@ -3742,6 +4546,7 @@ function endMatch(playerWon, fromNetwork = false) {
   if (gameState === 'gameover') return;
   gameState = 'gameover';
   isChargingCannon = false;
+  document.getElementById('worms-turn-banner').style.display = 'none';
 
   if (mpState.active && !fromNetwork) {
     sendNet({
@@ -3769,12 +4574,12 @@ function endMatch(playerWon, fromNetwork = false) {
   if (playerWon) {
     title.textContent = `🏆 VITÓRIA DE ${playerProfile.commanderName.toUpperCase()}!`;
     title.style.color = '#facc15';
-    desc.textContent = `Seu ${player.spec.name} venceu ${oppTitle} em ${scen.name}! Seu histórico foi salvo.`;
+    desc.textContent = `Seu ${player.spec.name} venceu ${oppTitle} em ${scen.name} (${scen.year || ''})! Seu histórico foi salvo.`;
     nextBtn.style.display = currentScenarioIdx < SCENARIOS.length - 1 ? 'inline-block' : 'none';
   } else {
     title.textContent = '💥 SEU BLINDADO FOI DESTRUÍDO!';
     title.style.color = '#f87171';
-    desc.textContent = `${oppTitle} venceu em ${scen.name}. Use seus Drones (Q), ative a Defesa Reativa APS (R) e abata os drones inimigos com a metralhadora!`;
+    desc.textContent = `${oppTitle} venceu em ${scen.name} (${scen.year || ''}). Cuidado com os penhascos, rios e use seus Drones (Q) e Defesa Reativa APS (R)!`;
     nextBtn.style.display = 'none';
   }
 }
@@ -3833,7 +4638,7 @@ function drawVehicleHD(c, fighter) {
   c.fillRect(4, -14, 24, 2.5);
   c.restore();
 
-  // Desenhar a imagem única de perfil do veículo
+  // Desenhar a imagem única de perfil do veículo (100% fundo transparente)
   const isCanvas = sprite instanceof HTMLCanvasElement;
   const isReadyImg = sprite && sprite.complete && sprite.naturalWidth > 0;
 
@@ -3868,7 +4673,6 @@ function drawVehicleHD(c, fighter) {
 
 function drawDrones(c) {
   drones.forEach(d => {
-    // Trilha luminosa do Drone Teleguiado
     if (d.trail.length > 1) {
       c.strokeStyle = d.owner === 'player' ? 'rgba(192, 132, 252, 0.55)' : 'rgba(248, 113, 113, 0.55)';
       c.lineWidth = 2.5;
@@ -3884,7 +4688,6 @@ function drawDrones(c) {
     c.translate(d.x, d.y);
     c.rotate(d.angle);
 
-    // Asa em delta / X estilo Drone Kamikaze Hero / Lancet / Switchblade
     c.fillStyle = d.owner === 'player' ? '#a855f7' : '#ef4444';
     c.strokeStyle = '#fff';
     c.lineWidth = 1.2;
@@ -3897,16 +4700,14 @@ function drawDrones(c) {
     c.fill();
     c.stroke();
 
-    // Ogiva brilhante na ponta
     c.fillStyle = '#fef08a';
     c.beginPath();
     c.arc(10, 0, 2.5, 0, Math.PI * 2);
     c.fill();
     c.restore();
 
-    // Indicador de Alerta e Vida do Drone no ar
     c.save();
-    c.font = '700 10px "Orbitron", sans-serif';
+    c.font = '700 11px "Share Tech Mono", monospace';
     c.fillStyle = d.owner === 'player' ? '#e9d5ff' : '#fecaca';
     c.textAlign = 'center';
     c.fillText(`✈️ DRONE [${'█'.repeat(d.hp)}]`, d.x, d.y - 16);
@@ -3915,20 +4716,22 @@ function drawDrones(c) {
 }
 
 // ============================================================================
-// 15. RENDERIZAÇÃO RICA DOS CENÁRIOS (PARALLAX + MONUMENTOS + TEXTURAS)
+// 15. RENDERIZAÇÃO RICA DOS 10 CENÁRIOS HISTÓRICOS, PENHASCOS E ÁGUA
 // ============================================================================
 function drawSceneryDecor(scen) {
+  const timeAnim = performance.now() * 0.003;
+
   // 1. Sol / Lua com brilho atmosférico
   if (scen.celestial) {
     const cx = W * scen.celestial.x;
     const cy = H * scen.celestial.y;
-    const rad = ctx.createRadialGradient(cx, cy, 10, cx, cy, 110);
+    const rad = ctx.createRadialGradient(cx, cy, 10, cx, cy, 115);
     rad.addColorStop(0, scen.celestial.color);
-    rad.addColorStop(0.35, scen.celestial.glow);
+    rad.addColorStop(0.38, scen.celestial.glow);
     rad.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = rad;
     ctx.beginPath();
-    ctx.arc(cx, cy, 110, 0, Math.PI * 2);
+    ctx.arc(cx, cy, 115, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.fillStyle = scen.celestial.color;
@@ -3955,46 +4758,227 @@ function drawSceneryDecor(scen) {
   ctx.closePath();
   ctx.fill();
 
-  // 4. Elementos Arquitetônicos e Naturais de cada Cenário
+  // 4. Elementos Arquitetônicos, Monumentos Históricos e Bandeiras Nacionais dos 10 Conflitos
   sceneryProps.forEach(p => {
-    const gy = getTerrainY(p.x);
+    const gy = p.x !== undefined ? getTerrainY(p.x) : H * 0.72;
     ctx.save();
-    if (p.type === 'eiffel') {
-      // Torre Eiffel detalhada com treliças (França Urbana)
-      ctx.strokeStyle = 'rgba(30, 41, 59, 0.85)';
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+
+    if (p.type === 'command_outpost') {
+      // Base de Comando Fortificada com Mastro e Bandeira Nacional Ondulando
+      ctx.fillStyle = 'rgba(30, 41, 59, 0.9)';
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
+      ctx.lineWidth = 2;
+      ctx.fillRect(p.x - 28, gy - 22, 56, 26);
+      ctx.strokeRect(p.x - 28, gy - 22, 56, 26);
+      // Sacos de areia e seteira
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(p.x - 14, gy - 14, 28, 6);
+      // Mastro da Bandeira
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(p.x, gy - 22);
+      ctx.lineTo(p.x, gy - 72);
+      ctx.stroke();
+      // Flâmula e Bandeira do País
+      const waveY = Math.sin(timeAnim * 2 + p.x) * 2.5;
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.78)';
+      ctx.fillRect(p.x + 2, gy - 72 + waveY, 38, 24);
+      ctx.font = '20px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(p.flag || '🏳️', p.x + 21, gy - 54 + waveY);
+    } else if (p.type === 'suez_bridge') {
+      // Ponte Militar de Pontões sobre o Canal de Suez (Fazenda Chinesa 1973)
+      const bridgeY = waterLevel - 10;
+      ctx.fillStyle = 'rgba(71, 85, 105, 0.88)';
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 2;
+      ctx.fillRect(p.xStart - 15, bridgeY - 8, (p.xEnd - p.xStart) + 30, 8);
+      // Treliças metálicas da ponte militar
+      ctx.beginPath();
+      for (let bx = p.xStart; bx < p.xEnd; bx += 22) {
+        ctx.moveTo(bx, bridgeY);
+        ctx.lineTo(bx + 11, bridgeY - 20);
+        ctx.lineTo(bx + 22, bridgeY);
+        // Flutuadores de pontão na água
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(bx + 3, waterLevel - 3, 16, 8);
+      }
+      ctx.stroke();
+    } else if (p.type === 'chinese_farm_tower') {
+      // Estação Agrícola de Bombeamento da Fazenda Chinesa (Sinai 1973)
+      ctx.fillStyle = 'rgba(120, 53, 15, 0.85)';
+      ctx.fillRect(p.x - 24, gy - 58, 48, 62);
+      ctx.fillStyle = '#facc15';
+      ctx.font = '700 10px "Share Tech Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('CHINESE FARM', p.x, gy - 64);
+      // Caixa d'água elevada
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(p.x - 18, gy - 88, 36, 22);
+    } else if (p.type === 'baghdad_swords') {
+      // Monumento "Espadas de Qādisīyah" (Arco da Vitória - Thunder Runs de Bagdá 2003)
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 5;
+      // Braços/Espadas cruzadas formando um grande arco
+      ctx.beginPath();
+      ctx.moveTo(p.x - 65, gy + 5);
+      ctx.quadraticCurveTo(p.x - 25, gy - 120, p.x + 25, gy - 155);
+      ctx.moveTo(p.x + 65, gy + 5);
+      ctx.quadraticCurveTo(p.x + 25, gy - 120, p.x - 25, gy - 155);
+      ctx.stroke();
+      // Pedestais de concreto na base
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(p.x - 75, gy - 25, 22, 30);
+      ctx.fillRect(p.x + 53, gy - 25, 22, 30);
+      // Estrela no cruzamento das lâminas
+      ctx.fillStyle = '#facc15';
+      ctx.beginPath();
+      ctx.arc(p.x, gy - 118, 6, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (p.type === 'golden_mosque') {
+      // Grande Cúpula Dourada e Minaretes no horizonte de Bagdá
+      ctx.fillStyle = 'rgba(30, 41, 59, 0.82)';
+      ctx.fillRect(p.x - 45, gy - 48, 90, 54);
+      ctx.fillStyle = '#eab308';
+      ctx.beginPath();
+      ctx.arc(p.x, gy - 48, 30, Math.PI, 0);
+      ctx.fill();
+      // Minaretes laterais
+      ctx.fillStyle = '#ca8a04';
+      ctx.fillRect(p.x - 56, gy - 95, 10, 100);
+      ctx.fillRect(p.x + 46, gy - 95, 10, 100);
+    } else if (p.type === 'burning_oil_well') {
+      // Poço de Petróleo em Chamas com Coluna de Fumaça Negra (Medina Ridge / Dezful / 73 Easting)
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(p.x - 8, gy - 28, 16, 30);
+      // Coluna de fumaça escura subindo ao céu
+      for (let s = 0; s < 5; s++) {
+        const sy = gy - 42 - s * 26;
+        const sx = p.x + Math.sin(timeAnim + s) * (8 + s * 4);
+        ctx.fillStyle = `rgba(15, 23, 42, ${0.65 - s * 0.1})`;
+        ctx.beginPath();
+        ctx.arc(sx, sy, 14 + s * 7, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // Chama viva oscilante
+      const flameH = 26 + Math.sin(timeAnim * 5 + p.x) * 8;
+      const fGrad = ctx.createRadialGradient(p.x, gy - 32, 3, p.x, gy - 38, flameH);
+      fGrad.addColorStop(0, '#fef08a');
+      fGrad.addColorStop(0.5, '#f97316');
+      fGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+      ctx.fillStyle = fGrad;
+      ctx.beginPath();
+      ctx.arc(p.x, gy - 34, flameH, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (p.type === 'oil_refinery') {
+      // Torres e Tanques de Refinaria (Dezful / Medina Ridge)
+      ctx.fillStyle = 'rgba(51, 65, 85, 0.85)';
+      ctx.fillRect(p.x - 32, gy - 42, 38, 46);
+      ctx.fillRect(p.x + 12, gy - 78, 12, 82);
+      ctx.fillRect(p.x + 28, gy - 64, 10, 68);
+      ctx.fillStyle = '#f97316';
+      ctx.beginPath();
+      ctx.arc(p.x + 18, gy - 84, 6 + Math.sin(timeAnim * 4) * 2, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (p.type === 'coal_mine_tower') {
+      // Torre de Extração de Carvão e Terrikon do Donbas (Vuhledar 2022–2023)
+      ctx.strokeStyle = '#334155';
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.moveTo(p.x - 52, gy + 10);
-      ctx.lineTo(p.x - 16, gy - 130);
-      ctx.lineTo(p.x - 5, gy - 265);
-      ctx.lineTo(p.x + 5, gy - 265);
-      ctx.lineTo(p.x + 16, gy - 130);
-      ctx.lineTo(p.x + 52, gy + 10);
+      ctx.moveTo(p.x - 24, gy + 4);
+      ctx.lineTo(p.x - 8, gy - 95);
+      ctx.lineTo(p.x + 8, gy - 95);
+      ctx.lineTo(p.x + 24, gy + 4);
+      ctx.stroke();
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(p.x - 16, gy - 110, 32, 18);
+      // Roda gigante de cabos da mina
+      ctx.strokeStyle = '#94a3b8';
+      ctx.beginPath();
+      ctx.arc(p.x, gy - 118, 12, 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (p.type === 'soviet_panelka') {
+      // Prédios residenciais soviéticos danificados (Brovary / Vuhledar)
+      ctx.fillStyle = 'rgba(71, 85, 105, 0.82)';
+      ctx.fillRect(p.x - p.w / 2, gy - p.h, p.w, p.h + 15);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+      for (let wy = gy - p.h + 10; wy < gy - 10; wy += 14) {
+        ctx.fillRect(p.x - p.w / 2 + 6, wy, 7, 8);
+        ctx.fillRect(p.x - 3, wy, 7, 8);
+        ctx.fillRect(p.x + p.w / 2 - 13, wy, 7, 8);
+      }
+    } else if (p.type === 'dragon_teeth') {
+      // "Dentes de Dragão" (Pirâmides antitanque de concreto armado)
+      ctx.fillStyle = '#94a3b8';
+      ctx.beginPath();
+      ctx.moveTo(p.x, gy - 14);
+      ctx.lineTo(p.x - 10, gy + 4);
+      ctx.lineTo(p.x + 10, gy + 4);
       ctx.closePath();
       ctx.fill();
+    } else if (p.type === 'bunker_casemate') {
+      // Casamata Fortificada com Bandeira
+      ctx.fillStyle = 'rgba(68, 64, 60, 0.9)';
+      ctx.beginPath();
+      ctx.arc(p.x, gy + 4, 26, Math.PI, 0);
+      ctx.fill();
+      ctx.fillStyle = '#090d16';
+      ctx.fillRect(p.x - 14, gy - 10, 28, 5);
+      if (p.flag) {
+        ctx.font = '15px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(p.flag, p.x, gy - 26);
+      }
+    } else if (p.type === 'wrecked_hull') {
+      // Carcaça de blindado destruído fumegando no campo de batalha histórico
+      ctx.fillStyle = '#27272a';
+      ctx.fillRect(p.x - 22, gy - 11, 44, 13);
+      ctx.beginPath();
+      ctx.arc(p.x, gy - 11, 12, Math.PI, 0);
+      ctx.fill();
+    } else if (p.type === 'minaret_dome') {
+      // Domo e Minarete Tradicional Indo-Paquistanês (Chawinda 1965)
+      ctx.fillStyle = 'rgba(120, 53, 15, 0.78)';
+      ctx.fillRect(p.x - 22, gy - 32, 44, 36);
+      ctx.beginPath();
+      ctx.arc(p.x, gy - 32, 18, Math.PI, 0);
+      ctx.fill();
+      ctx.fillRect(p.x + 24, gy - 68, 7, 72);
+    } else if (p.type === 'rail_signal') {
+      // Sinal Ferroviário de Chawinda (1965)
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(p.x, gy + 4);
+      ctx.lineTo(p.x, gy - 54);
       ctx.stroke();
-      // Arco na base da Torre Eiffel
-      ctx.fillStyle = scen.midHillsColor;
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(p.x - 14, gy - 50, 16, 6);
+    } else if (p.type === 'desert_monolith') {
+      // Formação Rochosa Íngreme do Sinai (14 de Outubro 1973)
+      ctx.fillStyle = 'rgba(146, 64, 14, 0.65)';
       ctx.beginPath();
-      ctx.arc(p.x, gy + 10, 24, Math.PI, 0);
+      ctx.moveTo(p.x - 28, gy + 10);
+      ctx.lineTo(p.x - 16, gy - p.h);
+      ctx.lineTo(p.x + 14, gy - p.h + 12);
+      ctx.lineTo(p.x + 30, gy + 10);
+      ctx.closePath();
       ctx.fill();
-      // Plataformas
-      ctx.fillStyle = '#facc15';
-      ctx.fillRect(p.x - 28, gy - 85, 56, 5);
-      ctx.fillRect(p.x - 18, gy - 155, 36, 4);
+    } else if (p.type === 'easting_marker') {
+      // Marco de Coordenada GPS Militar "73 EASTING" (Guerra do Golfo 1991)
+      ctx.fillStyle = 'rgba(234, 179, 8, 0.85)';
+      ctx.fillRect(p.x - 36, gy - 38, 72, 20);
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '700 10px "Share Tech Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('73 EASTING', p.x, gy - 24);
+      ctx.strokeStyle = '#eab308';
+      ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.arc(p.x, gy - 270, 4, 0, Math.PI * 2);
-      ctx.fill();
-    } else if (p.type === 'arc_triomphe') {
-      // Arco do Triunfo (França Urbana)
-      ctx.fillStyle = 'rgba(51, 65, 85, 0.82)';
-      ctx.fillRect(p.x - 42, gy - 85, 84, 90);
-      ctx.fillStyle = scen.midHillsColor;
-      ctx.beginPath();
-      ctx.arc(p.x, gy - 25, 16, Math.PI, 0);
-      ctx.fill();
-      ctx.fillRect(p.x - 16, gy - 25, 32, 30);
+      ctx.moveTo(p.x, gy - 18);
+      ctx.lineTo(p.x, gy + 4);
+      ctx.stroke();
     } else if (p.type === 'euro_bldg') {
       ctx.fillStyle = 'rgba(30, 41, 59, 0.78)';
       ctx.fillRect(p.x - p.w / 2, gy - p.h, p.w, p.h + 20);
@@ -4003,17 +4987,7 @@ function drawSceneryDecor(scen) {
         ctx.fillRect(p.x - p.w / 2 + 8, wy, 6, 8);
         ctx.fillRect(p.x + 4, wy, 6, 8);
       }
-    } else if (p.type === 'br_bldg') {
-      ctx.fillStyle = p.color;
-      ctx.globalAlpha = 0.55;
-      ctx.fillRect(p.x - p.w / 2, gy - p.h, p.w, p.h + 15);
-      ctx.fillStyle = '#fef08a';
-      for (let wy = gy - p.h + 10; wy < gy - 12; wy += 15) {
-        ctx.fillRect(p.x - 8, wy, 5, 5);
-        ctx.fillRect(p.x + 4, wy, 5, 5);
-      }
     } else if (p.type === 'pyramid') {
-      // Pirâmides no horizonte do Saara
       ctx.fillStyle = 'rgba(180, 83, 9, 0.55)';
       ctx.beginPath();
       ctx.moveTo(p.x, gy - p.size);
@@ -4059,7 +5033,7 @@ function drawSceneryDecor(scen) {
       ctx.closePath();
       ctx.fill();
     } else if (p.type === 'bunker_rock') {
-      ctx.fillStyle = 'rgba(51, 65, 85, 0.85)';
+      ctx.fillStyle = 'rgba(51, 65, 85, 0.88)';
       ctx.beginPath();
       ctx.arc(p.x, gy + 2, p.size, Math.PI, 0);
       ctx.fill();
@@ -4079,6 +5053,60 @@ function drawSceneryDecor(scen) {
   });
 }
 
+// Renderiza Corpo de Água Animado (Rios, Canal de Suez, Pântanos)
+function drawWaterBody(scen) {
+  if (!scen.hasWater || waterStartPx < 0) return;
+  const t = performance.now() * 0.004;
+
+  ctx.save();
+  const wGrad = ctx.createLinearGradient(0, waterLevel - 5, 0, H);
+  wGrad.addColorStop(0, scen.waterColor || 'rgba(14, 116, 144, 0.78)');
+  wGrad.addColorStop(0.5, 'rgba(3, 105, 161, 0.88)');
+  wGrad.addColorStop(1, 'rgba(7, 89, 133, 0.96)');
+
+  ctx.fillStyle = wGrad;
+  ctx.beginPath();
+  ctx.moveTo(waterStartPx - 12, H);
+  for (let x = Math.max(0, Math.floor(waterStartPx - 12)); x <= Math.min(W, Math.ceil(waterEndPx + 12)); x += 4) {
+    const waveY = waterLevel + Math.sin(x * 0.06 + t) * 2.4 + Math.cos(x * 0.03 - t * 0.7) * 1.4;
+    ctx.lineTo(x, waveY);
+  }
+  ctx.lineTo(waterEndPx + 12, H);
+  ctx.closePath();
+  ctx.fill();
+
+  // Espuma brilhante e reflexos na superfície da água
+  ctx.strokeStyle = 'rgba(186, 230, 253, 0.75)';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for (let x = Math.max(0, Math.floor(waterStartPx - 6)); x <= Math.min(W, Math.ceil(waterEndPx + 6)); x += 5) {
+    const waveY = waterLevel + Math.sin(x * 0.06 + t) * 2.4;
+    if (x === Math.max(0, Math.floor(waterStartPx - 6))) ctx.moveTo(x, waveY);
+    else ctx.lineTo(x, waveY);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+// Renderiza Textura Rochosa dos Penhascos e Escarpas Verticais
+function drawCliffStrata(scen) {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.28)';
+  ctx.lineWidth = 2;
+  for (let x = 8; x < W - 8; x += 8) {
+    const dy = Math.abs(terrain[x + 6] - terrain[x - 6]);
+    if (dy > 7) {
+      // Paredão de penhasco detectado: desenha rachaduras e estratos de rocha vertical
+      const topY = terrain[x];
+      ctx.beginPath();
+      ctx.moveTo(x, topY + 4);
+      ctx.lineTo(x + (dy > 14 ? 3 : -3), Math.min(H, topY + dy * 4.5 + 35));
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
 function draw() {
   const scen = SCENARIOS[currentScenarioIdx];
 
@@ -4095,10 +5123,13 @@ function draw() {
   ctx.fillStyle = skyGrad;
   ctx.fillRect(0, 0, W, H);
 
-  // 2. Decoração Parallax e Monumentos do Cenário
+  // 2. Decoração Parallax e Monumentos Históricos do Cenário
   drawSceneryDecor(scen);
 
-  // 3. Terreno Principal com Sombreamento em 3 Tons
+  // 2B. Corpo de Água (Rios, Canal de Suez, Lagos)
+  drawWaterBody(scen);
+
+  // 3. Terreno Principal com Penhascos e Sombreamento em 3 Tons
   const groundGrad = ctx.createLinearGradient(0, H * 0.25, 0, H);
   groundGrad.addColorStop(0, scen.groundTop);
   groundGrad.addColorStop(0.45, scen.groundMid);
@@ -4111,6 +5142,9 @@ function draw() {
   ctx.closePath();
   ctx.fill();
 
+  // Estratos rochosos verticais nos Penhascos
+  drawCliffStrata(scen);
+
   // Crista iluminada do terreno
   ctx.strokeStyle = scen.rockColor;
   ctx.lineWidth = 4.5;
@@ -4121,15 +5155,34 @@ function draw() {
   }
   ctx.stroke();
 
-  // 4. Linha Pontilhada de Mira (Mostra tanto o Canhão quanto a Trajetória Longa da Metralhadora!)
+  // 4. Linha Pontilhada de Mira
   if (gameState === 'playing' && player) {
-    drawAimDots(player);
+    if (battleMode !== 'turns' || turnState.current === 'player') {
+      drawAimDots(player);
+    }
   }
 
-  // 5. Tanques / Blindados
+  // 5. Tanques / Blindados + Indicador de Turno Ativo (Modo Worms)
   if (player && enemy) {
     drawVehicleHD(ctx, player);
     drawVehicleHD(ctx, enemy);
+
+    if (gameState === 'playing' && battleMode === 'turns' && turnState.phase === 'move_aim') {
+      const activeTank = turnState.current === 'player' ? player : enemy;
+      const bounce = Math.sin(performance.now() * 0.008) * 5;
+      ctx.save();
+      ctx.font = '700 12px "Russo One", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = turnState.current === 'player' ? '#4ade80' : '#f87171';
+      ctx.shadowColor = '#000';
+      ctx.shadowBlur = 5;
+      ctx.fillText(
+        turnState.current === 'player' ? `▼ SEU TURNO (${Math.ceil(turnState.timeLeft)}s)` : `▼ TURNO OPONENTE`,
+        activeTank.x,
+        activeTank.y - 68 + bounce
+      );
+      ctx.restore();
+    }
   }
 
   // 6. Drones Kamikaze Teleguiados
@@ -4162,7 +5215,7 @@ function draw() {
       ctx.beginPath();
       p.trail.forEach((pt, idx) => {
         if (idx === 0) ctx.moveTo(pt.x, pt.y);
-        else ctx.lineTo(pt.x, pt.y);
+        else cLineTo(ctx, pt.x, pt.y);
       });
       ctx.stroke();
     }
@@ -4229,20 +5282,24 @@ function draw() {
     }
   });
 
-  // 11. Textos Flutuantes
+  // 11. Textos Flutuantes com Tipografia Militar
   floatingTexts.forEach(ft => {
     ctx.save();
     ctx.globalAlpha = Math.max(0, ft.life);
-    ctx.font = '700 15px "Orbitron", sans-serif';
+    ctx.font = '700 15px "Russo One", sans-serif';
     ctx.fillStyle = ft.color;
     ctx.shadowColor = '#000';
-    ctx.shadowBlur = 4;
+    ctx.shadowBlur = 5;
     ctx.textAlign = 'center';
     ctx.fillText(ft.text, ft.x, ft.y);
     ctx.restore();
   });
 
   ctx.restore();
+}
+
+function cLineTo(context, x, y) {
+  context.lineTo(x, y);
 }
 
 // Linha Pontilhada de Mira: Mostra a trajetória longa e descendente da Metralhadora e a parábola do Canhão!

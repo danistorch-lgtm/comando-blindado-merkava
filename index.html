@@ -88,7 +88,7 @@
       width: 36px;
       height: 36px;
       object-fit: contain;
-      background: rgba(255,255,255,0.08);
+      background: transparent;
       border: 1px solid #475569;
       border-radius: 6px;
       padding: 2px;
@@ -627,7 +627,7 @@
       height: 38px;
       object-fit: contain;
       border-radius: 6px;
-      background: rgba(255,255,255,0.06);
+      background: transparent;
       padding: 2px;
     }
 
@@ -727,7 +727,7 @@
     .tank-card-preview {
       width: 200px;
       height: 82px;
-      background: radial-gradient(circle, #1e293b 0%, #090d16 100%);
+      background: transparent;
       border-radius: 6px;
       margin-bottom: 6px;
       display: flex;
@@ -1783,34 +1783,133 @@ const VEHICLES = [
 const VEHICLE_MAP = {};
 VEHICLES.forEach(v => { VEHICLE_MAP[v.id] = v; });
 
-// Carregar e processar os sprites únicos (removendo fundo branco das fotos do Merkava Mk.4 e Mk.3!)
+// Remove qualquer fundo branco/claro automaticamente (tanto no campo de batalha quanto nos cards do menu!)
 const loadedSprites = {};
+const transparentDataUrls = {};
+
+function makeImageTransparentCanvas(img) {
+  const w = img.naturalWidth || img.width;
+  const h = img.naturalHeight || img.height;
+  const off = document.createElement('canvas');
+  off.width = w;
+  off.height = h;
+  const octx = off.getContext('2d');
+  octx.drawImage(img, 0, 0);
+  const imgData = octx.getImageData(0, 0, w, h);
+  const d = imgData.data;
+
+  const isWhiteLike = (idx) => {
+    const a = d[idx + 3];
+    if (a < 25) return true;
+    const r = d[idx], g = d[idx + 1], b = d[idx + 2];
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    // Pixels brancos ou quase brancos com baixa saturação
+    return (r > 218 && g > 218 && b > 218 && (max - min) < 32);
+  };
+
+  // Flood-fill a partir de todas as bordas da imagem para remover 100% do fundo branco sem apagar detalhes internos
+  const visited = new Uint8Array(w * h);
+  const queue = new Int32Array(w * h);
+  let head = 0, tail = 0;
+
+  const pushIfBg = (x, y) => {
+    const p = y * w + x;
+    if (visited[p]) return;
+    const idx = p * 4;
+    if (isWhiteLike(idx)) {
+      visited[p] = 1;
+      queue[tail++] = p;
+    }
+  };
+
+  for (let x = 0; x < w; x++) {
+    pushIfBg(x, 0);
+    pushIfBg(x, h - 1);
+  }
+  for (let y = 0; y < h; y++) {
+    pushIfBg(0, y);
+    pushIfBg(w - 1, y);
+  }
+
+  while (head < tail) {
+    const p = queue[head++];
+    const idx = p * 4;
+    d[idx + 3] = 0; // Totalmente transparente
+
+    const x = p % w;
+    const y = (p - x) / w;
+    if (x > 0) pushIfBg(x - 1, y);
+    if (x < w - 1) pushIfBg(x + 1, y);
+    if (y > 0) pushIfBg(x, y - 1);
+    if (y < h - 1) pushIfBg(x, y + 1);
+  }
+
+  // Remove também qualquer pixel branco puro residual (ex: dentro das rodas/lagartas) e suaviza bordas (anti-halo branco)
+  for (let p = 0; p < w * h; p++) {
+    const i = p * 4;
+    if (d[i + 3] === 0) continue;
+    const r = d[i], g = d[i + 1], b = d[i + 2];
+    if (r > 238 && g > 238 && b > 238) {
+      d[i + 3] = 0;
+    } else if (r > 205 && g > 205 && b > 205 && Math.max(r, g, b) - Math.min(r, g, b) < 28) {
+      // Se for vizinho de pixel transparente, suaviza a borda para nunca ficar contorno branco
+      const x = p % w;
+      const y = (p - x) / w;
+      const hasTransNeighbor =
+        (x > 0 && visited[p - 1]) ||
+        (x < w - 1 && visited[p + 1]) ||
+        (y > 0 && visited[p - w]) ||
+        (y < h - 1 && visited[p + w]);
+      if (hasTransNeighbor) {
+        const brightness = (r + g + b) / 3;
+        d[i + 3] = Math.max(0, Math.min(255, Math.round((240 - brightness) * 5)));
+      }
+    }
+  }
+
+  octx.putImageData(imgData, 0, 0);
+  return off;
+}
+
 VEHICLES.forEach(v => {
   const img = new Image();
   img.onload = () => {
-    if (v.removeWhiteBg) {
-      try {
-        const off = document.createElement('canvas');
-        off.width = img.naturalWidth;
-        off.height = img.naturalHeight;
-        const octx = off.getContext('2d');
-        octx.drawImage(img, 0, 0);
-        const imgData = octx.getImageData(0, 0, off.width, off.height);
-        const d = imgData.data;
-        for (let i = 0; i < d.length; i += 4) {
-          if (d[i] > 236 && d[i + 1] > 236 && d[i + 2] > 236) {
-            d[i + 3] = 0;
-          }
-        }
-        octx.putImageData(imgData, 0, 0);
-        loadedSprites[v.id] = off;
-        return;
-      } catch (e) {}
-    }
+    try {
+      const off = makeImageTransparentCanvas(img);
+      loadedSprites[v.id] = off;
+      transparentDataUrls[v.id] = off.toDataURL('image/png');
+      // Atualiza imediatamente as miniaturas do menu que já estiverem na tela
+      document.querySelectorAll(`img[data-vehicle-img="${v.id}"]`).forEach(el => {
+        el.src = transparentDataUrls[v.id];
+      });
+      return;
+    } catch (e) {}
     loadedSprites[v.id] = img;
   };
   img.src = encodeURI(v.spriteSrc);
   loadedSprites[v.id] = img;
+});
+
+// Também remove fundo branco das insígnias das unidades militares
+const transparentUnitUrls = {};
+MILITARY_UNITS.forEach(u => {
+  if (u.img.endsWith('.svg')) return;
+  const img = new Image();
+  img.onload = () => {
+    try {
+      const off = makeImageTransparentCanvas(img);
+      transparentUnitUrls[u.img] = off.toDataURL('image/png');
+      document.querySelectorAll(`img[data-unit-img="${u.img}"]`).forEach(el => {
+        el.src = transparentUnitUrls[u.img];
+      });
+      if (playerProfile.unitId === u.id) {
+        const pImg = document.getElementById('p-unit-img');
+        if (pImg) pImg.src = transparentUnitUrls[u.img];
+      }
+    } catch (e) {}
+  };
+  img.src = encodeURI(u.img);
 });
 
 // ============================================================================
@@ -2150,8 +2249,9 @@ function initMenus() {
       document.querySelectorAll('.unit-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
     };
+    const unitImgSrc = transparentUnitUrls[u.img] || encodeURI(u.img);
     card.innerHTML = `
-      <img src="${encodeURI(u.img)}" alt="${u.name}" />
+      <img data-unit-img="${u.img}" src="${unitImgSrc}" alt="${u.name}" style="background:transparent;" />
       <div class="unit-card-info">
         <div class="unit-card-name">${u.name}</div>
         <div class="unit-card-country">${u.country}</div>
@@ -2212,14 +2312,12 @@ function renderVehicleGrid() {
 
     const techDesc = `✈️ ${tank.dronesCount || 0} Drones • 🛡️ ${tank.apsCount || 0} APS`;
 
-    const previewBgStyle = tank.removeWhiteBg
-      ? 'background: linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 100%); padding: 4px;'
-      : '';
+    const imgSrc = transparentDataUrls[tank.id] || encodeURI(tank.spriteSrc);
 
     card.innerHTML = `
       <span class="class-tag ${catTagClass}">${catLabel}</span>
-      <div class="tank-card-preview" style="${previewBgStyle}">
-        <img src="${encodeURI(tank.spriteSrc)}" style="max-width:186px; max-height:76px; object-fit:contain; transform: scaleX(${tank.facesRightInImg ? 1 : -1});" />
+      <div class="tank-card-preview">
+        <img data-vehicle-img="${tank.id}" src="${imgSrc}" style="max-width:186px; max-height:76px; object-fit:contain; background:transparent; transform: scaleX(${tank.facesRightInImg ? 1 : -1});" />
       </div>
       <div class="tank-card-title">${tank.flag} ${tank.name}</div>
       <div class="tank-card-origin">${tank.caliberDesc}</div>
@@ -2486,7 +2584,7 @@ function updateHUD() {
   document.getElementById('hud-env').textContent = `${scen.desc} • ${windDir}`;
 
   // Jogador
-  document.getElementById('p-unit-img').src = encodeURI(unitObj.img);
+  document.getElementById('p-unit-img').src = transparentUnitUrls[unitObj.img] || encodeURI(unitObj.img);
   document.getElementById('p-name').textContent = `${player.spec.flag} ${player.spec.name}`;
   document.getElementById('p-commander-rank').textContent = `🎖️ ${playerProfile.commanderName} (${rankObj.code}) • ${unitObj.name}`;
 
@@ -2515,7 +2613,7 @@ function updateHUD() {
   document.getElementById('t-aps-span').textContent = player.apsLeft > 0 ? (player.apsArmed ? `${player.apsLeft} ON` : `${player.apsLeft} OFF`) : '0 Usos';
 
   // Inimigo
-  document.getElementById('e-unit-img').src = encodeURI(scen.enemyUnitImg);
+  document.getElementById('e-unit-img').src = transparentUnitUrls[scen.enemyUnitImg] || encodeURI(scen.enemyUnitImg);
   document.getElementById('e-name').textContent = `${enemy.spec.flag} ${enemy.spec.name}`;
   document.getElementById('e-unit-name').textContent = enemy.spec.caliberDesc;
 

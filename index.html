@@ -1,0 +1,3795 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Comando Blindado: Operação Global</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Orbitron:wght@700;900&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    body {
+      background: #060911;
+      color: #f0f6fc;
+      font-family: 'Chakra Petch', sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      touch-action: none;
+    }
+
+    #game-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    /* ==================== HUD DE BATALHA ==================== */
+    #hud {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      pointer-events: none;
+      z-index: 15;
+      background: linear-gradient(to bottom, rgba(2,6,23,0.92) 0%, rgba(2,6,23,0) 100%);
+    }
+
+    .tank-hud {
+      background: rgba(15, 23, 42, 0.9);
+      border: 2px solid #334155;
+      border-radius: 10px;
+      padding: 8px 12px;
+      width: 335px;
+      max-width: 33vw;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.65);
+      backdrop-filter: blur(8px);
+    }
+
+    .tank-hud.player { border-color: #38bdf8; }
+    .tank-hud.enemy { border-color: #f87171; }
+
+    .hud-top-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+
+    .enemy .hud-top-row {
+      flex-direction: row-reverse;
+      text-align: right;
+    }
+
+    .unit-insignia-hud {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid #475569;
+      border-radius: 6px;
+      padding: 2px;
+      flex-shrink: 0;
+    }
+
+    .hud-title-block {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .tank-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12.5px;
+      font-weight: 900;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .commander-sub {
+      font-size: 10.5px;
+      color: #facc15;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .enemy .commander-sub {
+      color: #fca5a5;
+    }
+
+    .hp-bar-outer {
+      width: 100%;
+      height: 15px;
+      background: #0f172a;
+      border: 2px solid #475569;
+      border-radius: 5px;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 5px;
+    }
+
+    .hp-bar-inner {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #16a34a, #4ade80);
+      transition: width 0.15s ease-out;
+    }
+
+    .enemy .hp-bar-inner {
+      background: linear-gradient(90deg, #dc2626, #f87171);
+      float: right;
+    }
+
+    .hp-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      text-shadow: 1px 1px 2px #000;
+      color: #fff;
+    }
+
+    .hits-info {
+      font-size: 10px;
+      color: #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .hits-badge {
+      background: rgba(30, 41, 59, 0.95);
+      padding: 2px 5px;
+      border-radius: 4px;
+      border: 1px solid #475569;
+      font-weight: 700;
+    }
+
+    .hits-badge.special {
+      border-color: #38bdf8;
+      color: #7dd3fc;
+    }
+
+    /* Centro do HUD */
+    .center-hud {
+      text-align: center;
+      background: rgba(15, 23, 42, 0.92);
+      border: 2px solid #eab308;
+      border-radius: 10px;
+      padding: 6px 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.65);
+      pointer-events: auto;
+      min-width: 340px;
+      max-width: 38vw;
+    }
+
+    .level-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      color: #facc15;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .env-subtitle {
+      font-size: 10.5px;
+      color: #cbd5e1;
+      margin-bottom: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .weapon-selector {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .weapon-btn {
+      background: #1e293b;
+      border: 2px solid #475569;
+      color: #cbd5e1;
+      padding: 4px 7px;
+      border-radius: 6px;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: 10.5px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .weapon-btn.active {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.55);
+    }
+
+    .weapon-btn.drone-btn {
+      border-color: #a855f7;
+      color: #e9d5ff;
+    }
+    .weapon-btn.drone-btn:hover { background: #6b21a8; }
+
+    .weapon-btn.aps-btn {
+      border-color: #22c55e;
+      color: #bbf7d0;
+    }
+    .weapon-btn.aps-btn.armed {
+      background: #15803d;
+      border-color: #4ade80;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(74, 222, 128, 0.7);
+    }
+
+    .weapon-btn.disabled {
+      opacity: 0.32;
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+
+    .top-btn {
+      background: #334155;
+      color: #fff;
+      border: 1px solid #64748b;
+      border-radius: 6px;
+      padding: 4px 7px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 10.5px;
+      cursor: pointer;
+    }
+    .top-btn:hover { background: #475569; }
+
+    /* Medidor de Calibragem de Potência */
+    .bars-container {
+      margin-top: 5px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .power-bar-wrap {
+      width: 100%;
+      height: 14px;
+      background: #090d16;
+      border: 1px solid #64748b;
+      border-radius: 5px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .power-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #22c55e 0%, #eab308 55%, #ef4444 100%);
+      transition: width 0.02s linear;
+    }
+
+    .power-bar-label {
+      position: absolute;
+      inset: 0;
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #fff;
+      text-shadow: 1px 1px 2px #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cooldown-bar {
+      width: 100%;
+      height: 4px;
+      background: #0f172a;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .cooldown-fill {
+      height: 100%;
+      width: 100%;
+      background: #38bdf8;
+    }
+
+    /* Barra de Controles Teclado (PC) */
+    #controls-bar {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid #334155;
+      border-radius: 999px;
+      padding: 5px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      font-size: 11px;
+      color: #e2e8f0;
+      z-index: 14;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .key-badge {
+      background: #334155;
+      border-bottom: 2px solid #0f172a;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-weight: 700;
+      color: #facc15;
+      margin-right: 3px;
+    }
+
+    /* ==================== CONTROLES TOUCH MOBILE / TABLET ==================== */
+    #mobile-controls {
+      position: absolute;
+      bottom: 36px;
+      left: 0;
+      width: 100%;
+      padding: 0 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .touch-cluster {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      pointer-events: auto;
+    }
+
+    .dpad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 52px);
+      grid-template-rows: repeat(2, 48px);
+      gap: 6px;
+    }
+
+    .touch-btn {
+      background: rgba(15, 23, 42, 0.85);
+      border: 2px solid #475569;
+      color: #f8fafc;
+      border-radius: 12px;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.65);
+      backdrop-filter: blur(4px);
+      transition: transform 0.08s, background 0.1s;
+      touch-action: none;
+    }
+
+    .touch-btn:active, .touch-btn.pressed {
+      transform: scale(0.93);
+      background: rgba(2, 132, 199, 0.9);
+      border-color: #38bdf8;
+    }
+
+    .touch-btn span {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 8.5px;
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-top: 1px;
+    }
+
+    .fire-cannon-touch {
+      width: 88px;
+      height: 78px;
+      background: linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(153, 27, 27, 0.95));
+      border-color: #fca5a5;
+      border-radius: 16px;
+      font-size: 12px;
+    }
+
+    .fire-cannon-touch:active, .fire-cannon-touch.pressed {
+      background: linear-gradient(135deg, #eab308, #ca8a04);
+      border-color: #fef08a;
+      color: #000;
+    }
+
+    .fire-mg-touch {
+      width: 74px;
+      height: 66px;
+      background: linear-gradient(135deg, rgba(217, 119, 6, 0.9), rgba(146, 64, 14, 0.95));
+      border-color: #fde047;
+      border-radius: 14px;
+      font-size: 11px;
+    }
+
+    .drone-touch {
+      width: 64px;
+      height: 60px;
+      background: linear-gradient(135deg, rgba(126, 34, 206, 0.9), rgba(88, 28, 135, 0.95));
+      border-color: #d8b4fe;
+      font-size: 11px;
+    }
+
+    .aps-touch {
+      width: 64px;
+      height: 60px;
+      background: linear-gradient(135deg, rgba(21, 128, 61, 0.9), rgba(20, 83, 45, 0.95));
+      border-color: #86efac;
+      font-size: 11px;
+    }
+
+    .smoke-touch {
+      width: 54px;
+      height: 54px;
+      font-size: 11px;
+    }
+
+    @media (max-width: 960px) {
+      #controls-bar { display: none; }
+      #mobile-controls { bottom: 10px; }
+      .tank-hud { width: 210px; padding: 6px 8px; }
+      .center-hud { min-width: 210px; padding: 5px 8px; }
+      .tank-name { font-size: 10.5px; }
+      .hits-info { display: none; }
+      .dpad-grid {
+        grid-template-columns: repeat(3, 44px);
+        grid-template-rows: repeat(2, 42px);
+      }
+      .fire-cannon-touch { width: 74px; height: 66px; font-size: 10.5px; }
+      .fire-mg-touch { width: 64px; height: 58px; font-size: 10px; }
+      .drone-touch, .aps-touch { width: 54px; height: 52px; font-size: 9.5px; }
+    }
+
+    /* ==================== QUARTEL GENERAL / MENU ==================== */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.99) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      z-index: 50;
+      padding: 14px 18px;
+      overflow-y: auto;
+      touch-action: pan-y;
+    }
+
+    .overlay.hidden { display: none; }
+
+    .menu-box {
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid #475569;
+      border-radius: 16px;
+      padding: 16px 20px;
+      max-width: 1360px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.85);
+    }
+
+    .top-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+
+    .game-main-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 22px;
+      font-weight: 900;
+      color: #facc15;
+      text-shadow: 0 2px 12px rgba(250, 204, 21, 0.35);
+    }
+
+    .profile-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #1e293b;
+      border: 2px solid #38bdf8;
+      border-radius: 12px;
+      padding: 6px 12px;
+      flex-wrap: wrap;
+    }
+
+    .rank-badge-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #0f172a;
+      padding: 4px 10px;
+      border-radius: 8px;
+      border: 1px solid #eab308;
+    }
+
+    .rank-chevron-canvas {
+      width: 34px;
+      height: 34px;
+    }
+
+    .profile-input {
+      background: #0f172a;
+      border: 1px solid #475569;
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      width: 155px;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .stats-pills {
+      display: flex;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: #0f172a;
+      border: 1px solid #334155;
+    }
+    .stat-pill.win { color: #4ade80; border-color: #166534; }
+    .stat-pill.loss { color: #f87171; border-color: #7f1d1d; }
+    .stat-pill.rate { color: #38bdf8; border-color: #0369a1; }
+
+    .section-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12.5px;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      margin: 10px 0 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .units-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .unit-card {
+      background: #0f172a;
+      border: 2px solid #334155;
+      border-radius: 10px;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .unit-card:hover { border-color: #64748b; }
+    .unit-card.selected {
+      border-color: #facc15;
+      background: rgba(250, 204, 21, 0.1);
+      box-shadow: 0 0 15px rgba(250, 204, 21, 0.25);
+    }
+
+    .unit-card img {
+      width: 38px;
+      height: 38px;
+      object-fit: contain;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.06);
+      padding: 2px;
+    }
+
+    .unit-card-info {
+      text-align: left;
+      overflow: hidden;
+    }
+
+    .unit-card-name {
+      font-weight: 700;
+      font-size: 11.5px;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .unit-card-country {
+      font-size: 10.5px;
+      color: #94a3b8;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .filter-tab {
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #cbd5e1;
+      padding: 4px 11px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .filter-tab.active {
+      background: #facc15;
+      color: #0f172a;
+      border-color: #fef08a;
+    }
+
+    .tank-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+      max-height: 320px;
+      overflow-y: auto;
+      padding-right: 6px;
+      margin-bottom: 10px;
+      touch-action: pan-y;
+    }
+
+    .tank-card {
+      background: #0f172a;
+      border: 2px solid #334155;
+      border-radius: 10px;
+      padding: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .tank-card:hover {
+      border-color: #64748b;
+      transform: translateY(-2px);
+    }
+
+    .tank-card.selected {
+      border-color: #facc15;
+      background: rgba(250, 204, 21, 0.08);
+      box-shadow: 0 0 18px rgba(250, 204, 21, 0.25);
+    }
+
+    .class-tag {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      z-index: 2;
+    }
+    .class-mbt { background: #0284c7; color: #fff; }
+    .class-spg { background: #dc2626; color: #fff; }
+    .class-ifv { background: #16a34a; color: #fff; }
+    .class-td  { background: #9333ea; color: #fff; }
+
+    .tank-card-preview {
+      width: 200px;
+      height: 82px;
+      background: radial-gradient(circle, #1e293b 0%, #090d16 100%);
+      border-radius: 6px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .tank-card-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+    }
+
+    .tank-card-origin {
+      font-size: 10px;
+      color: #94a3b8;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .tank-stats {
+      width: 100%;
+      font-size: 10px;
+      color: #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      background: rgba(30, 41, 59, 0.75);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .stat-val { color: #38bdf8; font-weight: 700; }
+    .stat-val.modern { color: #c084fc; font-weight: 700; }
+
+    .scenarios-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .scenario-card {
+      background: #0f172a;
+      border: 2px solid #334155;
+      border-radius: 8px;
+      padding: 7px 10px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+    }
+    .scenario-card:hover { border-color: #64748b; }
+    .scenario-card.selected {
+      border-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+    }
+
+    .scen-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: #facc15;
+    }
+    .scen-desc {
+      font-size: 10px;
+      color: #cbd5e1;
+    }
+
+    .bottom-launch-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 8px;
+      border-top: 1px solid #334155;
+    }
+
+    .choice-btn {
+      background: #0f172a;
+      border: 2px solid #334155;
+      color: #cbd5e1;
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .choice-btn.selected {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: #fff;
+    }
+
+    .start-btn {
+      background: linear-gradient(135deg, #eab308, #ca8a04);
+      border: 2px solid #fef08a;
+      color: #0f172a;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 15px;
+      font-weight: 900;
+      padding: 10px 26px;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 25px rgba(234, 179, 8, 0.45);
+      text-transform: uppercase;
+    }
+    .start-btn:hover { transform: scale(1.03); }
+
+    .history-log {
+      font-size: 11px;
+      color: #94a3b8;
+      max-height: 54px;
+      overflow-y: auto;
+      background: #090d16;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid #1e293b;
+      flex: 1;
+      min-width: 220px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="game-container">
+  <!-- ==================== HUD DE BATALHA ==================== -->
+  <div id="hud">
+    <!-- Jogador -->
+    <div class="tank-hud player">
+      <div class="hud-top-row">
+        <img id="p-unit-img" class="unit-insignia-hud" src="Hativa188.png" alt="Unidade" />
+        <div class="hud-title-block">
+          <div class="tank-name" id="p-name">🇮🇱 MERKAVA MK.4M TROPHY</div>
+          <div class="commander-sub" id="p-commander-rank">⭐ Soldado • Hativa 188</div>
+        </div>
+      </div>
+      <div class="hp-bar-outer">
+        <div class="hp-bar-inner" id="p-hp-bar"></div>
+        <div class="hp-text" id="p-hp-text">100%</div>
+      </div>
+      <div class="hits-info">
+        <span class="hits-badge" id="p-cannon-left">💥 8 Canhões</span>
+        <span class="hits-badge" id="p-mg-left">🔥 85 Metralh.</span>
+        <span class="hits-badge special" id="p-aps-left">🛡️ Defesa APS: 2</span>
+        <span class="hits-badge special" id="p-drone-left">✈️ Drones: 3</span>
+      </div>
+    </div>
+
+    <!-- Centro: Cenário, Armas, Drones, Defesa Reativa e Calibragem -->
+    <div class="center-hud">
+      <div class="level-title" id="hud-level">COLINAS DE GOLÃ</div>
+      <div class="env-subtitle" id="hud-env">Movimento Livre • Drones Teleguiados e Defesa Reativa APS</div>
+      <div class="weapon-selector">
+        <button class="weapon-btn active" id="btn-w-cannon" onclick="selectWeapon('cannon')">
+          [1] 💥 CANHÃO
+        </button>
+        <button class="weapon-btn" id="btn-w-mg" onclick="selectWeapon('mg')">
+          [2] 🔥 METRALH. LONGA
+        </button>
+        <button class="weapon-btn drone-btn" id="btn-w-drone" onclick="launchDrone(player, true)" title="Tecla Q: Lança Drone Kamikaze Teleguiado (Pode ser abatido com metralhadora!)">
+          [Q] ✈️ DRONE (3)
+        </button>
+        <button class="weapon-btn aps-btn armed" id="btn-w-aps" onclick="toggleAPS(player)" title="Tecla R: Defesa Reativa Trophy/APS (Intercepta tiros de canhão automaticamente!)">
+          [R] 🛡️ DEFESA APS (2)
+        </button>
+        <button class="top-btn" onclick="openGarage()">🎖️ Quartel</button>
+      </div>
+      <div class="bars-container">
+        <div class="power-bar-wrap" title="Segure ESPAÇO ou Botão CANHÃO para calibrar a potência do tiro!">
+          <div class="power-bar-fill" id="power-bar-fill"></div>
+          <div class="power-bar-label" id="power-bar-label">⚡ POTÊNCIA DO TIRO (Segure Espaço): 65%</div>
+        </div>
+        <div class="cooldown-bar">
+          <div class="cooldown-fill" id="cannon-cd-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inimigo -->
+    <div class="tank-hud enemy">
+      <div class="hud-top-row">
+        <img id="e-unit-img" class="unit-insignia-hud" src="russia tank insignia.png" alt="Inimigo" />
+        <div class="hud-title-block">
+          <div class="tank-name" id="e-name">🇷🇺 T-14 ARMATA</div>
+          <div class="commander-sub" id="e-unit-name">Unidade Blindada Oponente</div>
+        </div>
+      </div>
+      <div class="hp-bar-outer">
+        <div class="hp-bar-inner" id="e-hp-bar"></div>
+        <div class="hp-text" id="e-hp-text">100%</div>
+      </div>
+      <div class="hits-info">
+        <span class="hits-badge" id="e-cannon-left">💥 7 Canhões</span>
+        <span class="hits-badge" id="e-mg-left">🔥 75 Metralh.</span>
+        <span class="hits-badge special" id="e-aps-left">🛡️ APS: 2</span>
+        <span class="hits-badge special" id="e-drone-left">✈️ Drones: 2</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Canvas Principal -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- ==================== CONTROLES MOBILE / TABLET E TOUCH ==================== -->
+  <div id="mobile-controls">
+    <div class="touch-cluster">
+      <div class="dpad-grid">
+        <div></div>
+        <button class="touch-btn" id="t-aim-up">▲<span>Subir Mira</span></button>
+        <div></div>
+        <button class="touch-btn" id="t-left">◀<span>Recuar</span></button>
+        <button class="touch-btn" id="t-aim-down">▼<span>Descer Mira</span></button>
+        <button class="touch-btn" id="t-right">▶<span>Avançar</span></button>
+      </div>
+    </div>
+
+    <div class="touch-cluster">
+      <button class="touch-btn smoke-touch" id="t-smoke">💨<span>Fumaça</span></button>
+      <button class="touch-btn aps-touch" id="t-aps">🛡️ APS<span id="t-aps-span">2 Usos</span></button>
+      <button class="touch-btn drone-touch" id="t-drone">✈️ DRONE<span id="t-drone-span">3 Unid.</span></button>
+      <button class="touch-btn fire-mg-touch" id="t-mg">🔥 RAJADA<span>Abate Drone</span></button>
+      <button class="touch-btn fire-cannon-touch" id="t-cannon">💥 CANHÃO<span>Segure=Força</span></button>
+    </div>
+  </div>
+
+  <!-- Barra de Comandos (PC) -->
+  <div id="controls-bar">
+    <div><span class="key-badge">A</span><span class="key-badge">D</span> ou <span class="key-badge">◀</span><span class="key-badge">▶</span> Mover Livre</div>
+    <div><span class="key-badge">Mouse</span>Mirar</div>
+    <div><span class="key-badge">Segurar Espaço</span>Calibrar Canhão</div>
+    <div><span class="key-badge">E</span> ou <span class="key-badge">Clique Dir</span>Metralhadora Longa (Abate Drones!)</div>
+    <div><span class="key-badge">Q</span>Lançar Drone Teleguiado</div>
+    <div><span class="key-badge">R</span>Defesa Reativa APS</div>
+    <div><span class="key-badge">F</span>Fumaça</div>
+  </div>
+
+  <!-- ==================== MENU QUARTEL GENERAL ==================== -->
+  <div class="overlay" id="menu-overlay">
+    <div class="menu-box">
+      <div class="top-header-bar">
+        <div>
+          <div class="game-main-title">🛡️ COMANDO BLINDADO: OPERAÇÃO GLOBAL</div>
+          <div style="font-size:12px; color:#94a3b8;">26 Blindados Reais • Drones Teleguiados (1-3) • Defesa Reativa APS (2 Usos) • Metralhadora de Longo Alcance</div>
+        </div>
+
+        <div class="profile-bar">
+          <div>
+            <div style="font-size:10px; color:#94a3b8; text-transform:uppercase;">Comandante (Inscrição):</div>
+            <input type="text" id="commander-name-input" class="profile-input" placeholder="Nome do Jogador" onchange="saveCommanderName(this.value)" />
+          </div>
+
+          <div class="rank-badge-box" title="Suba de patente ganhando batalhas!">
+            <canvas id="rank-badge-canvas" class="rank-chevron-canvas" width="44" height="44"></canvas>
+            <div style="text-align:left;">
+              <div style="font-size:10px; color:#94a3b8;">PATENTE ATUAL</div>
+              <div id="rank-title-display" style="font-family:'Orbitron'; font-size:12px; color:#facc15; font-weight:700;">Soldado (PVT)</div>
+              <div id="rank-next-display" style="font-size:10px; color:#cbd5e1;">Próxima: 1 vitória</div>
+            </div>
+          </div>
+
+          <div class="stats-pills">
+            <div class="stat-pill win" id="stat-wins">🏆 0 Vitórias</div>
+            <div class="stat-pill loss" id="stat-losses">💥 0 Derrotas</div>
+            <div class="stat-pill rate" id="stat-rate">📊 0% Vitórias</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1. Escolha da Unidade e Insígnia Militar -->
+      <div class="section-label">
+        <span>1. Escolha sua Unidade Blindada & Insígnia Histórica:</span>
+      </div>
+      <div class="units-row" id="units-grid"></div>
+
+      <!-- 2. Escolha do Tanque -->
+      <div class="section-label">
+        <span>2. Escolha seu Veículo Blindado (Tanques modernos têm Drones Teleguiados e Defesa Reativa APS!):</span>
+        <div class="filter-tabs">
+          <button class="filter-tab active" onclick="filterVehicles('ALL', this)">Todos (26)</button>
+          <button class="filter-tab" onclick="filterVehicles('MBT', this)">🛡️ Tanques (MBT)</button>
+          <button class="filter-tab" onclick="filterVehicles('SPG', this)">💥 Artilharia Móvel (+Forte / Lenta)</button>
+          <button class="filter-tab" onclick="filterVehicles('IFV', this)">🔥 Blindados Rápidos (Sem Canhão)</button>
+          <button class="filter-tab" onclick="filterVehicles('TD', this)">🎯 Caça-Tanques / Engenharia</button>
+        </div>
+      </div>
+      <div class="tank-grid" id="tank-selection-grid"></div>
+
+      <!-- 3. Escolha do Cenário de Guerra -->
+      <div class="section-label">
+        <span>3. Escolha o Teatro de Operações (Cenários Gráficos Detalhados):</span>
+      </div>
+      <div class="scenarios-grid" id="scenarios-grid"></div>
+
+      <!-- Rodapé -->
+      <div class="bottom-launch-row">
+        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+          <span style="font-size:12px; font-weight:700; color:#38bdf8; margin-right:4px;">DIFICULDADE:</span>
+          <button class="choice-btn" onclick="setDifficulty('easy', this)">🟢 Cadete</button>
+          <button class="choice-btn selected" onclick="setDifficulty('normal', this)">🟡 Comandante</button>
+          <button class="choice-btn" onclick="setDifficulty('hard', this)">🔴 General</button>
+        </div>
+
+        <div class="history-log" id="battle-history-log">
+          📋 Registro de Combate salvo automaticamente...
+        </div>
+
+        <button class="start-btn" onclick="startGame()">🚀 INICIAR MISSÃO!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL DE VITÓRIA / DERROTA ==================== -->
+  <div class="overlay hidden" id="result-overlay" style="justify-content:center;">
+    <div class="menu-box" style="max-width: 620px; text-align:center;">
+      <div class="game-main-title" id="res-title" style="font-size:28px;">🏆 VITÓRIA!</div>
+      <div id="res-rank-up" style="display:none; background:rgba(250,204,21,0.15); border:2px solid #facc15; border-radius:10px; padding:10px; margin:12px 0; color:#fef08a; font-weight:700;">
+        🎖️ PROMOÇÃO DE PATENTE! Você subiu no ranking militar!
+      </div>
+      <div id="res-desc" style="font-size: 15px; color:#e2e8f0; margin: 14px 0 22px;"></div>
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <button class="start-btn" id="btn-next-level" onclick="nextLevel()">⏩ PRÓXIMO CENÁRIO</button>
+        <button class="choice-btn" onclick="retryLevel()" style="font-size:14px; padding:10px 18px;">🔄 Jogar Novamente</button>
+        <button class="choice-btn" onclick="openGarage()" style="font-size:14px; padding:10px 18px;">🎖️ Quartel General</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// 1. UNIDADES MILITARES E SUAS INSÍGNIAS REAIS
+// ============================================================================
+const MILITARY_UNITS = [
+  { id: 'hativa188', name: '188ª Brigada "Barak"', country: '🇮🇱 Forças de Defesa de Israel', img: 'Hativa188.png' },
+  { id: 'brigade7',  name: '7ª Brigada Blindada',  country: '🇮🇱 Corpo Blindado de Israel',   img: '7thArmoredBrigade.svg' },
+  { id: 'us_hellcats', name: 'US Tank Destroyers', country: '🇺🇸 Exército dos EUA (Pantera)', img: 'usa insina.jpeg' },
+  { id: 'uk_royal',  name: 'Royal Armoured Corps', country: '🇬🇧 Exército Britânico',         img: 'uk inina.png' },
+  { id: 'ukr_47',    name: '47ª Brigada "Magura"', country: '🇺🇦 Brigada Mecanizada',         img: 'Insignia of 47th Separate Mechanized Brigade Ukr 47.png' },
+  { id: 'ukr_trident', name: 'Brigada Punho de Ferro', country: '🇺🇦 Forças Blindadas',       img: 'images (1).png' },
+  { id: 'ru_guards', name: 'Tropas da Guarda',     country: '🇷🇺 Divisão Blindada Russa',     img: 'russia tank insignia.png' },
+  { id: 'ru_shepetov', name: 'Batalhão Shepetovsky', country: '🇷🇺 Regimento de Couraçados',  img: 'images.png' }
+];
+
+// ============================================================================
+// 2. SISTEMA DE PATENTES MILITARES
+// ============================================================================
+const RANKS = [
+  { minWins: 0,  code: 'E-1', title: 'Soldado Recruta (Private)',       chevrons: 1, rockers: 0, star: false, diamond: false },
+  { minWins: 1,  code: 'E-2', title: 'Soldado 1ª Classe (PFC)',         chevrons: 1, rockers: 1, star: false, diamond: false },
+  { minWins: 3,  code: 'E-4', title: 'Cabo Blindado (Corporal)',        chevrons: 2, rockers: 0, star: false, diamond: false },
+  { minWins: 5,  code: 'E-5', title: '3º Sargento (Sergeant)',          chevrons: 3, rockers: 0, star: false, diamond: false },
+  { minWins: 8,  code: 'E-6', title: '2º Sargento (Staff Sergeant)',    chevrons: 3, rockers: 1, star: false, diamond: false },
+  { minWins: 12, code: 'E-7', title: '1º Sargento (Sgt First Class)',   chevrons: 3, rockers: 2, star: false, diamond: false },
+  { minWins: 16, code: 'E-8', title: 'Sargento-Mestre (First Sgt)',     chevrons: 3, rockers: 3, star: false, diamond: true  },
+  { minWins: 21, code: 'E-9', title: 'Sargento-Mor (Sergeant Major)',   chevrons: 3, rockers: 3, star: true,  diamond: false },
+  { minWins: 28, code: 'GEN', title: 'General de Divisão Blindada',     chevrons: 3, rockers: 3, star: true,  diamond: true  }
+];
+
+function getRankByWins(wins) {
+  let current = RANKS[0];
+  let next = null;
+  for (let i = 0; i < RANKS.length; i++) {
+    if (wins >= RANKS[i].minWins) {
+      current = RANKS[i];
+      next = RANKS[i + 1] || null;
+    }
+  }
+  return { current, next };
+}
+
+function drawRankInsignia(c, rankObj) {
+  const w = c.canvas.width;
+  const h = c.canvas.height;
+  c.clearRect(0, 0, w, h);
+  c.fillStyle = '#1e3323';
+  c.strokeStyle = '#eab308';
+  c.lineWidth = 2;
+  c.beginPath();
+  c.roundRect(4, 2, w - 8, h - 4, 8);
+  c.fill();
+  c.stroke();
+
+  c.strokeStyle = '#facc15';
+  c.lineWidth = 2.8;
+  c.lineCap = 'round';
+
+  for (let i = 0; i < rankObj.chevrons; i++) {
+    const y = 16 + i * 5.5;
+    c.beginPath();
+    c.moveTo(10, y + 5);
+    c.lineTo(w / 2, y - 2);
+    c.lineTo(w - 10, y + 5);
+    c.stroke();
+  }
+  for (let i = 0; i < rankObj.rockers; i++) {
+    const y = 30 + i * 4.2;
+    c.beginPath();
+    c.moveTo(10, y - 3);
+    c.quadraticCurveTo(w / 2, y + 4, w - 10, y - 3);
+    c.stroke();
+  }
+  if (rankObj.star) {
+    c.fillStyle = '#facc15';
+    c.font = '10px sans-serif';
+    c.textAlign = 'center';
+    c.fillText('★', w / 2, 28);
+  } else if (rankObj.diamond) {
+    c.fillStyle = '#facc15';
+    c.font = '10px sans-serif';
+    c.textAlign = 'center';
+    c.fillText('◆', w / 2, 28);
+  }
+}
+
+// ============================================================================
+// 3. TODOS OS 24 TANQUES, ARTILHARIAS E BLINDADOS
+//    - Foto oficial em alta definição da Merkava Mk.4 (Merkava-Mk4-Profile.png)!
+//    - Drones Kamikaze Teleguiados (1 a 3 unidades nos tanques modernos)
+//    - Defesa Reativa APS / Trophy (2 usos nos tanques modernos contra tiros de canhão)
+// ============================================================================
+const VEHICLES = [
+  // --- TANQUES ISRAELENSES (Com todas as novas fotos enviadas!) ---
+  {
+    id: 'merkava4',
+    name: 'Merkava Mk.4M Trophy',
+    flag: '🇮🇱',
+    category: 'MBT',
+    caliberDesc: 'Canhão 120mm MG253 + Trophy APS + 3 Drones Hero',
+    hasCannon: true,
+    cannonResist: 8,
+    mgResist: 85,
+    cannonPower: 1.2,
+    mgDamageMult: 1.05,
+    mgRate: 85,
+    speed: 2.55,
+    reloadTime: 1950,
+    dronesCount: 3, // 3 Drones Kamikaze Teleguiados!
+    apsCount: 2,    // 2 Defesas Reativas Trophy contra tiros de canhão!
+    spriteSrc: 't_82915_Merkava_Mk_IV.jpg',
+    removeWhiteBg: true,
+    facesRightInImg: false,
+    bodyColor: '#8d8868', turretColor: '#7b7759', accentColor: '#56533d'
+  },
+  {
+    id: 'merkava3',
+    name: 'Merkava Mk.3D Baz',
+    flag: '🇮🇱',
+    category: 'MBT',
+    caliberDesc: 'Canhão 120mm IMI + Correntes Anti-RPG + 2 Drones',
+    hasCannon: true,
+    cannonResist: 7,
+    mgResist: 76,
+    cannonPower: 1.14,
+    mgDamageMult: 1.1,
+    mgRate: 80,
+    speed: 2.65,
+    reloadTime: 1850,
+    dronesCount: 2,
+    apsCount: 2,
+    spriteSrc: 'Merkava 3 baz.jpeg',
+    removeWhiteBg: true,
+    facesRightInImg: false,
+    bodyColor: '#767c5c', turretColor: '#676d4f', accentColor: '#484d36'
+  },
+  {
+    id: 'merkava2',
+    name: 'Merkava Mk.2B Dor Dalet',
+    flag: '🇮🇱',
+    category: 'MBT',
+    caliberDesc: 'Canhão 105mm M68 + Morteiro 60mm + 1 Drone',
+    hasCannon: true,
+    cannonResist: 7,
+    mgResist: 72,
+    cannonPower: 1.06,
+    mgDamageMult: 1.05,
+    mgRate: 82,
+    speed: 2.5,
+    reloadTime: 1850,
+    dronesCount: 1,
+    apsCount: 2,
+    spriteSrc: 'merkava-2.webp',
+    removeWhiteBg: true,
+    facesRightInImg: false,
+    bodyColor: '#7d806c', turretColor: '#6d705e', accentColor: '#4d4f42'
+  },
+  {
+    id: 'merkava1',
+    name: 'Merkava Mk.1 Clássico',
+    flag: '🇮🇱',
+    category: 'MBT',
+    caliberDesc: 'Canhão 105mm M68 + Motor Frontal Protetor',
+    hasCannon: true,
+    cannonResist: 6,
+    mgResist: 68,
+    cannonPower: 1.02,
+    mgDamageMult: 1.0,
+    mgRate: 85,
+    speed: 2.4,
+    reloadTime: 1900,
+    dronesCount: 0,
+    apsCount: 1,
+    spriteSrc: 'merkava 3.webp',
+    removeWhiteBg: true,
+    facesRightInImg: false,
+    bodyColor: '#a8966e', turretColor: '#91805c', accentColor: '#665a3f'
+  },
+  {
+    id: 'magach6b',
+    name: 'Magach 6B Gal Batash',
+    flag: '🇮🇱',
+    category: 'MBT',
+    caliberDesc: 'Canhão 105mm M68 + Blindagem Reativa Blazer',
+    hasCannon: true,
+    cannonResist: 7,
+    mgResist: 72,
+    cannonPower: 1.0,
+    mgDamageMult: 1.0,
+    mgRate: 85,
+    speed: 2.4,
+    reloadTime: 1900,
+    dronesCount: 0,
+    apsCount: 2,
+    spriteSrc: 'Magach 6B Gal Batash.png',
+    facesRightInImg: false,
+    bodyColor: '#7f7860', turretColor: '#6d6751', accentColor: '#4f4a39'
+  },
+
+  // --- TANQUES NORTE-AMERICANOS ---
+  {
+    id: 'm1a2_tusk',
+    name: 'M1A2 Abrams SEP TUSK II',
+    flag: '🇺🇸',
+    category: 'MBT',
+    caliberDesc: 'Canhão 120mm M256 + TUSK ERA + 3 Drones Switchblade',
+    hasCannon: true,
+    cannonResist: 8,
+    mgResist: 88,
+    cannonPower: 1.22,
+    mgDamageMult: 1.15,
+    mgRate: 85,
+    speed: 2.6,
+    reloadTime: 1950,
+    dronesCount: 3,
+    apsCount: 2,
+    spriteSrc: 'M1A2_SEP_TUSK-II.png',
+    facesRightInImg: false,
+    bodyColor: '#cbb682', turretColor: '#bda672', accentColor: '#8f7b4f'
+  },
+  {
+    id: 'm1a1_ha',
+    name: 'M1A1 Abrams Heavy Armor',
+    flag: '🇺🇸',
+    category: 'MBT',
+    caliberDesc: 'Canhão 120mm L/44 + Blindagem Pesada + 1 Drone',
+    hasCannon: true,
+    cannonResist: 7,
+    mgResist: 80,
+    cannonPower: 1.18,
+    mgDamageMult: 1.0,
+    mgRate: 90,
+    speed: 2.7,
+    reloadTime: 1950,
+    dronesCount: 1,
+    apsCount: 2,
+    spriteSrc: 'Abrams-transparent.png',
+    facesRightInImg: false,
+    bodyColor: '#d2be96', turretColor: '#c4af85', accentColor: '#9c8861'
+  },
+  {
+    id: 'm60a1_era',
+    name: 'M60A1 USMC (Blazer ERA)',
+    flag: '🇺🇸',
+    category: 'MBT',
+    caliberDesc: 'Canhão 105mm M68 + Tijolos Reativos ERA (2 Usos)',
+    hasCannon: true,
+    cannonResist: 6,
+    mgResist: 68,
+    cannonPower: 1.0,
+    mgDamageMult: 1.0,
+    mgRate: 95,
+    speed: 2.35,
+    reloadTime: 1900,
+    dronesCount: 0,
+    apsCount: 2,
+    spriteSrc: 'M601 ERA of the USMC at the battle of Kuwait Airport.png',
+    facesRightInImg: false,
+    bodyColor: '#c5a976', turretColor: '#b39664', accentColor: '#856d43'
+  },
+
+  // --- TANQUES EUROPEUS ---
+  {
+    id: 'leopard2a6',
+    name: 'Leopard 2A6 / 2A8',
+    flag: '🇩🇪',
+    category: 'MBT',
+    caliberDesc: 'Canhão 120mm Rheinmetall L/55 + APS + 2 Drones',
+    hasCannon: true,
+    cannonResist: 7,
+    mgResist: 75,
+    cannonPower: 1.28,
+    mgDamageMult: 1.0,
+    mgRate: 90,
+    speed: 2.75,
+    reloadTime: 1950,
+    dronesCount: 2,
+    apsCount: 2,
+    spriteSrc: 'Leopard 2A6.png',
+    facesRightInImg: false,
+    bodyColor: '#4e5b47', turretColor: '#3f4a39', accentColor: '#293025'
+  },
+  {
+    id: 'leopard2e',
+    name: 'Leopard 2A4 (Espanha)',
+    flag: '🇪🇸',
+    category: 'MBT',
+    caliberDesc: 'Canhão 120mm Rheinmetall L/44 + 1 Drone',
+    hasCannon: true,
+    cannonResist: 6,
+    mgResist: 68,
+    cannonPower: 1.15,
+    mgDamageMult: 1.0,
+    mgRate: 85,
+    speed: 2.8,
+    reloadTime: 1850,
+    dronesCount: 1,
+    apsCount: 2,
+    spriteSrc: 'Camouflaged Leopard 2A4 in Spanish Service.png',
+    facesRightInImg: false,
+    bodyColor: '#576b48', turretColor: '#465739', accentColor: '#2e3826'
+  },
+  {
+    id: 'ariete',
+    name: 'C1 Ariete',
+    flag: '🇮🇹',
+    category: 'MBT',
+    caliberDesc: 'Canhão 120mm OTO Breda L/44 + Kit PSO + 1 Drone',
+    hasCannon: true,
+    cannonResist: 6,
+    mgResist: 64,
+    cannonPower: 1.15,
+    mgDamageMult: 1.0,
+    mgRate: 85,
+    speed: 2.85,
+    reloadTime: 1850,
+    dronesCount: 1,
+    apsCount: 2,
+    spriteSrc: 'Ariete Italy.png',
+    facesRightInImg: false,
+    bodyColor: '#4b5c43', turretColor: '#3f4f38', accentColor: '#2c3827'
+  },
+
+  // --- TANQUES ASIÁTICOS ---
+  {
+    id: 'type10',
+    name: 'Type 10 Hitomaru',
+    flag: '🇯🇵',
+    category: 'MBT',
+    caliberDesc: 'Canhão 120mm JSW Autoloader + 3 Drones Táticos',
+    hasCannon: true,
+    cannonResist: 6,
+    mgResist: 62,
+    cannonPower: 1.18,
+    mgDamageMult: 1.0,
+    mgRate: 85,
+    speed: 2.95,
+    reloadTime: 1450,
+    dronesCount: 3,
+    apsCount: 2,
+    spriteSrc: 'Hitomaru Main Battle Tank.png',
+    facesRightInImg: false,
+    bodyColor: '#526348', turretColor: '#45543c', accentColor: '#2e3828'
+  },
+  {
+    id: 'type90',
+    name: 'Type 90 Kyu-maru',
+    flag: '🇯🇵',
+    category: 'MBT',
+    caliberDesc: 'Canhão 120mm Rheinmetall + Autoloader + 1 Drone',
+    hasCannon: true,
+    cannonResist: 6,
+    mgResist: 65,
+    cannonPower: 1.16,
+    mgDamageMult: 1.0,
+    mgRate: 88,
+    speed: 2.8,
+    reloadTime: 1550,
+    dronesCount: 1,
+    apsCount: 2,
+    spriteSrc: 'Type-90_MBT-late-1 japan.png',
+    facesRightInImg: false,
+    bodyColor: '#5d6b52', turretColor: '#4c5942', accentColor: '#353d2e'
+  },
+  {
+    id: 'type96',
+    name: 'ZTZ-96A (Type 96)',
+    flag: '🇨🇳',
+    category: 'MBT',
+    caliberDesc: 'Canhão 125mm + Blindagem Reativa FY-4 + 2 Drones',
+    hasCannon: true,
+    cannonResist: 6,
+    mgResist: 66,
+    cannonPower: 1.18,
+    mgDamageMult: 1.0,
+    mgRate: 90,
+    speed: 2.65,
+    reloadTime: 1850,
+    dronesCount: 2,
+    apsCount: 2,
+    spriteSrc: 'Type 96 of the 71st Group Army during live firing exercises, May 2022.png',
+    facesRightInImg: false,
+    bodyColor: '#5c6e49', turretColor: '#4b593b', accentColor: '#333d28'
+  },
+  {
+    id: 'chonma2',
+    name: 'Ch\'onma-2 (M2020)',
+    flag: '🇰🇵',
+    category: 'MBT',
+    caliberDesc: 'Canhão 125mm + APS Afghanit-K + 2 Drones',
+    hasCannon: true,
+    cannonResist: 6,
+    mgResist: 65,
+    cannonPower: 1.2,
+    mgDamageMult: 1.15,
+    mgRate: 85,
+    speed: 2.55,
+    reloadTime: 1950,
+    dronesCount: 2,
+    apsCount: 2,
+    spriteSrc: 'The Ch\u2019\u014Fnma-2 Model 2023 with the new armor package and new three tone camouflage.png',
+    facesRightInImg: false,
+    bodyColor: '#9c8c64', turretColor: '#7a6d4c', accentColor: '#4d442e'
+  },
+
+  // --- TANQUES RUSSOS / SOVIÉTICOS / ORIENTE MÉDIO ---
+  {
+    id: 'armata',
+    name: 'T-14 Armata',
+    flag: '🇷🇺',
+    category: 'MBT',
+    caliberDesc: 'Canhão 125mm 2A82 + Defesa Afghanit + 3 Drones Lancet',
+    hasCannon: true,
+    cannonResist: 7,
+    mgResist: 75,
+    cannonPower: 1.26,
+    mgDamageMult: 1.05,
+    mgRate: 85,
+    speed: 2.85,
+    reloadTime: 1800,
+    dronesCount: 3,
+    apsCount: 2,
+    spriteSrc: 'T-14-Armata.png',
+    facesRightInImg: false,
+    bodyColor: '#5c6649', turretColor: '#4b543b', accentColor: '#353b29'
+  },
+  {
+    id: 't90m',
+    name: 'T-90 Omsk / Proryv',
+    flag: '🇷🇺',
+    category: 'MBT',
+    caliberDesc: 'Canhão 125mm + Blindagem Reativa Relikt + 2 Drones',
+    hasCannon: true,
+    cannonResist: 6,
+    mgResist: 68,
+    cannonPower: 1.2,
+    mgDamageMult: 1.05,
+    mgRate: 85,
+    speed: 2.7,
+    reloadTime: 1850,
+    dronesCount: 2,
+    apsCount: 2,
+    spriteSrc: 'T-90-Omsk_VTTV_exhibition1999.png',
+    facesRightInImg: false,
+    bodyColor: '#48593a', turretColor: '#3c4a30', accentColor: '#293320'
+  },
+  {
+    id: 'karrar',
+    name: 'Karrar / T-72M Rakhsh',
+    flag: '🇮🇷',
+    category: 'MBT',
+    caliberDesc: 'Canhão 125mm + ERA Relikt + 2 Drones Shahed',
+    hasCannon: true,
+    cannonResist: 6,
+    mgResist: 65,
+    cannonPower: 1.16,
+    mgDamageMult: 1.0,
+    mgRate: 88,
+    speed: 2.6,
+    reloadTime: 1900,
+    dronesCount: 2,
+    apsCount: 2,
+    spriteSrc: 'The Karrar Main Battle tank.png',
+    facesRightInImg: false,
+    bodyColor: '#b39f74', turretColor: '#9c8960', accentColor: '#6e6041'
+  },
+  {
+    id: 'm84_kuwait',
+    name: 'M-84 / T-62AGM Upgrade',
+    flag: '🇰🇼',
+    category: 'MBT',
+    caliberDesc: 'Canhão 125mm + Defesa Reativa Nozh (2 Usos)',
+    hasCannon: true,
+    cannonResist: 5,
+    mgResist: 58,
+    cannonPower: 1.12,
+    mgDamageMult: 1.0,
+    mgRate: 85,
+    speed: 2.75,
+    reloadTime: 1850,
+    dronesCount: 1,
+    apsCount: 2,
+    spriteSrc: 'T-62AGM with three-tone digit camouflage. Illustration done by Ardhya \u2018Vesp\u2019 Anargha.png',
+    facesRightInImg: false,
+    bodyColor: '#a69168', turretColor: '#8c7954', accentColor: '#5e5136'
+  },
+
+  // --- 💥 ARTILHARIA MÓVEL (SPG) ---
+  {
+    id: 'pzh2000',
+    name: 'Panzerhaubitze 2000 (155mm)',
+    flag: '🇩🇪',
+    category: 'SPG',
+    caliberDesc: 'Obuseiro 155mm L/52 Devastador + 2 Drones Busca-Alvo',
+    hasCannon: true,
+    cannonResist: 5,
+    mgResist: 50,
+    cannonPower: 1.75,
+    mgDamageMult: 0.9,
+    mgRate: 100,
+    speed: 1.55,
+    reloadTime: 2550,
+    dronesCount: 2,
+    apsCount: 0,
+    spriteSrc: 'Panzerhaubitze 2000.png',
+    facesRightInImg: false,
+    bodyColor: '#4a593d', turretColor: '#3b4731', accentColor: '#252e1e'
+  },
+  {
+    id: 'm1989_koksan',
+    name: 'M-1992 / Koksan Artilharia',
+    flag: '🇰🇵',
+    category: 'SPG',
+    caliberDesc: 'Artilharia Móvel Pesada + Radar (Alto Poder)',
+    hasCannon: true,
+    cannonResist: 4,
+    mgResist: 45,
+    cannonPower: 1.65,
+    mgDamageMult: 1.35,
+    mgRate: 70,
+    speed: 1.5,
+    reloadTime: 2450,
+    dronesCount: 1,
+    apsCount: 0,
+    spriteSrc: 'M-1989 M-1992.png',
+    facesRightInImg: false,
+    bodyColor: '#485735', turretColor: '#3b472b', accentColor: '#252e1b'
+  },
+
+  // --- 🎯 CAÇA-TANQUES E ENGENHARIA (TD) ---
+  {
+    id: 'type16_mcv',
+    name: 'Type 16 MCV 8x8',
+    flag: '🇯🇵',
+    category: 'TD',
+    caliberDesc: 'Canhão 105mm 8x8 Veloz + 2 Drones de Ataque',
+    hasCannon: true,
+    cannonResist: 4,
+    mgResist: 45,
+    cannonPower: 1.05,
+    mgDamageMult: 1.0,
+    mgRate: 85,
+    speed: 3.55,
+    reloadTime: 1650,
+    dronesCount: 2,
+    apsCount: 2,
+    spriteSrc: 'Type 16.png',
+    facesRightInImg: false,
+    bodyColor: '#4e634c', turretColor: '#3d4f3b', accentColor: '#283327'
+  },
+  {
+    id: 'stryker_m1128',
+    name: 'M1128 Stryker Mobile Gun',
+    flag: '🇺🇸',
+    category: 'TD',
+    caliberDesc: 'Canhão 105mm Remoto + 2 Drones Switchblade',
+    hasCannon: true,
+    cannonResist: 4,
+    mgResist: 45,
+    cannonPower: 1.05,
+    mgDamageMult: 1.0,
+    mgRate: 85,
+    speed: 3.5,
+    reloadTime: 1600,
+    dronesCount: 2,
+    apsCount: 2,
+    spriteSrc: 'The M1128 Mobile Gun System is the latest Stryker-based vehicle in use with the US military. The main armament consists of a remotely operated autoloading 105-mm main gun..png',
+    facesRightInImg: true,
+    bodyColor: '#526149', turretColor: '#424f3b', accentColor: '#2d3628'
+  },
+  {
+    id: 'm1150_abv',
+    name: 'M1150 Assault Breacher',
+    flag: '🇺🇸',
+    category: 'TD',
+    caliberDesc: 'Demolição Pesada + ERA (2 Usos) + 1 Drone',
+    hasCannon: true,
+    cannonResist: 9,
+    mgResist: 95,
+    cannonPower: 1.45,
+    mgDamageMult: 1.1,
+    mgRate: 85,
+    speed: 1.85,
+    reloadTime: 2300,
+    dronesCount: 1,
+    apsCount: 2,
+    spriteSrc: 'M1150 Assault Breacher Vehicle.png',
+    facesRightInImg: false,
+    bodyColor: '#cbb682', turretColor: '#bda672', accentColor: '#8f7b4f'
+  },
+
+  // --- 🔥 BLINDADOS SEM CANHÃO PESADO (IFV / APC) ---
+  {
+    id: 'ee11_urutu',
+    name: 'EE-11 Urutu Modernizado',
+    flag: '🇧🇷',
+    category: 'IFV',
+    caliberDesc: 'SEM CANHÃO • Torre 30mm/.50 + 2 Drones + Defesa APS',
+    hasCannon: false,
+    cannonResist: 4,
+    mgResist: 45,
+    cannonPower: 0,
+    mgDamageMult: 2.35,
+    mgRate: 55,
+    speed: 3.65,
+    reloadTime: 1000,
+    dronesCount: 2,
+    apsCount: 2,
+    spriteSrc: 'EE-11 Urutu Q.T. Modernization. Illustration by Ardhya \u2018Vesp\u2019 Anargha..png',
+    facesRightInImg: false,
+    bodyColor: '#485c3a', turretColor: '#394a2e', accentColor: '#25301d'
+  },
+  {
+    id: 'btr90',
+    name: 'BTR-90 Blindado 8x8',
+    flag: '🇷🇺',
+    category: 'IFV',
+    caliberDesc: 'SEM CANHÃO • Autocanhão 30mm 2A42 + 2 Drones',
+    hasCannon: false,
+    cannonResist: 4,
+    mgResist: 48,
+    cannonPower: 0,
+    mgDamageMult: 2.45,
+    mgRate: 52,
+    speed: 3.6,
+    reloadTime: 1000,
+    dronesCount: 2,
+    apsCount: 0,
+    spriteSrc: 'BTR-90.png',
+    facesRightInImg: false,
+    bodyColor: '#4a5738', turretColor: '#3b452c', accentColor: '#282e1e'
+  },
+  {
+    id: 't15_armata',
+    name: 'T-15 Armata IFV Pesado',
+    flag: '🇷🇺',
+    category: 'IFV',
+    caliberDesc: 'SEM CANHÃO • Autocanhão 30mm + APS Afghanit (2) + 3 Drones',
+    hasCannon: false,
+    cannonResist: 7,
+    mgResist: 75,
+    cannonPower: 0,
+    mgDamageMult: 2.6,
+    mgRate: 55,
+    speed: 2.95,
+    reloadTime: 1000,
+    dronesCount: 3,
+    apsCount: 2,
+    spriteSrc: 'T-15-Armata.png',
+    facesRightInImg: false,
+    bodyColor: '#556142', turretColor: '#444f35', accentColor: '#2e3624'
+  },
+  {
+    id: 'kurganets25',
+    name: 'Kurganets-25 IFV',
+    flag: '🇷🇺',
+    category: 'IFV',
+    caliberDesc: 'SEM CANHÃO • Autocanhão 30mm + APS (2) + 2 Drones',
+    hasCannon: false,
+    cannonResist: 4,
+    mgResist: 46,
+    cannonPower: 0,
+    mgDamageMult: 2.35,
+    mgRate: 54,
+    speed: 3.4,
+    reloadTime: 1000,
+    dronesCount: 2,
+    apsCount: 2,
+    spriteSrc: 'Kurganetz-25.png',
+    facesRightInImg: false,
+    bodyColor: '#3d5234', turretColor: '#314229', accentColor: '#d9531e'
+  },
+  {
+    id: 'bpm97',
+    name: 'BPM-97 Vystrel 4x4',
+    flag: '🇷🇺',
+    category: 'IFV',
+    caliberDesc: 'SEM CANHÃO • Metralhadora KPVT 14.5mm + 1 Drone',
+    hasCannon: false,
+    cannonResist: 3,
+    mgResist: 36,
+    cannonPower: 0,
+    mgDamageMult: 2.15,
+    mgRate: 50,
+    speed: 3.85,
+    reloadTime: 1000,
+    dronesCount: 1,
+    apsCount: 0,
+    spriteSrc: 'BPM-97-Vystrel.png',
+    facesRightInImg: false,
+    bodyColor: '#4b593e', turretColor: '#3c4731', accentColor: '#283021'
+  },
+  {
+    id: 'puma4x4',
+    name: 'Puma 4x4 Reconhecimento',
+    flag: '🇮🇹',
+    category: 'IFV',
+    caliberDesc: 'SEM CANHÃO • Ultra Veloz + 2 Drones Espiões/Kamikaze',
+    hasCannon: false,
+    cannonResist: 3,
+    mgResist: 34,
+    cannonPower: 0,
+    mgDamageMult: 2.1,
+    mgRate: 46,
+    speed: 4.1,
+    reloadTime: 1000,
+    dronesCount: 2,
+    apsCount: 0,
+    spriteSrc: 'Puma-4x4.png',
+    facesRightInImg: false,
+    bodyColor: '#48543c', turretColor: '#37402e', accentColor: '#242b1e'
+  }
+];
+
+const VEHICLE_MAP = {};
+VEHICLES.forEach(v => { VEHICLE_MAP[v.id] = v; });
+
+// Carregar e processar os sprites únicos (removendo fundo branco das fotos do Merkava Mk.4 e Mk.3!)
+const loadedSprites = {};
+VEHICLES.forEach(v => {
+  const img = new Image();
+  img.onload = () => {
+    if (v.removeWhiteBg) {
+      try {
+        const off = document.createElement('canvas');
+        off.width = img.naturalWidth;
+        off.height = img.naturalHeight;
+        const octx = off.getContext('2d');
+        octx.drawImage(img, 0, 0);
+        const imgData = octx.getImageData(0, 0, off.width, off.height);
+        const d = imgData.data;
+        for (let i = 0; i < d.length; i += 4) {
+          if (d[i] > 236 && d[i + 1] > 236 && d[i + 2] > 236) {
+            d[i + 3] = 0;
+          }
+        }
+        octx.putImageData(imgData, 0, 0);
+        loadedSprites[v.id] = off;
+        return;
+      } catch (e) {}
+    }
+    loadedSprites[v.id] = img;
+  };
+  img.src = encodeURI(v.spriteSrc);
+  loadedSprites[v.id] = img;
+});
+
+// ============================================================================
+// 4. CENÁRIOS COM GRÁFICOS PARALLAX MELHORADOS
+// ============================================================================
+const SCENARIOS = [
+  {
+    id: 'golan',
+    name: '1. Colinas de Golã (Golan Heights)',
+    desc: 'Monte Hermon ao fundo, Bunkers e Antenas • Contra Karrar / T-72',
+    enemyId: 'karrar',
+    enemyUnitImg: 'russia tank insignia.png',
+    skyTop: '#0b132b', skyMid: '#1d3557', skyBottom: '#60a5fa',
+    celestial: { type: 'sun', color: '#fef08a', glow: 'rgba(250, 204, 21, 0.35)', x: 0.78, y: 0.2 },
+    farHillsColor: '#1e293b', midHillsColor: '#334155',
+    groundTop: '#65a30d', groundMid: '#3f6212', groundBottom: '#1c1917', rockColor: '#4d7c0f',
+    ridgeHeight: 0.23, roughness: 0.06, windRange: 0.03,
+    weather: 'clouds', decorType: 'golan'
+  },
+  {
+    id: 'sahara',
+    name: '2. Deserto do Saara',
+    desc: 'Sol Escaldante, Pirâmides/Oásis e Dunas • Contra M-84 Deserto',
+    enemyId: 'm84_kuwait',
+    enemyUnitImg: 'images.png',
+    skyTop: '#7c2d12', skyMid: '#d97706', skyBottom: '#fde047',
+    celestial: { type: 'sun', color: '#fffbeb', glow: 'rgba(251, 191, 36, 0.55)', x: 0.25, y: 0.22 },
+    farHillsColor: '#b45309', midHillsColor: '#d97706',
+    groundTop: '#f59e0b', groundMid: '#b45309', groundBottom: '#451a03', rockColor: '#fbbf24',
+    ridgeHeight: 0.26, roughness: 0.05, windRange: 0.06,
+    weather: 'sand', decorType: 'sahara'
+  },
+  {
+    id: 'siberia',
+    name: '3. Tundra da Sibéria',
+    desc: 'Montanhas de Gelo, Nevasca e Pinheiros • Contra T-90M Russo',
+    enemyId: 't90m',
+    enemyUnitImg: 'russia tank insignia.png',
+    skyTop: '#090d16', skyMid: '#1e293b', skyBottom: '#cbd5e1',
+    celestial: { type: 'moon', color: '#f8fafc', glow: 'rgba(226, 232, 240, 0.3)', x: 0.82, y: 0.18 },
+    farHillsColor: '#334155', midHillsColor: '#64748b',
+    groundTop: '#f8fafc', groundMid: '#94a3b8', groundBottom: '#1e293b', rockColor: '#e2e8f0',
+    ridgeHeight: 0.28, roughness: 0.07, windRange: 0.07,
+    weather: 'snow', decorType: 'siberia'
+  },
+  {
+    id: 'france_urban',
+    name: '4. Guerra Urbana na França',
+    desc: 'Paris Histórica, Torre Eiffel, Arco do Triunfo e Ruínas • Contra Leopard 2A6',
+    enemyId: 'leopard2a6',
+    enemyUnitImg: 'uk inina.png',
+    skyTop: '#0f172a', skyMid: '#312e81', skyBottom: '#94a3b8',
+    celestial: { type: 'moon', color: '#fef9c3', glow: 'rgba(254, 249, 195, 0.25)', x: 0.18, y: 0.18 },
+    farHillsColor: '#1e1b4b', midHillsColor: '#312e81',
+    groundTop: '#52525b', groundMid: '#3f3f46', groundBottom: '#09090b', rockColor: '#71717a',
+    ridgeHeight: 0.19, roughness: 0.05, windRange: 0.04,
+    weather: 'embers', decorType: 'france'
+  },
+  {
+    id: 'brazil_urban',
+    name: '5. Guerra Urbana no Brasil',
+    desc: 'Pôr do Sol Tropical, Morros Urbanos e Viadutos • Contra EE-11 Urutu',
+    enemyId: 'ee11_urutu',
+    enemyUnitImg: 'usa insina.jpeg',
+    skyTop: '#0c4a6e', skyMid: '#c2410c', skyBottom: '#fdba74',
+    celestial: { type: 'sun', color: '#fed7aa', glow: 'rgba(251, 146, 60, 0.45)', x: 0.72, y: 0.26 },
+    farHillsColor: '#1e293b', midHillsColor: '#334155',
+    groundTop: '#57534e', groundMid: '#44403c', groundBottom: '#1c1917', rockColor: '#78716c',
+    ridgeHeight: 0.29, roughness: 0.06, windRange: 0.04,
+    weather: 'clouds', decorType: 'brazil_urban'
+  },
+  {
+    id: 'amazon',
+    name: '6. Selva na Amazônia',
+    desc: 'Floresta Densa Multicamadas, Rio e Chuva Tropical • Contra Panzerhaubitze 2000',
+    enemyId: 'pzh2000',
+    enemyUnitImg: 'Insignia of 47th Separate Mechanized Brigade Ukr 47.png',
+    skyTop: '#022c22', skyMid: '#064e3b', skyBottom: '#34d399',
+    celestial: { type: 'sun', color: '#a7f3d0', glow: 'rgba(52, 211, 153, 0.25)', x: 0.3, y: 0.2 },
+    farHillsColor: '#064e3b', midHillsColor: '#047857',
+    groundTop: '#15803d', groundMid: '#166534', groundBottom: '#052e16', rockColor: '#22c55e',
+    ridgeHeight: 0.31, roughness: 0.08, windRange: 0.05,
+    weather: 'rain', decorType: 'amazon'
+  },
+  {
+    id: 'canyon_boss',
+    name: '7. Desfiladeiro Final (Chefe Armata)',
+    desc: 'A Grande Montanha Vulcânica! • Contra T-14 Armata Elite',
+    enemyId: 'armata',
+    enemyUnitImg: 'russia tank insignia.png',
+    skyTop: '#18041c', skyMid: '#7f1d1d', skyBottom: '#f97316',
+    celestial: { type: 'sun', color: '#fca5a5', glow: 'rgba(239, 68, 68, 0.45)', x: 0.5, y: 0.16 },
+    farHillsColor: '#27121b', midHillsColor: '#451a1c',
+    groundTop: '#7c2d12', groundMid: '#431407', groundBottom: '#09090b', rockColor: '#ea580c',
+    ridgeHeight: 0.37, roughness: 0.08, windRange: 0.08,
+    weather: 'embers', decorType: 'golan'
+  }
+];
+
+// ============================================================================
+// 5. PERFIL DO JOGADOR & SALVAMENTO AUTOMÁTICO
+// ============================================================================
+const STORAGE_KEY = 'comando_blindado_save_v2';
+
+let playerProfile = {
+  commanderName: 'Comandante',
+  unitId: 'hativa188',
+  selectedVehicleId: 'merkava4',
+  wins: 0,
+  losses: 0,
+  history: []
+};
+
+function loadProfile() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) playerProfile = { ...playerProfile, ...JSON.parse(raw) };
+  } catch (e) {}
+}
+
+function saveProfile() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(playerProfile));
+  } catch (e) {}
+  renderProfileUI();
+}
+
+function saveCommanderName(name) {
+  playerProfile.commanderName = (name || 'Comandante').trim();
+  saveProfile();
+}
+
+function recordMatchResult(won, scenarioName, playerTankName, enemyTankName) {
+  const prevRank = getRankByWins(playerProfile.wins).current;
+  if (won) playerProfile.wins++;
+  else playerProfile.losses++;
+
+  const newRank = getRankByWins(playerProfile.wins).current;
+  const promoted = newRank.code !== prevRank.code;
+
+  const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const entry = `[${timeStr}] ${won ? '🏆 VITÓRIA' : '💥 DERROTA'} em ${scenarioName} (${playerTankName} vs ${enemyTankName})`;
+  playerProfile.history.unshift(entry);
+  if (playerProfile.history.length > 20) playerProfile.history.pop();
+
+  saveProfile();
+  return { promoted, newRank };
+}
+
+function renderProfileUI() {
+  const nameInput = document.getElementById('commander-name-input');
+  if (nameInput && document.activeElement !== nameInput) {
+    nameInput.value = playerProfile.commanderName;
+  }
+
+  const { current, next } = getRankByWins(playerProfile.wins);
+  document.getElementById('rank-title-display').textContent = `${current.title}`;
+  document.getElementById('rank-next-display').textContent = next
+    ? `Faltam ${next.minWins - playerProfile.wins} vitórias p/ ${next.title}`
+    : `⭐ Patente Máxima Alcançada!`;
+
+  const badgeCanvas = document.getElementById('rank-badge-canvas');
+  if (badgeCanvas) drawRankInsignia(badgeCanvas.getContext('2d'), current);
+
+  const total = playerProfile.wins + playerProfile.losses;
+  const rate = total > 0 ? Math.round((playerProfile.wins / total) * 100) : 0;
+  document.getElementById('stat-wins').textContent = `🏆 ${playerProfile.wins} Vitórias`;
+  document.getElementById('stat-losses').textContent = `💥 ${playerProfile.losses} Derrotas`;
+  document.getElementById('stat-rate').textContent = `📊 ${rate}% Vitórias`;
+
+  const logBox = document.getElementById('battle-history-log');
+  if (logBox) {
+    logBox.innerHTML = playerProfile.history.length === 0
+      ? '📋 Nenhuma batalha registrada ainda. Escolha seu tanque e entre em combate!'
+      : playerProfile.history.map(h => `<div>${h}</div>`).join('');
+  }
+}
+
+// ============================================================================
+// 6. SISTEMA DE SOM SINTETIZADO (Canhão, Metralhadora, Drone e Interceptação APS)
+// ============================================================================
+class SoundSystem {
+  constructor() { this.ctx = null; }
+  init() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AudioCtx();
+    }
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+  }
+  playCannon(power = 1.0) {
+    this.init();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(140 / Math.sqrt(power), now);
+    osc.frequency.exponentialRampToValueAtTime(24, now + 0.45);
+    gain.gain.setValueAtTime(0.5, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.46);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.46);
+  }
+  playMG() {
+    this.init();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(250 + Math.random() * 70, now);
+    osc.frequency.exponentialRampToValueAtTime(65, now + 0.06);
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.065);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.065);
+  }
+  playDroneLaunch() {
+    this.init();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(280, now);
+    osc.frequency.linearRampToValueAtTime(620, now + 0.28);
+    gain.gain.setValueAtTime(0.22, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.3);
+  }
+  playAPSIntercept() {
+    this.init();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, now);
+    osc.frequency.exponentialRampToValueAtTime(160, now + 0.22);
+    gain.gain.setValueAtTime(0.4, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.24);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.24);
+  }
+  playExplosion(big = true) {
+    this.init();
+    if (!this.ctx) return;
+    const dur = big ? 0.55 : 0.16;
+    const bufferSize = this.ctx.sampleRate * dur;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx.sampleRate * (big ? 0.18 : 0.05)));
+    }
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = big ? 400 : 950;
+    const gain = this.ctx.createGain();
+    gain.gain.value = big ? 0.65 : 0.25;
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+    noise.start();
+  }
+}
+
+const sfx = new SoundSystem();
+
+// ============================================================================
+// 7. VARIÁVEIS DO JOGO
+// ============================================================================
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let W = window.innerWidth;
+let H = window.innerHeight;
+canvas.width = W;
+canvas.height = H;
+
+let currentCategoryFilter = 'ALL';
+let currentScenarioIdx = 0;
+let selectedDifficulty = 'normal';
+let gameState = 'menu';
+
+let terrain = [];
+let farHills = [];
+let midHills = [];
+let sceneryProps = [];
+let wind = 0;
+let currentWeapon = 'cannon';
+
+let isChargingCannon = false;
+let chargeStartTime = 0;
+let currentChargeRatio = 0.65;
+let lastChosenPowerRatio = 0.65;
+
+const keys = {};
+const touchState = { left: false, right: false, aimUp: false, aimDown: false, mg: false };
+const mouse = { x: W * 0.6, y: H * 0.4, leftDown: false, rightDown: false, active: false };
+
+let player = null;
+let enemy = null;
+let projectiles = [];
+let drones = []; // Drones Kamikaze Teleguiados ativos no céu!
+let particles = [];
+let floatingTexts = [];
+let weatherParticles = [];
+let smokes = [];
+let apsEffects = []; // Anéis visuais de interceptação da Defesa Reativa Trophy/APS!
+let screenShake = 0;
+
+// ============================================================================
+// 8. CONSTRUÇÃO DO MENU QUARTEL GENERAL
+// ============================================================================
+function initMenus() {
+  renderProfileUI();
+
+  const unitsGrid = document.getElementById('units-grid');
+  unitsGrid.innerHTML = '';
+  MILITARY_UNITS.forEach(u => {
+    const card = document.createElement('div');
+    card.className = 'unit-card' + (u.id === playerProfile.unitId ? ' selected' : '');
+    card.onclick = () => {
+      playerProfile.unitId = u.id;
+      saveProfile();
+      document.querySelectorAll('.unit-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+    };
+    card.innerHTML = `
+      <img src="${encodeURI(u.img)}" alt="${u.name}" />
+      <div class="unit-card-info">
+        <div class="unit-card-name">${u.name}</div>
+        <div class="unit-card-country">${u.country}</div>
+      </div>
+    `;
+    unitsGrid.appendChild(card);
+  });
+
+  renderVehicleGrid();
+
+  const scenGrid = document.getElementById('scenarios-grid');
+  scenGrid.innerHTML = '';
+  SCENARIOS.forEach((sc, idx) => {
+    const card = document.createElement('div');
+    card.className = 'scenario-card' + (idx === currentScenarioIdx ? ' selected' : '');
+    card.onclick = () => {
+      currentScenarioIdx = idx;
+      document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+    };
+    card.innerHTML = `
+      <div class="scen-name">${sc.name}</div>
+      <div class="scen-desc">${sc.desc}</div>
+    `;
+    scenGrid.appendChild(card);
+  });
+}
+
+function filterVehicles(cat, btnEl) {
+  currentCategoryFilter = cat;
+  document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+  btnEl.classList.add('active');
+  renderVehicleGrid();
+}
+
+function renderVehicleGrid() {
+  const grid = document.getElementById('tank-selection-grid');
+  grid.innerHTML = '';
+
+  const list = VEHICLES.filter(v => currentCategoryFilter === 'ALL' || v.category === currentCategoryFilter);
+
+  list.forEach(tank => {
+    const card = document.createElement('div');
+    card.className = 'tank-card' + (tank.id === playerProfile.selectedVehicleId ? ' selected' : '');
+    card.onclick = () => {
+      playerProfile.selectedVehicleId = tank.id;
+      saveProfile();
+      document.querySelectorAll('.tank-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+    };
+
+    const catTagClass = tank.category === 'MBT' ? 'class-mbt' : tank.category === 'SPG' ? 'class-spg' : tank.category === 'IFV' ? 'class-ifv' : 'class-td';
+    const catLabel = tank.category === 'MBT' ? 'Tanque MBT' : tank.category === 'SPG' ? 'Artilharia' : tank.category === 'IFV' ? 'Sem Canhão' : 'Caça-Tanque';
+
+    const fireDesc = tank.hasCannon
+      ? `💥 Canhão: ${Math.round(tank.cannonPower * 100)}%`
+      : `🔥 Autocanhão (${Math.round(tank.mgDamageMult * 100)}%)`;
+
+    const techDesc = `✈️ ${tank.dronesCount || 0} Drones • 🛡️ ${tank.apsCount || 0} APS`;
+
+    const previewBgStyle = tank.removeWhiteBg
+      ? 'background: linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 100%); padding: 4px;'
+      : '';
+
+    card.innerHTML = `
+      <span class="class-tag ${catTagClass}">${catLabel}</span>
+      <div class="tank-card-preview" style="${previewBgStyle}">
+        <img src="${encodeURI(tank.spriteSrc)}" style="max-width:186px; max-height:76px; object-fit:contain; transform: scaleX(${tank.facesRightInImg ? 1 : -1});" />
+      </div>
+      <div class="tank-card-title">${tank.flag} ${tank.name}</div>
+      <div class="tank-card-origin">${tank.caliberDesc}</div>
+      <div class="tank-stats">
+        <div class="stat-row"><span>Poder de Fogo:</span><span class="stat-val">${fireDesc}</span></div>
+        <div class="stat-row"><span>Blindagem:</span><span class="stat-val">${tank.cannonResist} Canhões / ${tank.mgResist} Metr.</span></div>
+        <div class="stat-row"><span>Tecnologia:</span><span class="stat-val modern">${techDesc}</span></div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function setDifficulty(diff, btnEl) {
+  selectedDifficulty = diff;
+  document.querySelectorAll('.bottom-launch-row .choice-btn').forEach(b => b.classList.remove('selected'));
+  btnEl.classList.add('selected');
+}
+
+function selectWeapon(w) {
+  if (player && !player.spec.hasCannon && w === 'cannon') {
+    addFloatingText(player.x, player.y - 55, '⚠️ Este blindado não tem canhão pesado! Usa Autocanhão Rápido!', '#facc15');
+    w = 'mg';
+  }
+  currentWeapon = w;
+  document.getElementById('btn-w-cannon').classList.toggle('active', w === 'cannon');
+  document.getElementById('btn-w-mg').classList.toggle('active', w === 'mg');
+}
+
+function openGarage() {
+  gameState = 'menu';
+  isChargingCannon = false;
+  document.getElementById('result-overlay').classList.add('hidden');
+  document.getElementById('menu-overlay').classList.remove('hidden');
+  initMenus();
+}
+
+// ============================================================================
+// 9. GERAÇÃO DE TERRENO E CENÁRIOS MULTICAMADAS (PARALLAX + GRÁFICOS RICOS)
+// ============================================================================
+function generateTerrain(scen) {
+  terrain = new Float32Array(W + 1);
+  farHills = new Float32Array(W + 1);
+  midHills = new Float32Array(W + 1);
+
+  const baseGround = H * 0.79;
+  const ridgeH = H * scen.ridgeHeight;
+  const seed1 = Math.random() * 100;
+  const seed2 = Math.random() * 100;
+
+  for (let x = 0; x <= W; x++) {
+    const nx = x / W;
+    // Montanhas distantes (Parallax Camada 1)
+    farHills[x] = H * 0.58 - Math.sin(nx * 5 + seed1) * (H * 0.12) - Math.cos(nx * 13) * (H * 0.05);
+    // Colinas médias (Parallax Camada 2)
+    midHills[x] = H * 0.68 - Math.cos(nx * 7 + seed2) * (H * 0.08) - Math.sin(nx * 17) * (H * 0.03);
+
+    // Terreno Principal de Combate
+    const centerDist = (nx - 0.5) / 0.21;
+    const centralMountain = Math.exp(-(centerDist * centerDist)) * ridgeH;
+    const waves =
+      Math.sin(nx * 10 + seed1) * (H * scen.roughness * 0.42) +
+      Math.cos(nx * 22 + seed2) * (H * scen.roughness * 0.18);
+    const edgeFlatten = Math.sin(nx * Math.PI);
+    let y = baseGround - centralMountain - waves * edgeFlatten;
+    terrain[x] = Math.max(H * 0.25, Math.min(H * 0.88, y));
+  }
+
+  sceneryProps = [];
+  if (scen.decorType === 'france') {
+    sceneryProps.push({ type: 'eiffel', x: W * 0.5, y: getTerrainY(W * 0.5) });
+    sceneryProps.push({ type: 'arc_triomphe', x: W * 0.24, y: getTerrainY(W * 0.24) });
+    for (let i = 0; i < 12; i++) {
+      const bx = (i / 12) * W + 35;
+      if (Math.abs(bx - W * 0.5) > 85 && Math.abs(bx - W * 0.24) > 70) {
+        sceneryProps.push({ type: 'euro_bldg', x: bx, w: 45 + Math.random() * 35, h: 75 + Math.random() * 95 });
+      }
+    }
+  } else if (scen.decorType === 'brazil_urban') {
+    for (let i = 0; i < 18; i++) {
+      const bx = (i / 18) * W + 25;
+      sceneryProps.push({
+        type: 'br_bldg', x: bx,
+        w: 34 + Math.random() * 32, h: 48 + Math.random() * 90,
+        color: ['#b45309', '#be123c', '#0369a1', '#4d7c0f', '#6d28d9'][i % 5]
+      });
+    }
+  } else if (scen.decorType === 'amazon') {
+    for (let i = 0; i < 26; i++) {
+      const tx = 30 + (i / 26) * (W - 60);
+      sceneryProps.push({ type: 'jungle_tree', x: tx, size: 30 + Math.random() * 28 });
+    }
+  } else if (scen.decorType === 'siberia') {
+    for (let i = 0; i < 20; i++) {
+      const tx = 40 + (i / 20) * (W - 80);
+      sceneryProps.push({ type: 'pine_tree', x: tx, size: 34 + Math.random() * 26 });
+    }
+  } else if (scen.decorType === 'sahara') {
+    sceneryProps.push({ type: 'pyramid', x: W * 0.32, size: 110 });
+    sceneryProps.push({ type: 'pyramid', x: W * 0.68, size: 85 });
+    for (let i = 0; i < 8; i++) {
+      sceneryProps.push({ type: 'palm_tree', x: 80 + (i / 8) * (W - 160), size: 36 + Math.random() * 15 });
+    }
+  } else if (scen.decorType === 'golan') {
+    for (let i = 0; i < 12; i++) {
+      const rx = 60 + (i / 12) * (W - 120);
+      sceneryProps.push({ type: 'bunker_rock', x: rx, size: 18 + Math.random() * 16, hasRadar: i % 4 === 0 });
+    }
+  }
+}
+
+function getTerrainY(x) {
+  const ix = Math.max(0, Math.min(W, Math.round(x)));
+  return terrain[ix] || H * 0.79;
+}
+
+function getTerrainAngle(x) {
+  const x1 = Math.max(0, Math.min(W, Math.round(x - 16)));
+  const x2 = Math.max(0, Math.min(W, Math.round(x + 16)));
+  return Math.atan2(terrain[x2] - terrain[x1], x2 - x1);
+}
+
+function deformTerrain(cx, cy, radius) {
+  const startX = Math.max(0, Math.floor(cx - radius));
+  const endX = Math.min(W, Math.ceil(cx + radius));
+  for (let x = startX; x <= endX; x++) {
+    const dx = x - cx;
+    const depth = Math.sqrt(Math.max(0, radius * radius - dx * dx)) * 0.45;
+    if (terrain[x] < cy + radius) {
+      terrain[x] = Math.min(H * 0.92, Math.max(terrain[x], terrain[x] + depth));
+    }
+  }
+}
+
+// ============================================================================
+// 10. CRIAÇÃO DOS COMBATENTES (COM DRONES E DEFESA REATIVA APS!)
+// ============================================================================
+function createFighter(vehicleId, x, facing, isAI) {
+  const spec = VEHICLE_MAP[vehicleId] || VEHICLES[0];
+  let cannonHitsMax = spec.cannonResist;
+  let mgHitsMax = spec.mgResist;
+
+  if (isAI) {
+    if (selectedDifficulty === 'easy') {
+      cannonHitsMax = Math.max(3, cannonHitsMax - 1);
+      mgHitsMax = Math.max(25, mgHitsMax - 12);
+    } else if (selectedDifficulty === 'hard') {
+      cannonHitsMax += 1;
+      mgHitsMax += 15;
+    }
+  } else if (selectedDifficulty === 'easy') {
+    cannonHitsMax += 2;
+    mgHitsMax += 20;
+  }
+
+  return {
+    spec,
+    x,
+    y: getTerrainY(x),
+    vx: 0,
+    slope: 0,
+    facing,
+    turretAngle: facing === 1 ? -0.35 : -Math.PI + 0.35,
+    hp: 100,
+    baseCannonDamageTaken: 100 / cannonHitsMax,
+    baseMgDamageTaken: 100 / mgHitsMax,
+    cannonHitsTaken: 0,
+    mgHitsTaken: 0,
+    dronesLeft: spec.dronesCount || 0,
+    apsLeft: spec.apsCount || 0,
+    apsArmed: (spec.apsCount || 0) > 0, // Defesa Reativa armada para interceptar tiros de canhão!
+    lastCannonShot: 0,
+    lastMgShot: 0,
+    lastDroneTime: -10000,
+    lastSmokeTime: -10000,
+    recoil: 0,
+    wheelRot: 0,
+    aiTargetX: x,
+    aiMoveTimer: 0,
+    aiAimOffset: 0
+  };
+}
+
+function startGame() {
+  sfx.init();
+  document.getElementById('menu-overlay').classList.add('hidden');
+  document.getElementById('result-overlay').classList.add('hidden');
+
+  const scen = SCENARIOS[currentScenarioIdx];
+  generateTerrain(scen);
+  wind = (Math.random() * 2 - 1) * scen.windRange;
+
+  player = createFighter(playerProfile.selectedVehicleId, W * 0.14, 1, false);
+  enemy = createFighter(scen.enemyId, W * 0.86, -1, true);
+
+  const cannonBtn = document.getElementById('btn-w-cannon');
+  const touchCannonBtn = document.getElementById('t-cannon');
+  if (!player.spec.hasCannon) {
+    cannonBtn.classList.add('disabled');
+    touchCannonBtn.style.opacity = '0.35';
+    selectWeapon('mg');
+  } else {
+    cannonBtn.classList.remove('disabled');
+    touchCannonBtn.style.opacity = '1';
+    selectWeapon('cannon');
+  }
+
+  isChargingCannon = false;
+  currentChargeRatio = 0.65;
+  lastChosenPowerRatio = 0.65;
+  updatePowerBarUI(lastChosenPowerRatio, false);
+
+  projectiles = [];
+  drones = [];
+  particles = [];
+  floatingTexts = [];
+  smokes = [];
+  apsEffects = [];
+  initWeather(scen);
+  updateHUD();
+
+  gameState = 'playing';
+}
+
+function retryLevel() { startGame(); }
+
+function nextLevel() {
+  if (currentScenarioIdx < SCENARIOS.length - 1) {
+    currentScenarioIdx++;
+    startGame();
+  } else {
+    openGarage();
+  }
+}
+
+function initWeather(scen) {
+  weatherParticles = [];
+  const count = scen.weather === 'clouds' ? 22 : 70;
+  for (let i = 0; i < count; i++) {
+    weatherParticles.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      s: 1.5 + Math.random() * 3,
+      vy: scen.weather === 'rain' ? 8 + Math.random() * 5 : 1.2 + Math.random() * 1.8
+    });
+  }
+}
+
+function updatePowerBarUI(ratio, charging) {
+  const pct = Math.round(ratio * 100);
+  document.getElementById('power-bar-fill').style.width = `${pct}%`;
+  document.getElementById('power-bar-label').textContent = charging
+    ? `🔥 CALIBRANDO POTÊNCIA (Solte para Atirar!): ${pct}%`
+    : `⚡ POTÊNCIA CALIBRADA (Segure p/ Ajustar): ${pct}%`;
+}
+
+function updateHUD() {
+  const scen = SCENARIOS[currentScenarioIdx];
+  const unitObj = MILITARY_UNITS.find(u => u.id === playerProfile.unitId) || MILITARY_UNITS[0];
+  const rankObj = getRankByWins(playerProfile.wins).current;
+
+  document.getElementById('hud-level').textContent = scen.name;
+  const windDir = wind > 0.005 ? `Vento ▶ ${Math.round(Math.abs(wind) * 1000)}` : wind < -0.005 ? `Vento ◀ ${Math.round(Math.abs(wind) * 1000)}` : 'Vento: Calmo';
+  document.getElementById('hud-env').textContent = `${scen.desc} • ${windDir}`;
+
+  // Jogador
+  document.getElementById('p-unit-img').src = encodeURI(unitObj.img);
+  document.getElementById('p-name').textContent = `${player.spec.flag} ${player.spec.name}`;
+  document.getElementById('p-commander-rank').textContent = `🎖️ ${playerProfile.commanderName} (${rankObj.code}) • ${unitObj.name}`;
+
+  const pHp = Math.max(0, player.hp);
+  document.getElementById('p-hp-bar').style.width = `${pHp}%`;
+  document.getElementById('p-hp-text').textContent = `BLINDAGEM: ${Math.ceil(pHp)}%`;
+
+  const enemyPower = enemy.spec.hasCannon ? enemy.spec.cannonPower : 1.0;
+  const pCannonLeft = Math.ceil(pHp / (player.baseCannonDamageTaken * enemyPower));
+  const pMgLeft = Math.ceil(pHp / (player.baseMgDamageTaken * enemy.spec.mgDamageMult));
+  document.getElementById('p-cannon-left').textContent = `💥 ${pCannonLeft} Canhões`;
+  document.getElementById('p-mg-left').textContent = `🔥 ${pMgLeft} Rajadas`;
+  document.getElementById('p-aps-left').textContent = `🛡️ APS: ${player.apsLeft}`;
+  document.getElementById('p-drone-left').textContent = `✈️ Drones: ${player.dronesLeft}`;
+
+  // Botões de Drone e APS no centro e Mobile
+  const btnDrone = document.getElementById('btn-w-drone');
+  btnDrone.textContent = `[Q] ✈️ DRONE (${player.dronesLeft})`;
+  btnDrone.classList.toggle('disabled', player.dronesLeft <= 0);
+  document.getElementById('t-drone-span').textContent = `${player.dronesLeft} Unid.`;
+
+  const btnAps = document.getElementById('btn-w-aps');
+  btnAps.textContent = `[R] 🛡️ DEFESA APS (${player.apsLeft})`;
+  btnAps.classList.toggle('armed', player.apsArmed && player.apsLeft > 0);
+  btnAps.classList.toggle('disabled', player.apsLeft <= 0);
+  document.getElementById('t-aps-span').textContent = player.apsLeft > 0 ? (player.apsArmed ? `${player.apsLeft} ON` : `${player.apsLeft} OFF`) : '0 Usos';
+
+  // Inimigo
+  document.getElementById('e-unit-img').src = encodeURI(scen.enemyUnitImg);
+  document.getElementById('e-name').textContent = `${enemy.spec.flag} ${enemy.spec.name}`;
+  document.getElementById('e-unit-name').textContent = enemy.spec.caliberDesc;
+
+  const eHp = Math.max(0, enemy.hp);
+  document.getElementById('e-hp-bar').style.width = `${eHp}%`;
+  document.getElementById('e-hp-text').textContent = `BLINDAGEM: ${Math.ceil(eHp)}%`;
+
+  const playerPower = player.spec.hasCannon ? player.spec.cannonPower : 1.0;
+  const eCannonLeft = Math.ceil(eHp / (enemy.baseCannonDamageTaken * playerPower));
+  const eMgLeft = Math.ceil(eHp / (enemy.baseMgDamageTaken * player.spec.mgDamageMult));
+  document.getElementById('e-cannon-left').textContent = `💥 ${eCannonLeft} Canhões`;
+  document.getElementById('e-mg-left').textContent = `🔥 ${eMgLeft} Rajadas`;
+  document.getElementById('e-aps-left').textContent = `🛡️ APS: ${enemy.apsLeft}`;
+  document.getElementById('e-drone-left').textContent = `✈️ Drones: ${enemy.dronesLeft}`;
+}
+
+// ============================================================================
+// 11. BALÍSTICA LONGA DA METRALHADORA, CANHÃO, DRONES TELEGUIADOS E DEFESA REATIVA (APS)
+// ============================================================================
+// Metralhadora agora tem alcance muito mais longo (velocidade maior, menor arrasto e gravidade suave),
+// mantendo a trajetória curva descendente no longo prazo!
+const MG_INITIAL_SPEED = 22.8;
+const MG_GRAVITY = 0.105;
+const MG_AIR_DRAG = 0.9965;
+
+function fireCannon(shooter, isPlayer, chargeRatio = 0.72) {
+  if (!shooter.spec.hasCannon) {
+    fireMG(shooter, isPlayer);
+    return;
+  }
+
+  const now = performance.now();
+  if (now - shooter.lastCannonShot < shooter.spec.reloadTime) return;
+  shooter.lastCannonShot = now;
+  shooter.recoil = 13 * shooter.spec.cannonPower;
+
+  sfx.playCannon(shooter.spec.cannonPower);
+  screenShake = Math.max(screenShake, 7 * shooter.spec.cannonPower);
+
+  const turretX = shooter.x;
+  const turretY = shooter.y - 26;
+  const barrelLen = 54;
+  const mx = turretX + Math.cos(shooter.turretAngle) * barrelLen;
+  const my = turretY + Math.sin(shooter.turretAngle) * barrelLen;
+
+  const minSpeed = 5.8;
+  const maxSpeed = 19.5 * Math.pow(shooter.spec.cannonPower, 0.25);
+  const speed = minSpeed + chargeRatio * (maxSpeed - minSpeed);
+
+  projectiles.push({
+    type: 'cannon',
+    owner: isPlayer ? 'player' : 'enemy',
+    x: mx,
+    y: my,
+    vx: Math.cos(shooter.turretAngle) * speed + shooter.vx * 0.2,
+    vy: Math.sin(shooter.turretAngle) * speed,
+    power: shooter.spec.cannonPower,
+    isArtillery: shooter.spec.category === 'SPG',
+    trail: []
+  });
+
+  const pCount = shooter.spec.category === 'SPG' ? 28 : 18;
+  for (let i = 0; i < pCount; i++) {
+    const a = shooter.turretAngle + (Math.random() - 0.5) * 0.65;
+    const sp = 2 + Math.random() * 7;
+    particles.push({
+      x: mx, y: my,
+      vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
+      life: 1, decay: 0.04 + Math.random() * 0.04,
+      size: 4 + Math.random() * 6,
+      color: i % 2 === 0 ? '#facc15' : '#ea580c'
+    });
+  }
+}
+
+function fireMG(shooter, isPlayer) {
+  const now = performance.now();
+  if (now - shooter.lastMgShot < shooter.spec.mgRate) return;
+  shooter.lastMgShot = now;
+
+  sfx.playMG();
+
+  const isAutocannon = !shooter.spec.hasCannon;
+  const turretX = shooter.x;
+  const turretY = shooter.y - (isAutocannon ? 26 : 33);
+  const barrelLen = isAutocannon ? 44 : 32;
+  const spread = (Math.random() - 0.5) * (isAutocannon ? 0.024 : 0.035);
+  const angle = shooter.turretAngle + spread;
+  const mx = turretX + Math.cos(angle) * barrelLen;
+  const my = turretY + Math.sin(angle) * barrelLen;
+
+  const powerBoost = (isPlayer && isAutocannon) ? (0.75 + lastChosenPowerRatio * 0.4) : 1.0;
+  const speed = MG_INITIAL_SPEED * powerBoost;
+
+  projectiles.push({
+    type: 'mg',
+    owner: isPlayer ? 'player' : 'enemy',
+    x: mx, y: my,
+    vx: Math.cos(angle) * speed + shooter.vx * 0.15,
+    vy: Math.sin(angle) * speed,
+    power: shooter.spec.mgDamageMult,
+    isAutocannon,
+    trail: []
+  });
+
+  particles.push({
+    x: mx, y: my,
+    vx: Math.cos(angle) * 3, vy: Math.sin(angle) * 3,
+    life: 1, decay: 0.16,
+    size: isAutocannon ? 4.5 : 3,
+    color: isAutocannon ? '#fb923c' : '#fef08a'
+  });
+}
+
+// ✈️ LANÇAR DRONE KAMIKAZE TELEGUIADO (1 a 3 por tanque moderno - Pode ser abatido com metralhadora!)
+function launchDrone(shooter, isPlayer) {
+  if (!shooter || gameState !== 'playing') return;
+  if (shooter.dronesLeft <= 0) {
+    if (isPlayer) addFloatingText(shooter.x, shooter.y - 60, '⚠️ Sem Drones disponíveis neste veículo!', '#f87171');
+    return;
+  }
+  const now = performance.now();
+  if (now - shooter.lastDroneTime < 2800) return;
+
+  shooter.dronesLeft--;
+  shooter.lastDroneTime = now;
+  sfx.playDroneLaunch();
+  updateHUD();
+
+  const target = isPlayer ? enemy : player;
+  drones.push({
+    owner: isPlayer ? 'player' : 'enemy',
+    x: shooter.x,
+    y: shooter.y - 42,
+    vx: shooter.facing * 3.5,
+    vy: -4.8, // Sobe primeiro para ganhar altitude sobre a montanha e depois mergulha no alvo!
+    angle: -Math.PI / 2,
+    hp: 3, // Aguenta 3 tiros de metralhadora antes de ser abatido no ar!
+    age: 0,
+    target,
+    trail: []
+  });
+
+  addFloatingText(shooter.x, shooter.y - 62, '✈️ DRONE KAMIKAZE LANÇADO!', '#c084fc');
+}
+
+// 🛡️ ATIVAR / DESATIVAR DEFESA REATIVA (Trophy / APS - 2 usos contra tiros de canhão)
+function toggleAPS(shooter) {
+  if (!shooter || gameState !== 'playing') return;
+  if (shooter.apsLeft <= 0) {
+    addFloatingText(shooter.x, shooter.y - 60, '⚠️ Cargas de Defesa Reativa APS esgotadas!', '#f87171');
+    return;
+  }
+  shooter.apsArmed = !shooter.apsArmed;
+  addFloatingText(
+    shooter.x,
+    shooter.y - 60,
+    shooter.apsArmed ? `🛡️ DEFESA REATIVA ARMADA (${shooter.apsLeft} Usos)` : '🛡️ DEFESA REATIVA EM ESPERA',
+    shooter.apsArmed ? '#4ade80' : '#94a3b8'
+  );
+  updateHUD();
+}
+
+function deploySmoke(shooter) {
+  const now = performance.now();
+  if (now - shooter.lastSmokeTime < 9000) return;
+  shooter.lastSmokeTime = now;
+  smokes.push({
+    x: shooter.x + shooter.facing * 45,
+    y: shooter.y - 25,
+    radius: 58,
+    life: 1.0
+  });
+  addFloatingText(shooter.x, shooter.y - 58, '💨 CORTINA DE FUMAÇA!', '#cbd5e1');
+}
+
+function addFloatingText(x, y, text, color) {
+  floatingTexts.push({ x, y, text, color, life: 1.0 });
+}
+
+// ============================================================================
+// 12. INTELIGÊNCIA ARTIFICIAL DO INIMIGO (Lança Drones e tenta abater Drones do Jogador com Metralhadora!)
+// ============================================================================
+function updateEnemyAI() {
+  const diffMult = selectedDifficulty === 'easy' ? 0.65 : selectedDifficulty === 'hard' ? 1.28 : 1.0;
+
+  enemy.facing = player.x <= enemy.x ? -1 : 1;
+
+  enemy.aiMoveTimer--;
+  let incomingDanger = false;
+  for (const p of projectiles) {
+    if (p.owner === 'player' && Math.abs(p.x - enemy.x) < 280) {
+      incomingDanger = true;
+      break;
+    }
+  }
+
+  if (enemy.aiMoveTimer <= 0 || incomingDanger) {
+    enemy.aiMoveTimer = incomingDanger ? 35 : 65 + Math.random() * 75;
+    const minX = W * 0.15;
+    const maxX = W * 0.95;
+    enemy.aiTargetX = minX + Math.random() * (maxX - minX);
+  }
+
+  const distToTarget = enemy.aiTargetX - enemy.x;
+  if (Math.abs(distToTarget) > 14) {
+    const dir = Math.sign(distToTarget);
+    const nextX = enemy.x + dir * enemy.spec.speed * 0.85;
+    if (Math.abs(nextX - player.x) > 55 || Math.abs(nextX - player.x) > Math.abs(enemy.x - player.x)) {
+      enemy.vx = dir * enemy.spec.speed * 0.85;
+      enemy.x += enemy.vx;
+      enemy.wheelRot += enemy.vx * 0.08;
+    } else {
+      enemy.vx = 0;
+    }
+  } else {
+    enemy.vx = 0;
+  }
+
+  enemy.x = Math.max(45, Math.min(W - 45, enemy.x));
+  enemy.y = getTerrainY(enemy.x);
+  enemy.slope = getTerrainAngle(enemy.x);
+
+  // Verificar se há um Drone do jogador vindo na direção do inimigo para tentar abater com a metralhadora!
+  let playerDroneThreat = null;
+  for (const d of drones) {
+    if (d.owner === 'player') {
+      playerDroneThreat = d;
+      break;
+    }
+  }
+
+  if (playerDroneThreat && Math.random() < 0.65 * diffMult) {
+    const dAngle = Math.atan2(playerDroneThreat.y - (enemy.y - 26), playerDroneThreat.x - enemy.x);
+    enemy.turretAngle += (dAngle - enemy.turretAngle) * 0.16;
+    if (Math.random() < 0.35 * diffMult) {
+      fireMG(enemy, false);
+    }
+    return;
+  }
+
+  // Lançar Drone Teleguiado inimigo ocasionalmente se tiver disponível
+  if (enemy.dronesLeft > 0 && Math.random() < 0.0022 * diffMult) {
+    launchDrone(enemy, false);
+  }
+
+  const dx = player.x - enemy.x;
+  const dy = (player.y - 20) - (enemy.y - 26);
+  const dist = Math.hypot(dx, dy);
+
+  let inSmoke = false;
+  for (const s of smokes) {
+    if (Math.hypot(player.x - s.x, player.y - s.y) < s.radius + 30) inSmoke = true;
+  }
+
+  const inaccuracy = (1.3 - 0.3 * diffMult) * (inSmoke ? 2.5 : 1.0);
+  if (Math.random() < 0.03) {
+    enemy.aiAimOffset = (Math.random() - 0.5) * 0.18 * inaccuracy;
+  }
+
+  const directAngle = Math.atan2(dy, dx);
+  const arcLift = Math.min(0.65, (Math.abs(dx) / W) * 0.72);
+  let idealAngle = dx < 0 ? (directAngle + arcLift) : (directAngle - arcLift);
+  idealAngle += enemy.aiAimOffset;
+
+  enemy.turretAngle += (idealAngle - enemy.turretAngle) * 0.08;
+
+  let aiCharge = Math.max(0.22, Math.min(0.98, (dist / (W * 0.85)) + (Math.random() - 0.5) * 0.1 * inaccuracy));
+
+  const now = performance.now();
+  if (enemy.spec.hasCannon) {
+    const cannonReady = now - enemy.lastCannonShot >= enemy.spec.reloadTime / (0.85 * diffMult);
+    if (cannonReady && Math.random() < 0.045 * diffMult) {
+      fireCannon(enemy, false, aiCharge);
+    } else if (!cannonReady && Math.random() < 0.085 * diffMult) {
+      fireMG(enemy, false);
+    }
+  } else {
+    if (Math.random() < 0.25 * diffMult) {
+      fireMG(enemy, false);
+    }
+  }
+}
+
+// ============================================================================
+// 13. ATUALIZAÇÃO FÍSICA (PROJETÉIS, DRONES TELEGUIADOS E DEFESA REATIVA APS)
+// ============================================================================
+function startChargingShot() {
+  if (gameState !== 'playing' || !player) return;
+  if (currentWeapon === 'mg' || !player.spec.hasCannon) {
+    fireMG(player, true);
+    return;
+  }
+  const now = performance.now();
+  if (now - player.lastCannonShot < player.spec.reloadTime) return;
+
+  if (!isChargingCannon) {
+    isChargingCannon = true;
+    chargeStartTime = now;
+  }
+}
+
+function releaseChargedShot() {
+  if (!isChargingCannon) return;
+  isChargingCannon = false;
+  lastChosenPowerRatio = currentChargeRatio;
+  updatePowerBarUI(lastChosenPowerRatio, false);
+  fireCannon(player, true, lastChosenPowerRatio);
+}
+
+function update() {
+  if (gameState !== 'playing') return;
+
+  // 1. Movimento Livre do Jogador
+  let moveDir = 0;
+  if (keys['KeyA'] || keys['ArrowLeft'] || touchState.left) moveDir -= 1;
+  if (keys['KeyD'] || keys['ArrowRight'] || touchState.right) moveDir += 1;
+
+  if (moveDir !== 0) {
+    const climbing = (moveDir > 0 && player.slope < -0.15) || (moveDir < 0 && player.slope > 0.15);
+    const speedMult = climbing ? 0.72 : 1.0;
+    player.vx = moveDir * player.spec.speed * speedMult;
+    player.x += player.vx;
+    player.wheelRot += player.vx * 0.09;
+  } else {
+    player.vx = 0;
+  }
+
+  player.x = Math.max(45, Math.min(W - 45, player.x));
+  player.y = getTerrainY(player.x);
+  player.slope = getTerrainAngle(player.x);
+
+  if (enemy) {
+    player.facing = enemy.x >= player.x ? 1 : -1;
+  }
+
+  // 2. Mira do Jogador
+  if (keys['ArrowUp'] || keys['KeyW'] || touchState.aimUp) {
+    player.turretAngle += (player.facing === 1 ? -0.022 : 0.022);
+    mouse.active = false;
+  }
+  if (keys['ArrowDown'] || keys['KeyS'] || touchState.aimDown) {
+    player.turretAngle += (player.facing === 1 ? 0.022 : -0.022);
+    mouse.active = false;
+  }
+  if (mouse.active) {
+    player.turretAngle = Math.atan2(mouse.y - (player.y - 26), mouse.x - player.x);
+  }
+
+  // 3. Calibragem de Potência
+  if (isChargingCannon) {
+    const elapsed = (performance.now() - chargeStartTime) / 1150;
+    const wave = (Math.sin(elapsed * Math.PI - Math.PI / 2) + 1) / 2;
+    currentChargeRatio = 0.20 + wave * 0.80;
+    updatePowerBarUI(currentChargeRatio, true);
+  }
+
+  // Disparo contínuo de Metralhadora / Autocanhão
+  if (
+    keys['KeyE'] ||
+    mouse.rightDown ||
+    touchState.mg ||
+    ((keys['Space'] || mouse.leftDown) && (currentWeapon === 'mg' || !player.spec.hasCannon))
+  ) {
+    fireMG(player, true);
+  }
+
+  if (keys['KeyF']) deploySmoke(player);
+
+  // Barra de recarga
+  const cdElapsed = performance.now() - player.lastCannonShot;
+  const cdRatio = Math.min(1, cdElapsed / player.spec.reloadTime);
+  const cdBar = document.getElementById('cannon-cd-bar');
+  cdBar.style.width = `${cdRatio * 100}%`;
+  cdBar.style.background = cdRatio >= 1 ? '#22c55e' : '#38bdf8';
+
+  player.recoil *= 0.84;
+  enemy.recoil *= 0.84;
+
+  // 4. IA Inimiga
+  updateEnemyAI();
+
+  // 5. ATUALIZAR DRONES KAMIKAZE TELEGUIADOS
+  for (let i = drones.length - 1; i >= 0; i--) {
+    const d = drones[i];
+    d.age++;
+    d.trail.push({ x: d.x, y: d.y });
+    if (d.trail.length > 22) d.trail.shift();
+
+    const target = d.owner === 'player' ? enemy : player;
+
+    // Fase 1 (primeiros 45 frames): ganha altitude para cruzar montanhas
+    // Fase 2: guia automaticamente em direção ao tanque alvo como míssil teleguiado!
+    let aimX = target.x;
+    let aimY = target.y - 22;
+    if (d.age < 50 || Math.abs(target.x - d.x) > 190) {
+      const midPeakY = Math.min(getTerrainY(d.x), getTerrainY(W * 0.5)) - 110;
+      aimY = Math.min(aimY - 80, midPeakY);
+    }
+
+    const desiredAngle = Math.atan2(aimY - d.y, aimX - d.x);
+    const speed = 4.65;
+    d.vx += (Math.cos(desiredAngle) * speed - d.vx) * 0.08;
+    d.vy += (Math.sin(desiredAngle) * speed - d.vy) * 0.08;
+    d.x += d.vx;
+    d.y += d.vy;
+    d.angle = Math.atan2(d.vy, d.vx);
+
+    // Colisão do Drone com o Tanque Alvo
+    if (Math.hypot(d.x - target.x, d.y - (target.y - 20)) < 38) {
+      const dmg = target.baseCannonDamageTaken * 1.15; // Dano potente de míssil teleguiado!
+      target.hp = Math.max(0, target.hp - dmg);
+      sfx.playExplosion(true);
+      screenShake = 13;
+      spawnExplosion(d.x, d.y, 38, '#c084fc');
+      addFloatingText(target.x, target.y - 62, '💥 IMPACTO DE DRONE TELEGUIADO!', '#e879f9');
+      updateHUD();
+      drones.splice(i, 1);
+
+      if (target.hp <= 0) {
+        spawnExplosion(target.x, target.y - 20, 75, '#ef4444');
+        endMatch(d.owner === 'player');
+        return;
+      }
+      continue;
+    }
+
+    // Colisão do Drone com o Terreno
+    if (d.y >= getTerrainY(d.x)) {
+      sfx.playExplosion(false);
+      spawnExplosion(d.x, d.y, 18, '#c084fc');
+      drones.splice(i, 1);
+    }
+  }
+
+  // 6. ATUALIZAR PROJÉTEIS (COM INTERCEPTAÇÃO DE DRONES E DEFESA REATIVA APS!)
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+    const p = projectiles[i];
+    p.trail.push({ x: p.x, y: p.y });
+    if (p.trail.length > (p.type === 'cannon' ? 18 : 12)) p.trail.shift();
+
+    p.x += p.vx;
+    p.y += p.vy;
+
+    if (p.type === 'cannon') {
+      p.vy += 0.24;
+      p.vx += wind;
+    } else {
+      // Balística longa da metralhadora: alcança longe e cai suavemente no longo prazo!
+      p.vx *= MG_AIR_DRAG;
+      p.vy = p.vy * MG_AIR_DRAG + MG_GRAVITY;
+      p.vx += wind * 0.35;
+    }
+
+    if (p.x < -60 || p.x > W + 60 || p.y > H + 60) {
+      projectiles.splice(i, 1);
+      continue;
+    }
+
+    // A) VERIFICAR SE TIRO DE METRALHADORA ABATEU UM DRONE INIMIGO NO AR!
+    let hitDrone = false;
+    for (let j = drones.length - 1; j >= 0; j--) {
+      const d = drones[j];
+      if (d.owner !== p.owner && Math.hypot(p.x - d.x, p.y - d.y) < 28) {
+        d.hp -= (p.type === 'cannon' ? 3 : 1);
+        spawnExplosion(p.x, p.y, 8, '#fde047');
+        if (d.hp <= 0) {
+          sfx.playExplosion(false);
+          spawnExplosion(d.x, d.y, 26, '#c084fc');
+          addFloatingText(d.x, d.y - 20, '🎯 DRONE ABATIDO NO AR!', '#4ade80');
+          drones.splice(j, 1);
+        }
+        hitDrone = true;
+        break;
+      }
+    }
+    if (hitDrone) {
+      projectiles.splice(i, 1);
+      continue;
+    }
+
+    const target = p.owner === 'player' ? enemy : player;
+
+    // B) 🛡️ DEFESA REATIVA (APS / TROPHY): Intercepta tiros de CANHÃO antes de baterem no tanque! (2 Usos)
+    if (p.type === 'cannon' && target.apsArmed && target.apsLeft > 0) {
+      const distToTank = Math.hypot(p.x - target.x, p.y - (target.y - 24));
+      if (distToTank < 78) {
+        target.apsLeft--;
+        sfx.playAPSIntercept();
+        apsEffects.push({
+          x: target.x,
+          y: target.y - 24,
+          targetX: p.x,
+          targetY: p.y,
+          radius: 18,
+          maxRadius: 82,
+          life: 1.0
+        });
+        spawnExplosion(p.x, p.y, 24, '#38bdf8');
+        addFloatingText(target.x, target.y - 68, `🛡️ DEFESA REATIVA APS BLOQUEOU O CANHÃO! (${target.apsLeft} rest.)`, '#4ade80');
+        updateHUD();
+        projectiles.splice(i, 1);
+        continue;
+      }
+    }
+
+    // C) Colisão normal com o tanque alvo
+    const hitDx = p.x - target.x;
+    const hitDy = p.y - (target.y - 22);
+
+    if (Math.abs(hitDx) < 42 && Math.abs(hitDy) < 26) {
+      if (p.type === 'cannon') {
+        const dmg = target.baseCannonDamageTaken * p.power;
+        target.hp = Math.max(0, target.hp - dmg);
+        target.cannonHitsTaken++;
+        sfx.playExplosion(true);
+        screenShake = p.isArtillery ? 16 : 11;
+        spawnExplosion(p.x, p.y, p.isArtillery ? 40 : 28, '#f97316');
+        addFloatingText(target.x, target.y - 58, p.isArtillery ? `💥 ARTILHARIA 155mm!!` : `💥 IMPACTO DE CANHÃO!`, '#facc15');
+      } else {
+        const dmg = target.baseMgDamageTaken * p.power;
+        target.hp = Math.max(0, target.hp - dmg);
+        target.mgHitsTaken++;
+        sfx.playExplosion(false);
+        spawnExplosion(p.x, p.y, p.isAutocannon ? 11 : 7, '#fef08a');
+        if (target.mgHitsTaken % 4 === 0) {
+          addFloatingText(target.x + (Math.random() - 0.5) * 30, target.y - 48, p.isAutocannon ? `🔥 AUTOCANHÃO 30mm!` : `🔥 RAJADA .50!`, '#fb923c');
+        }
+      }
+
+      updateHUD();
+      projectiles.splice(i, 1);
+
+      if (target.hp <= 0) {
+        spawnExplosion(target.x, target.y - 20, 75, '#ef4444');
+        endMatch(p.owner === 'player');
+        return;
+      }
+      continue;
+    }
+
+    // D) Colisão com o terreno
+    const groundY = getTerrainY(p.x);
+    if (p.y >= groundY) {
+      if (p.type === 'cannon') {
+        sfx.playExplosion(true);
+        const craterRadius = p.isArtillery ? 38 : 26;
+        deformTerrain(p.x, groundY, craterRadius);
+        spawnExplosion(p.x, groundY, p.isArtillery ? 34 : 22, '#d97706');
+
+        const splashRadius = p.isArtillery ? 85 : 58;
+        [player, enemy].forEach(t => {
+          const dist = Math.hypot(p.x - t.x, groundY - t.y);
+          if (dist < splashRadius) {
+            const splashDmg = t.baseCannonDamageTaken * p.power * (p.isArtillery ? 0.55 : 0.32);
+            t.hp = Math.max(0, t.hp - splashDmg);
+            addFloatingText(t.x, t.y - 48, '💥 Ondas de Choque!', '#fb923c');
+            updateHUD();
+            if (t.hp <= 0) endMatch(t === enemy);
+          }
+        });
+      } else {
+        spawnExplosion(p.x, groundY, 5, '#cbd5e1');
+      }
+      projectiles.splice(i, 1);
+    }
+  }
+
+  for (let i = apsEffects.length - 1; i >= 0; i--) {
+    const ef = apsEffects[i];
+    ef.radius += (ef.maxRadius - ef.radius) * 0.25;
+    ef.life -= 0.045;
+    if (ef.life <= 0) apsEffects.splice(i, 1);
+  }
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const pt = particles[i];
+    pt.x += pt.vx;
+    pt.y += pt.vy;
+    pt.vy += 0.12;
+    pt.life -= pt.decay;
+    if (pt.life <= 0) particles.splice(i, 1);
+  }
+  for (let i = floatingTexts.length - 1; i >= 0; i--) {
+    const ft = floatingTexts[i];
+    ft.y -= 1.1;
+    ft.life -= 0.02;
+    if (ft.life <= 0) floatingTexts.splice(i, 1);
+  }
+  for (let i = smokes.length - 1; i >= 0; i--) {
+    smokes[i].life -= 0.0025;
+    if (smokes[i].life <= 0) smokes.splice(i, 1);
+  }
+  if (screenShake > 0) screenShake *= 0.88;
+}
+
+function spawnExplosion(x, y, count, mainColor) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1 + Math.random() * (count > 15 ? 7.5 : 3.5);
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1.5,
+      life: 1,
+      decay: 0.02 + Math.random() * 0.03,
+      size: count > 15 ? 4 + Math.random() * 7 : 2 + Math.random() * 3,
+      color: i % 3 === 0 ? '#ffffff' : i % 2 === 0 ? mainColor : '#ef4444'
+    });
+  }
+}
+
+function endMatch(playerWon) {
+  if (gameState === 'gameover') return;
+  gameState = 'gameover';
+  isChargingCannon = false;
+
+  const scen = SCENARIOS[currentScenarioIdx];
+  const { promoted, newRank } = recordMatchResult(playerWon, scen.name, player.spec.name, enemy.spec.name);
+
+  const overlay = document.getElementById('result-overlay');
+  const title = document.getElementById('res-title');
+  const desc = document.getElementById('res-desc');
+  const rankUpBox = document.getElementById('res-rank-up');
+  const nextBtn = document.getElementById('btn-next-level');
+
+  overlay.classList.remove('hidden');
+  rankUpBox.style.display = promoted ? 'block' : 'none';
+  if (promoted) {
+    rankUpBox.innerHTML = `🎖️ PROMOÇÃO MILITAR! Parabéns ${playerProfile.commanderName}, você subiu para a patente de <b>${newRank.title}</b>!`;
+  }
+
+  if (playerWon) {
+    title.textContent = `🏆 VITÓRIA DE ${playerProfile.commanderName.toUpperCase()}!`;
+    title.style.color = '#facc15';
+    desc.textContent = `Seu ${player.spec.name} destruiu o ${enemy.spec.name} em ${scen.name}! Seu histórico foi salvo.`;
+    nextBtn.style.display = currentScenarioIdx < SCENARIOS.length - 1 ? 'inline-block' : 'none';
+  } else {
+    title.textContent = '💥 SEU BLINDADO FOI DESTRUÍDO!';
+    title.style.color = '#f87171';
+    desc.textContent = `O ${enemy.spec.name} venceu em ${scen.name}. Use seus Drones (Q), ative a Defesa Reativa APS (R) e abata os drones inimigos com a metralhadora!`;
+    nextBtn.style.display = 'none';
+  }
+}
+
+// ============================================================================
+// 14. RENDERIZAÇÃO DOS VEÍCULOS, DRONES E DEFESA REATIVA APS
+// ============================================================================
+function drawVehicleHD(c, fighter) {
+  const { x, y, slope, turretAngle, facing, spec, recoil, apsLeft, apsArmed } = fighter;
+  const sprite = loadedSprites[spec.id];
+
+  c.save();
+  c.translate(x, y);
+  c.rotate(slope);
+
+  // Sombra no solo
+  c.fillStyle = 'rgba(0,0,0,0.55)';
+  c.beginPath();
+  c.ellipse(0, 2, 56, 8, 0, 0, Math.PI * 2);
+  c.fill();
+
+  // Canhão / Autocanhão Articulado
+  c.save();
+  const pivotY = -26;
+  c.translate(0, pivotY);
+  const relAngle = turretAngle - slope;
+  c.rotate(relAngle);
+
+  const rec = -recoil;
+  if (spec.hasCannon) {
+    const barrelLen = spec.category === 'SPG' ? 64 : 52;
+    const barrelThick = spec.category === 'SPG' ? 7.5 : 6.2;
+
+    c.fillStyle = spec.accentColor;
+    c.strokeStyle = '#111';
+    c.lineWidth = 1.6;
+    c.fillRect(10 + rec, -barrelThick / 2, barrelLen, barrelThick);
+    c.strokeRect(10 + rec, -barrelThick / 2, barrelLen, barrelThick);
+
+    c.fillStyle = spec.bodyColor;
+    c.fillRect(26 + rec, -barrelThick / 2 - 1.5, 12, barrelThick + 3);
+    c.strokeRect(26 + rec, -barrelThick / 2 - 1.5, 12, barrelThick + 3);
+
+    if (spec.category === 'SPG') {
+      c.fillStyle = '#18181b';
+      c.fillRect(10 + barrelLen - 4 + rec, -barrelThick / 2 - 2, 7, barrelThick + 4);
+    }
+  } else {
+    c.fillStyle = '#1f2937';
+    c.fillRect(8, -2.5, 38, 4.5);
+    c.fillStyle = '#eab308';
+    c.fillRect(6, -6, 8, 4);
+  }
+
+  c.fillStyle = '#1e293b';
+  c.fillRect(4, -14, 24, 2.5);
+  c.restore();
+
+  // Desenhar a imagem única de perfil do veículo
+  const isCanvas = sprite instanceof HTMLCanvasElement;
+  const isReadyImg = sprite && sprite.complete && sprite.naturalWidth > 0;
+
+  if (isCanvas || isReadyImg) {
+    c.save();
+    const flip = (facing === 1 && !spec.facesRightInImg) || (facing === -1 && spec.facesRightInImg) ? -1 : 1;
+    c.scale(flip, 1);
+
+    const natW = isCanvas ? sprite.width : sprite.naturalWidth;
+    const natH = isCanvas ? sprite.height : sprite.naturalHeight;
+    const targetW = 118;
+    const ratio = natH / natW;
+    const targetH = Math.min(68, Math.max(40, targetW * ratio));
+    c.drawImage(sprite, -targetW / 2, -targetH + 4, targetW, targetH);
+    c.restore();
+  }
+
+  // Arco sutil indicador de Defesa Reativa APS / Trophy ativa!
+  if (apsArmed && apsLeft > 0) {
+    c.save();
+    c.strokeStyle = apsLeft === 2 ? 'rgba(74, 222, 128, 0.55)' : 'rgba(250, 204, 21, 0.55)';
+    c.lineWidth = 2.2;
+    c.setLineDash([6, 5]);
+    c.beginPath();
+    c.arc(0, -20, 62, Math.PI * 1.1, Math.PI * 1.9);
+    c.stroke();
+    c.restore();
+  }
+
+  c.restore();
+}
+
+function drawDrones(c) {
+  drones.forEach(d => {
+    // Trilha luminosa do Drone Teleguiado
+    if (d.trail.length > 1) {
+      c.strokeStyle = d.owner === 'player' ? 'rgba(192, 132, 252, 0.55)' : 'rgba(248, 113, 113, 0.55)';
+      c.lineWidth = 2.5;
+      c.beginPath();
+      d.trail.forEach((pt, idx) => {
+        if (idx === 0) c.moveTo(pt.x, pt.y);
+        else c.lineTo(pt.x, pt.y);
+      });
+      c.stroke();
+    }
+
+    c.save();
+    c.translate(d.x, d.y);
+    c.rotate(d.angle);
+
+    // Asa em delta / X estilo Drone Kamikaze Hero / Lancet / Switchblade
+    c.fillStyle = d.owner === 'player' ? '#a855f7' : '#ef4444';
+    c.strokeStyle = '#fff';
+    c.lineWidth = 1.2;
+    c.beginPath();
+    c.moveTo(14, 0);
+    c.lineTo(-10, -11);
+    c.lineTo(-6, 0);
+    c.lineTo(-10, 11);
+    c.closePath();
+    c.fill();
+    c.stroke();
+
+    // Ogiva brilhante na ponta
+    c.fillStyle = '#fef08a';
+    c.beginPath();
+    c.arc(10, 0, 2.5, 0, Math.PI * 2);
+    c.fill();
+    c.restore();
+
+    // Indicador de Alerta e Vida do Drone no ar
+    c.save();
+    c.font = '700 10px "Orbitron", sans-serif';
+    c.fillStyle = d.owner === 'player' ? '#e9d5ff' : '#fecaca';
+    c.textAlign = 'center';
+    c.fillText(`✈️ DRONE [${'█'.repeat(d.hp)}]`, d.x, d.y - 16);
+    c.restore();
+  });
+}
+
+// ============================================================================
+// 15. RENDERIZAÇÃO RICA DOS CENÁRIOS (PARALLAX + MONUMENTOS + TEXTURAS)
+// ============================================================================
+function drawSceneryDecor(scen) {
+  // 1. Sol / Lua com brilho atmosférico
+  if (scen.celestial) {
+    const cx = W * scen.celestial.x;
+    const cy = H * scen.celestial.y;
+    const rad = ctx.createRadialGradient(cx, cy, 10, cx, cy, 110);
+    rad.addColorStop(0, scen.celestial.color);
+    rad.addColorStop(0.35, scen.celestial.glow);
+    rad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = rad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 110, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = scen.celestial.color;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 2. Cadeia de Montanhas Distantes (Parallax Camada 1)
+  ctx.fillStyle = scen.farHillsColor;
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for (let x = 0; x <= W; x += 6) ctx.lineTo(x, farHills[x]);
+  ctx.lineTo(W, H);
+  ctx.closePath();
+  ctx.fill();
+
+  // 3. Colinas Intermediárias (Parallax Camada 2)
+  ctx.fillStyle = scen.midHillsColor;
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for (let x = 0; x <= W; x += 6) ctx.lineTo(x, midHills[x]);
+  ctx.lineTo(W, H);
+  ctx.closePath();
+  ctx.fill();
+
+  // 4. Elementos Arquitetônicos e Naturais de cada Cenário
+  sceneryProps.forEach(p => {
+    const gy = getTerrainY(p.x);
+    ctx.save();
+    if (p.type === 'eiffel') {
+      // Torre Eiffel detalhada com treliças (França Urbana)
+      ctx.strokeStyle = 'rgba(30, 41, 59, 0.85)';
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(p.x - 52, gy + 10);
+      ctx.lineTo(p.x - 16, gy - 130);
+      ctx.lineTo(p.x - 5, gy - 265);
+      ctx.lineTo(p.x + 5, gy - 265);
+      ctx.lineTo(p.x + 16, gy - 130);
+      ctx.lineTo(p.x + 52, gy + 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      // Arco na base da Torre Eiffel
+      ctx.fillStyle = scen.midHillsColor;
+      ctx.beginPath();
+      ctx.arc(p.x, gy + 10, 24, Math.PI, 0);
+      ctx.fill();
+      // Plataformas
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(p.x - 28, gy - 85, 56, 5);
+      ctx.fillRect(p.x - 18, gy - 155, 36, 4);
+      ctx.beginPath();
+      ctx.arc(p.x, gy - 270, 4, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (p.type === 'arc_triomphe') {
+      // Arco do Triunfo (França Urbana)
+      ctx.fillStyle = 'rgba(51, 65, 85, 0.82)';
+      ctx.fillRect(p.x - 42, gy - 85, 84, 90);
+      ctx.fillStyle = scen.midHillsColor;
+      ctx.beginPath();
+      ctx.arc(p.x, gy - 25, 16, Math.PI, 0);
+      ctx.fill();
+      ctx.fillRect(p.x - 16, gy - 25, 32, 30);
+    } else if (p.type === 'euro_bldg') {
+      ctx.fillStyle = 'rgba(30, 41, 59, 0.78)';
+      ctx.fillRect(p.x - p.w / 2, gy - p.h, p.w, p.h + 20);
+      ctx.fillStyle = 'rgba(250, 204, 21, 0.35)';
+      for (let wy = gy - p.h + 12; wy < gy - 10; wy += 16) {
+        ctx.fillRect(p.x - p.w / 2 + 8, wy, 6, 8);
+        ctx.fillRect(p.x + 4, wy, 6, 8);
+      }
+    } else if (p.type === 'br_bldg') {
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = 0.55;
+      ctx.fillRect(p.x - p.w / 2, gy - p.h, p.w, p.h + 15);
+      ctx.fillStyle = '#fef08a';
+      for (let wy = gy - p.h + 10; wy < gy - 12; wy += 15) {
+        ctx.fillRect(p.x - 8, wy, 5, 5);
+        ctx.fillRect(p.x + 4, wy, 5, 5);
+      }
+    } else if (p.type === 'pyramid') {
+      // Pirâmides no horizonte do Saara
+      ctx.fillStyle = 'rgba(180, 83, 9, 0.55)';
+      ctx.beginPath();
+      ctx.moveTo(p.x, gy - p.size);
+      ctx.lineTo(p.x - p.size * 1.1, gy + 15);
+      ctx.lineTo(p.x + p.size * 1.1, gy + 15);
+      ctx.closePath();
+      ctx.fill();
+    } else if (p.type === 'palm_tree') {
+      ctx.strokeStyle = '#78350f';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(p.x, gy + 5);
+      ctx.quadraticCurveTo(p.x + 8, gy - p.size * 0.5, p.x + 4, gy - p.size);
+      ctx.stroke();
+      ctx.fillStyle = '#15803d';
+      for (let a = 0; a < 5; a++) {
+        ctx.beginPath();
+        ctx.ellipse(p.x + 4 + Math.cos(a) * 12, gy - p.size + Math.sin(a) * 5, 14, 4, a * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else if (p.type === 'jungle_tree') {
+      ctx.fillStyle = '#14532d';
+      ctx.fillRect(p.x - 3.5, gy - p.size, 7, p.size + 6);
+      ctx.fillStyle = '#15803d';
+      ctx.beginPath();
+      ctx.arc(p.x, gy - p.size, p.size * 0.68, 0, Math.PI * 2);
+      ctx.arc(p.x - 14, gy - p.size + 8, p.size * 0.48, 0, Math.PI * 2);
+      ctx.arc(p.x + 14, gy - p.size + 8, p.size * 0.48, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (p.type === 'pine_tree') {
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.moveTo(p.x, gy - p.size * 1.5);
+      ctx.lineTo(p.x - 18, gy);
+      ctx.lineTo(p.x + 18, gy);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.moveTo(p.x, gy - p.size * 1.5);
+      ctx.lineTo(p.x - 10, gy - p.size * 0.75);
+      ctx.lineTo(p.x + 10, gy - p.size * 0.75);
+      ctx.closePath();
+      ctx.fill();
+    } else if (p.type === 'bunker_rock') {
+      ctx.fillStyle = 'rgba(51, 65, 85, 0.85)';
+      ctx.beginPath();
+      ctx.arc(p.x, gy + 2, p.size, Math.PI, 0);
+      ctx.fill();
+      if (p.hasRadar) {
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(p.x, gy - p.size);
+        ctx.lineTo(p.x, gy - p.size - 16);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(p.x, gy - p.size - 18, 7, 0.2, Math.PI - 0.2);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  });
+}
+
+function draw() {
+  const scen = SCENARIOS[currentScenarioIdx];
+
+  ctx.save();
+  if (screenShake > 0.3) {
+    ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
+  }
+
+  // 1. Céu Multicamadas
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.85);
+  skyGrad.addColorStop(0, scen.skyTop);
+  skyGrad.addColorStop(0.5, scen.skyMid);
+  skyGrad.addColorStop(1, scen.skyBottom);
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // 2. Decoração Parallax e Monumentos do Cenário
+  drawSceneryDecor(scen);
+
+  // 3. Terreno Principal com Sombreamento em 3 Tons
+  const groundGrad = ctx.createLinearGradient(0, H * 0.25, 0, H);
+  groundGrad.addColorStop(0, scen.groundTop);
+  groundGrad.addColorStop(0.45, scen.groundMid);
+  groundGrad.addColorStop(1, scen.groundBottom);
+  ctx.fillStyle = groundGrad;
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for (let x = 0; x <= W; x += 2) ctx.lineTo(x, terrain[x]);
+  ctx.lineTo(W, H);
+  ctx.closePath();
+  ctx.fill();
+
+  // Crista iluminada do terreno
+  ctx.strokeStyle = scen.rockColor;
+  ctx.lineWidth = 4.5;
+  ctx.beginPath();
+  for (let x = 0; x <= W; x += 3) {
+    if (x === 0) ctx.moveTo(x, terrain[x]);
+    else ctx.lineTo(x, terrain[x]);
+  }
+  ctx.stroke();
+
+  // 4. Linha Pontilhada de Mira (Mostra tanto o Canhão quanto a Trajetória Longa da Metralhadora!)
+  if (gameState === 'playing' && player) {
+    drawAimDots(player);
+  }
+
+  // 5. Tanques / Blindados
+  if (player && enemy) {
+    drawVehicleHD(ctx, player);
+    drawVehicleHD(ctx, enemy);
+  }
+
+  // 6. Drones Kamikaze Teleguiados
+  drawDrones(ctx);
+
+  // 7. Efeitos Visuais da Defesa Reativa (APS / Trophy)
+  apsEffects.forEach(ef => {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, ef.life);
+    ctx.strokeStyle = '#4ade80';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(ef.x, ef.y, ef.radius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#fef08a';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(ef.x, ef.y);
+    ctx.lineTo(ef.targetX, ef.targetY);
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  // 8. Projéteis
+  projectiles.forEach(p => {
+    if (p.trail.length > 1) {
+      ctx.strokeStyle = p.type === 'cannon' ? 'rgba(251, 191, 36, 0.65)' : 'rgba(254, 240, 138, 0.85)';
+      ctx.lineWidth = p.isArtillery ? 5.5 : p.type === 'cannon' ? 4 : 2.4;
+      ctx.beginPath();
+      p.trail.forEach((pt, idx) => {
+        if (idx === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      });
+      ctx.stroke();
+    }
+    ctx.fillStyle = p.type === 'cannon' ? '#f97316' : '#fef08a';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.isArtillery ? 7 : p.type === 'cannon' ? 5.5 : 3.2, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // 9. Fumaça e Explosões
+  smokes.forEach(s => {
+    ctx.save();
+    ctx.globalAlpha = Math.min(0.75, s.life);
+    const radGrad = ctx.createRadialGradient(s.x, s.y, 10, s.x, s.y, s.radius);
+    radGrad.addColorStop(0, '#e2e8f0');
+    radGrad.addColorStop(1, 'rgba(148, 163, 184, 0)');
+    ctx.fillStyle = radGrad;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+
+  particles.forEach(pt => {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, pt.life);
+    ctx.fillStyle = pt.color;
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+
+  // 10. Clima
+  weatherParticles.forEach(wp => {
+    wp.y += wp.vy;
+    wp.x += wind * 40 + (scen.weather === 'sand' ? 4 : 0);
+    if (wp.y > H) wp.y = -10;
+    if (wp.x > W) wp.x = 0;
+    if (wp.x < 0) wp.x = W;
+
+    if (scen.weather === 'rain') {
+      ctx.strokeStyle = 'rgba(186, 230, 253, 0.45)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(wp.x, wp.y);
+      ctx.lineTo(wp.x + wind * 80, wp.y + 13);
+      ctx.stroke();
+    } else if (scen.weather === 'snow') {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.beginPath();
+      ctx.arc(wp.x, wp.y, wp.s, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (scen.weather === 'sand') {
+      ctx.fillStyle = 'rgba(253, 224, 71, 0.45)';
+      ctx.beginPath();
+      ctx.arc(wp.x, wp.y, wp.s * 0.9, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (scen.weather === 'embers') {
+      ctx.fillStyle = 'rgba(251, 146, 60, 0.65)';
+      ctx.beginPath();
+      ctx.arc(wp.x, wp.y, wp.s * 0.8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+
+  // 11. Textos Flutuantes
+  floatingTexts.forEach(ft => {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, ft.life);
+    ctx.font = '700 15px "Orbitron", sans-serif';
+    ctx.fillStyle = ft.color;
+    ctx.shadowColor = '#000';
+    ctx.shadowBlur = 4;
+    ctx.textAlign = 'center';
+    ctx.fillText(ft.text, ft.x, ft.y);
+    ctx.restore();
+  });
+
+  ctx.restore();
+}
+
+// Linha Pontilhada de Mira: Mostra a trajetória longa e descendente da Metralhadora e a parábola do Canhão!
+function drawAimDots(shooter) {
+  const barrelLen = 52;
+  let sx = shooter.x + Math.cos(shooter.turretAngle) * barrelLen;
+  let sy = (shooter.y - 26) + Math.sin(shooter.turretAngle) * barrelLen;
+
+  const isCannon = currentWeapon === 'cannon' && shooter.spec.hasCannon;
+  const activeRatio = isChargingCannon ? currentChargeRatio : lastChosenPowerRatio;
+
+  let speed;
+  if (isCannon) {
+    const minSpeed = 5.8;
+    const maxSpeed = 19.5 * Math.pow(shooter.spec.cannonPower, 0.25);
+    speed = minSpeed + activeRatio * (maxSpeed - minSpeed);
+  } else {
+    const isAutocannon = !shooter.spec.hasCannon;
+    const powerBoost = isAutocannon ? (0.75 + activeRatio * 0.4) : 1.0;
+    speed = MG_INITIAL_SPEED * powerBoost;
+  }
+
+  let vx = Math.cos(shooter.turretAngle) * speed + shooter.vx * 0.2;
+  let vy = Math.sin(shooter.turretAngle) * speed;
+
+  ctx.fillStyle = isChargingCannon ? 'rgba(250, 204, 21, 0.92)' : isCannon ? 'rgba(56, 189, 248, 0.8)' : 'rgba(251, 146, 60, 0.82)';
+  const maxSteps = selectedDifficulty === 'hard' ? 28 : 54;
+
+  for (let step = 0; step < maxSteps; step++) {
+    for (let f = 0; f < 2; f++) {
+      sx += vx;
+      sy += vy;
+      if (isCannon) {
+        vy += 0.24;
+        vx += wind;
+      } else {
+        vx *= MG_AIR_DRAG;
+        vy = vy * MG_AIR_DRAG + MG_GRAVITY;
+        vx += wind * 0.35;
+      }
+    }
+
+    if (sy >= getTerrainY(sx)) break;
+
+    ctx.beginPath();
+    ctx.arc(sx, sy, isChargingCannon ? 3.2 : 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// ============================================================================
+// 16. EVENTOS DE TECLADO, MOUSE E TOUCH MOBILE
+// ============================================================================
+window.addEventListener('keydown', e => {
+  if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+  keys[e.code] = true;
+  if (e.code === 'Digit1') selectWeapon('cannon');
+  if (e.code === 'Digit2') selectWeapon('mg');
+  if (e.code === 'KeyQ' && !e.repeat) launchDrone(player, true);
+  if (e.code === 'KeyR' && !e.repeat) toggleAPS(player);
+  if (e.code === 'Space' && !e.repeat) {
+    startChargingShot();
+  }
+});
+
+window.addEventListener('keyup', e => {
+  if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+  keys[e.code] = false;
+  if (e.code === 'Space') {
+    releaseChargedShot();
+  }
+});
+
+canvas.addEventListener('pointerdown', e => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  mouse.active = true;
+  if (e.pointerType === 'mouse') {
+    if (e.button === 0) {
+      mouse.leftDown = true;
+      startChargingShot();
+    }
+    if (e.button === 2) mouse.rightDown = true;
+  }
+});
+
+canvas.addEventListener('pointermove', e => {
+  if (e.pointerType === 'mouse' || e.buttons > 0) {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    mouse.active = true;
+  }
+});
+
+window.addEventListener('pointerup', e => {
+  if (e.pointerType === 'mouse') {
+    if (e.button === 0) {
+      mouse.leftDown = false;
+      releaseChargedShot();
+    }
+    if (e.button === 2) mouse.rightDown = false;
+  }
+});
+
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+// Configurar botões Touch Mobile / Tablet
+function bindTouchButton(id, onDown, onUp) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const start = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    el.classList.add('pressed');
+    onDown();
+  };
+  const end = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    el.classList.remove('pressed');
+    if (onUp) onUp();
+  };
+  el.addEventListener('pointerdown', start);
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointerleave', end);
+  el.addEventListener('pointercancel', end);
+}
+
+bindTouchButton('t-left',     () => { touchState.left = true; },    () => { touchState.left = false; });
+bindTouchButton('t-right',    () => { touchState.right = true; },   () => { touchState.right = false; });
+bindTouchButton('t-aim-up',   () => { touchState.aimUp = true; },   () => { touchState.aimUp = false; });
+bindTouchButton('t-aim-down', () => { touchState.aimDown = true; }, () => { touchState.aimDown = false; });
+bindTouchButton('t-mg',       () => { touchState.mg = true; },      () => { touchState.mg = false; });
+bindTouchButton('t-smoke',    () => { if (player) deploySmoke(player); }, null);
+bindTouchButton('t-drone',    () => { if (player) launchDrone(player, true); }, null);
+bindTouchButton('t-aps',      () => { if (player) toggleAPS(player); }, null);
+bindTouchButton(
+  't-cannon',
+  () => {
+    selectWeapon('cannon');
+    startChargingShot();
+  },
+  () => {
+    releaseChargedShot();
+  }
+);
+
+window.addEventListener('resize', () => {
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = W;
+  canvas.height = H;
+  if (SCENARIOS[currentScenarioIdx]) generateTerrain(SCENARIOS[currentScenarioIdx]);
+});
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+loadProfile();
+generateTerrain(SCENARIOS[0]);
+initMenus();
+loop();
+</script>
+</body>
+</html>

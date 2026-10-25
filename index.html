@@ -299,6 +299,28 @@
       box-shadow: 0 0 10px rgba(56, 189, 248, 0.55);
     }
 
+    .weapon-btn.frag-btn {
+      border-color: #f59e0b;
+      color: #fde68a;
+    }
+    .weapon-btn.frag-btn.active {
+      background: #d97706;
+      border-color: #fef08a;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.7);
+    }
+
+    .weapon-btn.bunker-btn {
+      border-color: #f43f5e;
+      color: #fecdd3;
+    }
+    .weapon-btn.bunker-btn.active {
+      background: #be123c;
+      border-color: #fda4af;
+      color: #fff;
+      box-shadow: 0 0 12px rgba(244, 63, 94, 0.75);
+    }
+
     .weapon-btn.drone-btn {
       border-color: #a855f7;
       color: #e9d5ff;
@@ -520,9 +542,25 @@
     }
 
     .smoke-touch {
-      width: 54px;
-      height: 54px;
-      font-size: 11px;
+      width: 50px;
+      height: 52px;
+      font-size: 10.5px;
+    }
+
+    .frag-touch {
+      width: 62px;
+      height: 58px;
+      background: linear-gradient(135deg, rgba(217, 119, 6, 0.92), rgba(180, 83, 9, 0.96));
+      border-color: #fde68a;
+      font-size: 10.5px;
+    }
+
+    .bunker-touch {
+      width: 66px;
+      height: 58px;
+      background: linear-gradient(135deg, rgba(225, 29, 72, 0.92), rgba(136, 19, 55, 0.96));
+      border-color: #fda4af;
+      font-size: 10.5px;
     }
 
     @media (max-width: 960px) {
@@ -536,9 +574,9 @@
         grid-template-columns: repeat(3, 44px);
         grid-template-rows: repeat(2, 42px);
       }
-      .fire-cannon-touch { width: 74px; height: 66px; font-size: 10.5px; }
-      .fire-mg-touch { width: 64px; height: 58px; font-size: 10px; }
-      .drone-touch, .aps-touch { width: 54px; height: 52px; font-size: 9.5px; }
+      .fire-cannon-touch { width: 70px; height: 64px; font-size: 10px; }
+      .fire-mg-touch { width: 60px; height: 56px; font-size: 9.5px; }
+      .drone-touch, .aps-touch, .frag-touch, .bunker-touch { width: 52px; height: 50px; font-size: 9px; }
     }
 
     /* ==================== QUARTEL GENERAL / MENU ==================== */
@@ -740,9 +778,9 @@
 
     .tank-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 8px;
-      max-height: 270px;
+      max-height: 290px;
       overflow-y: auto;
       padding-right: 6px;
       margin-bottom: 8px;
@@ -788,13 +826,30 @@
     .class-mbt { background: #0284c7; color: #fff; }
     .class-spg { background: #dc2626; color: #fff; }
     .class-ifv { background: #16a34a; color: #fff; }
+    .class-apc { background: #0d9488; color: #fff; }
     .class-td  { background: #9333ea; color: #fff; }
+
+    .country-tag {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      font-family: var(--font-hud);
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid #475569;
+      color: #fef08a;
+      z-index: 2;
+    }
 
     .tank-card-preview {
       width: 200px;
       height: 76px;
       background: transparent;
       border-radius: 6px;
+      margin-top: 14px;
       margin-bottom: 4px;
       display: flex;
       align-items: center;
@@ -809,8 +864,17 @@
       text-align: center;
     }
 
+    .tank-card-country-line {
+      font-family: var(--font-hud);
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #38bdf8;
+      margin: 1px 0 2px;
+      text-align: center;
+    }
+
     .tank-card-origin {
-      font-size: 11px;
+      font-size: 10.5px;
       color: #94a3b8;
       margin-bottom: 5px;
       text-align: center;
@@ -1107,17 +1171,23 @@
       </div>
 
       <div class="weapon-selector">
-        <button class="weapon-btn active" id="btn-w-cannon" onclick="selectWeapon('cannon')">
+        <button class="weapon-btn active" id="btn-w-cannon" onclick="selectWeapon('cannon')" title="Tecla 1: Projétil Padrão de Canhão">
           [1] 💥 CANHÃO
         </button>
-        <button class="weapon-btn" id="btn-w-mg" onclick="selectWeapon('mg')">
-          [2] 🔥 METRALH. LONGA
+        <button class="weapon-btn" id="btn-w-mg" onclick="selectWeapon('mg')" title="Tecla 2: Metralhadora Longa / Autocanhão (Abate Drones!)">
+          [2] 🔥 METRALH.
+        </button>
+        <button class="weapon-btn frag-btn" id="btn-w-frag" onclick="selectWeapon('frag')" title="Tecla 3: Projétil de Fragmentação (Explode em chuva de estilhaços sobre trincheiras e penhascos!)">
+          [3] 💣 FRAG (3)
+        </button>
+        <button class="weapon-btn bunker-btn" id="btn-w-bunker" onclick="selectWeapon('bunker')" title="Tecla 4: Projétil Perfura-Bunker (Abre CRATERAS GIGANTES e derruba tanques de penhascos!)">
+          [4] 🕳️ BUNKER (2)
         </button>
         <button class="weapon-btn drone-btn" id="btn-w-drone" onclick="launchDrone(player, true)" title="Tecla Q: Lança Drone Kamikaze Teleguiado (Pode ser abatido com metralhadora!)">
           [Q] ✈️ DRONE (3)
         </button>
         <button class="weapon-btn aps-btn armed" id="btn-w-aps" onclick="toggleAPS(player)" title="Tecla R: Defesa Reativa Trophy/APS (Intercepta tiros de canhão automaticamente!)">
-          [R] 🛡️ DEFESA APS (2)
+          [R] 🛡️ APS (2)
         </button>
         <button class="top-btn" onclick="openGarage()">🎖️ Quartel</button>
       </div>
@@ -1174,19 +1244,24 @@
       <button class="touch-btn smoke-touch" id="t-smoke">💨<span>Fumaça</span></button>
       <button class="touch-btn aps-touch" id="t-aps">🛡️ APS<span id="t-aps-span">2 Usos</span></button>
       <button class="touch-btn drone-touch" id="t-drone">✈️ DRONE<span id="t-drone-span">3 Unid.</span></button>
+      <button class="touch-btn frag-touch" id="t-frag">💣 FRAG<span id="t-frag-span">3 Unid.</span></button>
+      <button class="touch-btn bunker-touch" id="t-bunker">🕳️ BUNKER<span id="t-bunker-span">2 Unid.</span></button>
       <button class="touch-btn fire-mg-touch" id="t-mg">🔥 RAJADA<span>Abate Drone</span></button>
-      <button class="touch-btn fire-cannon-touch" id="t-cannon">💥 CANHÃO<span>Segure=Força</span></button>
+      <button class="touch-btn fire-cannon-touch" id="t-cannon">💥 ATIRAR<span>Segure=Força</span></button>
     </div>
   </div>
 
   <!-- Barra de Comandos (PC) -->
   <div id="controls-bar">
-    <div><span class="key-badge">A</span><span class="key-badge">D</span> ou <span class="key-badge">◀</span><span class="key-badge">▶</span> Mover (Cuidado c/ Penhascos e Água!)</div>
+    <div><span class="key-badge">A</span><span class="key-badge">D</span>Mover</div>
     <div><span class="key-badge">Mouse</span>Mirar</div>
-    <div><span class="key-badge">Segurar Espaço</span>Calibrar Canhão</div>
-    <div><span class="key-badge">E</span> ou <span class="key-badge">Clique Dir</span>Metralhadora Longa (Abate Drones!)</div>
-    <div><span class="key-badge">Q</span>Drone Teleguiado</div>
-    <div><span class="key-badge">R</span>Defesa APS</div>
+    <div><span class="key-badge">Espaço</span>Atirar (Segure=Potência)</div>
+    <div><span class="key-badge">1</span>Canhão</div>
+    <div><span class="key-badge">2</span>/ <span class="key-badge">E</span>Metralh.</div>
+    <div><span class="key-badge">3</span>💣 Fragmentação</div>
+    <div><span class="key-badge">4</span>🕳️ Perfura-Bunker</div>
+    <div><span class="key-badge">Q</span>Drone</div>
+    <div><span class="key-badge">R</span>APS</div>
     <div><span class="key-badge">F</span>Fumaça</div>
   </div>
 
@@ -1195,8 +1270,8 @@
     <div class="menu-box">
       <div class="top-header-bar">
         <div>
-          <div class="game-main-title">🛡️ COMANDO BLINDADO: GRANDES BATALHAS HISTÓRICAS</div>
-          <div style="font-size:12.5px; color:#94a3b8; font-weight:600;">10 Batalhas Reais (1965–2023) • Modo Turnos (Estilo Worms) & Tempo Real • Penhascos com Dano de Queda & Rios/Canais</div>
+          <div class="game-main-title">🛡️ COMANDO BLINDADO: CATÁLOGO GLOBAL & BATALHAS HISTÓRICAS</div>
+          <div style="font-size:12.5px; color:#94a3b8; font-weight:600;">Catálogo Oficial 50+ Blindados com Países • Projéteis de Fragmentação & Perfura-Bunker (Crateras Gigantes!) • 10 Batalhas Reais</div>
         </div>
 
         <div class="profile-bar">
@@ -1253,13 +1328,14 @@
 
       <!-- 2. Escolha do Tanque -->
       <div class="section-label">
-        <span>2. Escolha seu Veículo Blindado (26 Blindados c/ Fundo Transparente, Drones e Defesa Reativa APS):</span>
+        <span id="vehicles-section-title">2. Escolha seu Veículo Blindado (Catálogo Completo 2026 c/ Países, Poder de Fogo & Resistência Afinados):</span>
         <div class="filter-tabs">
-          <button class="filter-tab active" onclick="filterVehicles('ALL', this)">Todos (26)</button>
+          <button class="filter-tab active" id="tab-all-count" onclick="filterVehicles('ALL', this)">Todos (68)</button>
           <button class="filter-tab" onclick="filterVehicles('MBT', this)">🛡️ Tanques (MBT)</button>
-          <button class="filter-tab" onclick="filterVehicles('SPG', this)">💥 Artilharia Móvel (+Forte / Lenta)</button>
-          <button class="filter-tab" onclick="filterVehicles('IFV', this)">🔥 Blindados Rápidos (Sem Canhão)</button>
-          <button class="filter-tab" onclick="filterVehicles('TD', this)">🎯 Caça-Tanques / Engenharia</button>
+          <button class="filter-tab" onclick="filterVehicles('IFV', this)">🔥 VCI / IFV (Autocanhão)</button>
+          <button class="filter-tab" onclick="filterVehicles('APC', this)">🛞 Blindados APC (Tropas)</button>
+          <button class="filter-tab" onclick="filterVehicles('TD', this)">🎯 Caça-Tanques / Recon</button>
+          <button class="filter-tab" onclick="filterVehicles('SPG', this)">💥 Artilharia Móvel (155mm+)</button>
         </div>
       </div>
       <div class="tank-grid" id="tank-selection-grid"></div>
@@ -1398,465 +1474,1106 @@ function drawRankInsignia(c, rankObj) {
 }
 
 // ============================================================================
-// 3. TODOS OS 24 TANQUES, ARTILHARIAS E BLINDADOS
-//    - Foto oficial em alta definição da Merkava Mk.4 (Merkava-Mk4-Profile.png)!
-//    - Drones Kamikaze Teleguiados (1 a 3 unidades nos tanques modernos)
-//    - Defesa Reativa APS / Trophy (2 usos nos tanques modernos contra tiros de canhão)
+// 3. CATÁLOGO OFICIAL COMPLETO: 50 BLINDADOS 2026 (DA PLANILHA) + 20 ESPECIAIS/HISTÓRICOS
+//    - Todos os 70 veículos com País de Origem, Bandeira, Peso (t), Poder de Fogo e Resistência afinados!
+//    - Projéteis de Fragmentação (Frag) & Perfura-Bunker (Crateras Gigantes!)
+//    - Drones Kamikaze Teleguiados (1 a 3) e Defesa Reativa APS/Trophy (até 2 usos)
 // ============================================================================
 const VEHICLES = [
-  // --- TANQUES ISRAELENSES (Com todas as novas fotos enviadas!) ---
+  // ==================== CATÁLOGO OFICIAL 50 BLINDADOS 2026 (1 a 25: MBTs) ====================
+  {
+    id: 'leopard2a8',
+    name: 'Leopard 2A8',
+    country: 'Alemanha',
+    flag: '🇩🇪',
+    category: 'MBT',
+    weightTons: 66,
+    caliberDesc: '120mm L/55A1 Alta Pressão • 66t • Trophy APS (KNDS)',
+    hasCannon: true,
+    cannonResist: 8, mgResist: 88,
+    cannonPower: 1.36, mgDamageMult: 1.15, mgRate: 82,
+    speed: 2.75, reloadTime: 1850,
+    dronesCount: 3, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Leopard 2A6.png',
+    facesRightInImg: false,
+    bodyColor: '#4e5b47', turretColor: '#3f4a39', accentColor: '#293025'
+  },
+  {
+    id: 'm1a2_sepv3',
+    name: 'M1A2 SEPv3 Abrams',
+    country: 'Estados Unidos',
+    flag: '🇺🇸',
+    category: 'MBT',
+    weightTons: 73,
+    caliberDesc: '120mm M256 • 73t • Blindagem Urânio + Trophy APS',
+    hasCannon: true,
+    cannonResist: 9, mgResist: 92,
+    cannonPower: 1.30, mgDamageMult: 1.20, mgRate: 80,
+    speed: 2.55, reloadTime: 1900,
+    dronesCount: 3, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'M1A2_SEP_TUSK-II.png',
+    facesRightInImg: false,
+    bodyColor: '#cbb682', turretColor: '#bda672', accentColor: '#8f7b4f'
+  },
+  {
+    id: 'k2_black_panther',
+    name: 'K2 Black Panther',
+    country: 'Coreia do Sul',
+    flag: '🇰🇷',
+    category: 'MBT',
+    weightTons: 55,
+    caliberDesc: '120mm L/55 Autoloader • 55t • Composta + APS (Hyundai Rotem)',
+    hasCannon: true,
+    cannonResist: 7, mgResist: 78,
+    cannonPower: 1.32, mgDamageMult: 1.12, mgRate: 80,
+    speed: 2.85, reloadTime: 1550,
+    dronesCount: 3, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Hitomaru Main Battle Tank.png',
+    facesRightInImg: false,
+    bodyColor: '#4d5d46', turretColor: '#3c4a36', accentColor: '#263022'
+  },
   {
     id: 'merkava4',
-    name: 'Merkava Mk.4M Trophy',
+    name: 'Merkava Mk 4 Barak',
+    country: 'Israel',
     flag: '🇮🇱',
     category: 'MBT',
-    caliberDesc: 'Canhão 120mm MG253 + Trophy APS + 3 Drones Hero',
+    weightTons: 65,
+    caliberDesc: '120mm MG253 • 65t • Trophy APS + IA 360° + 3 Drones Hero',
     hasCannon: true,
-    cannonResist: 8,
-    mgResist: 85,
-    cannonPower: 1.2,
-    mgDamageMult: 1.05,
-    mgRate: 85,
-    speed: 2.55,
-    reloadTime: 1950,
-    dronesCount: 3, // 3 Drones Kamikaze Teleguiados!
-    apsCount: 2,    // 2 Defesas Reativas Trophy contra tiros de canhão!
+    cannonResist: 8, mgResist: 88,
+    cannonPower: 1.28, mgDamageMult: 1.18, mgRate: 80,
+    speed: 2.60, reloadTime: 1850,
+    dronesCount: 3, apsCount: 2, fragCount: 3, bunkerCount: 2,
     spriteSrc: 't_82915_Merkava_Mk_IV.jpg',
-    removeWhiteBg: true,
     facesRightInImg: false,
     bodyColor: '#8d8868', turretColor: '#7b7759', accentColor: '#56533d'
   },
   {
+    id: 'leopard2a7v',
+    name: 'Leopard 2A7V',
+    country: 'Alemanha',
+    flag: '🇩🇪',
+    category: 'MBT',
+    weightTons: 64,
+    caliberDesc: '120mm Rheinmetall L/55 • 64t • Blindagem Modular Pesada',
+    hasCannon: true,
+    cannonResist: 8, mgResist: 85,
+    cannonPower: 1.33, mgDamageMult: 1.10, mgRate: 85,
+    speed: 2.70, reloadTime: 1900,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Leopard 2A6.png',
+    facesRightInImg: false,
+    bodyColor: '#485942', turretColor: '#3a4735', accentColor: '#252e22'
+  },
+  {
+    id: 'challenger3',
+    name: 'Challenger 3',
+    country: 'Reino Unido',
+    flag: '🇬🇧',
+    category: 'MBT',
+    weightTons: 66,
+    caliberDesc: '120mm L/55A1 Alma Lisa • 66t • Blindagem Farnham + Trophy APS',
+    hasCannon: true,
+    cannonResist: 8, mgResist: 88,
+    cannonPower: 1.35, mgDamageMult: 1.12, mgRate: 84,
+    speed: 2.48, reloadTime: 1900,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: '06_Challenger_3.png',
+    facesRightInImg: false,
+    bodyColor: '#5c6649', turretColor: '#4a523b', accentColor: '#303626'
+  },
+  {
+    id: 'leclerc_xlr',
+    name: 'Leclerc XLR',
+    country: 'França',
+    flag: '🇫🇷',
+    category: 'MBT',
+    weightTons: 57,
+    caliberDesc: '120mm CN120-26 L/52 Autoloader • 57t • Modular + GALIX',
+    hasCannon: true,
+    cannonResist: 7, mgResist: 78,
+    cannonPower: 1.29, mgDamageMult: 1.15, mgRate: 80,
+    speed: 2.88, reloadTime: 1600,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Ariete Italy.png',
+    facesRightInImg: false,
+    bodyColor: '#526348', turretColor: '#42523a', accentColor: '#2c3627'
+  },
+  {
+    id: 't90m',
+    name: 'T-90M Proryv',
+    country: 'Rússia',
+    flag: '🇷🇺',
+    category: 'MBT',
+    weightTons: 48,
+    caliberDesc: '125mm 2A46M-5 • 48t • Blindagem Reativa Relikt + Drones',
+    hasCannon: true,
+    cannonResist: 7, mgResist: 74,
+    cannonPower: 1.25, mgDamageMult: 1.12, mgRate: 84,
+    speed: 2.68, reloadTime: 1850,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: '08_T-90M_Proryv.png',
+    facesRightInImg: false,
+    bodyColor: '#48593a', turretColor: '#3c4a30', accentColor: '#293320'
+  },
+  {
+    id: 'type99a',
+    name: 'Type 99A (ZTZ-99A)',
+    country: 'China',
+    flag: '🇨🇳',
+    category: 'MBT',
+    weightTons: 58,
+    caliberDesc: '125mm ZPT-98 • 58t • 1500 hp (80 km/h) • Composta + ERA FY-4',
+    hasCannon: true,
+    cannonResist: 8, mgResist: 80,
+    cannonPower: 1.28, mgDamageMult: 1.15, mgRate: 82,
+    speed: 3.00, reloadTime: 1800,
+    dronesCount: 3, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Type 96 of the 71st Group Army during live firing exercises, May 2022.png',
+    facesRightInImg: false,
+    bodyColor: '#5c6e49', turretColor: '#4b593b', accentColor: '#333d28'
+  },
+  {
+    id: 'type10',
+    name: 'Type 10 Hitomaru',
+    country: 'Japão',
+    flag: '🇯🇵',
+    category: 'MBT',
+    weightTons: 44,
+    caliberDesc: '120mm JSW Autoloader Rápido • 44t • Blindagem Nano-Modular',
+    hasCannon: true,
+    cannonResist: 6, mgResist: 68,
+    cannonPower: 1.24, mgDamageMult: 1.10, mgRate: 82,
+    speed: 2.95, reloadTime: 1450,
+    dronesCount: 3, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Hitomaru Main Battle Tank.png',
+    facesRightInImg: false,
+    bodyColor: '#526348', turretColor: '#45543c', accentColor: '#2e3828'
+  },
+  {
+    id: 'altay',
+    name: 'Altay T1',
+    country: 'Turquia',
+    flag: '🇹🇷',
+    category: 'MBT',
+    weightTons: 65,
+    caliberDesc: '120mm L/55 • 65t • Sistema de Proteção Ativa AKKOR APS',
+    hasCannon: true,
+    cannonResist: 8, mgResist: 85,
+    cannonPower: 1.31, mgDamageMult: 1.12, mgRate: 84,
+    speed: 2.65, reloadTime: 1880,
+    dronesCount: 3, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Camouflaged Leopard 2A4 in Spanish Service.png',
+    facesRightInImg: false,
+    bodyColor: '#6b6348', turretColor: '#575039', accentColor: '#3b3626'
+  },
+  {
+    id: 'karrar',
+    name: 'Karrar',
+    country: 'Irã',
+    flag: '🇮🇷',
+    category: 'MBT',
+    weightTons: 51,
+    caliberDesc: '125mm 2A46M • 51t • Blindagem Reativa ERA + Drones Shahed',
+    hasCannon: true,
+    cannonResist: 7, mgResist: 70,
+    cannonPower: 1.20, mgDamageMult: 1.08, mgRate: 86,
+    speed: 2.72, reloadTime: 1900,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'The Karrar Main Battle tank.png',
+    facesRightInImg: false,
+    bodyColor: '#b39f74', turretColor: '#9c8960', accentColor: '#6e6041'
+  },
+  {
+    id: 't80bvm',
+    name: 'T-80BVM',
+    country: 'Rússia',
+    flag: '🇷🇺',
+    category: 'MBT',
+    weightTons: 46,
+    caliberDesc: '125mm 2A46M-4 • 46t • Turbina 1250 hp (70 km/h) + Relikt ERA',
+    hasCannon: true,
+    cannonResist: 7, mgResist: 72,
+    cannonPower: 1.24, mgDamageMult: 1.08, mgRate: 85,
+    speed: 2.85, reloadTime: 1800,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'T-80BVM.png',
+    facesRightInImg: false,
+    bodyColor: '#4a593d', turretColor: '#3b4731', accentColor: '#252e1e'
+  },
+  {
+    id: 't72b3m',
+    name: 'T-72B3M',
+    country: 'Rússia',
+    flag: '🇷🇺',
+    category: 'MBT',
+    weightTons: 46,
+    caliberDesc: '125mm 2A46M-5 • 46t • Blindagem Reativa Kontakt-5 / Relikt',
+    hasCannon: true,
+    cannonResist: 6, mgResist: 68,
+    cannonPower: 1.20, mgDamageMult: 1.05, mgRate: 86,
+    speed: 2.65, reloadTime: 1900,
+    dronesCount: 2, apsCount: 1, fragCount: 3, bunkerCount: 2,
+    spriteSrc: '14_T-72B3M.png',
+    facesRightInImg: false,
+    bodyColor: '#4c5c3e', turretColor: '#3d4a32', accentColor: '#283020'
+  },
+  {
+    id: 'vt4',
+    name: 'VT-4 (MBT-3000)',
+    country: 'China',
+    flag: '🇨🇳',
+    category: 'MBT',
+    weightTons: 52,
+    caliberDesc: '125mm Alma Lisa • 52t • 1300 hp • Blindagem Composta + ERA',
+    hasCannon: true,
+    cannonResist: 7, mgResist: 74,
+    cannonPower: 1.24, mgDamageMult: 1.10, mgRate: 85,
+    speed: 2.78, reloadTime: 1850,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Type 96 of the 71st Group Army during live firing exercises, May 2022.png',
+    facesRightInImg: false,
+    bodyColor: '#667552', turretColor: '#536142', accentColor: '#38422c'
+  },
+  {
+    id: 'type96',
+    name: 'Type 96B (ZTZ-96B)',
+    country: 'China',
+    flag: '🇨🇳',
+    category: 'MBT',
+    weightTons: 43,
+    caliberDesc: '125mm Autoloader • 43t • Blindagem Reativa FY-4 + 2 Drones',
+    hasCannon: true,
+    cannonResist: 6, mgResist: 66,
+    cannonPower: 1.20, mgDamageMult: 1.05, mgRate: 86,
+    speed: 2.75, reloadTime: 1850,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Type 96 of the 71st Group Army during live firing exercises, May 2022.png',
+    facesRightInImg: false,
+    bodyColor: '#5c6e49', turretColor: '#4b593b', accentColor: '#333d28'
+  },
+  {
+    id: 'k1a2',
+    name: 'K1A2',
+    country: 'Coreia do Sul',
+    flag: '🇰🇷',
+    category: 'MBT',
+    weightTons: 54,
+    caliberDesc: '120mm KM256 • 54t • Blindagem Composta Especial SAP',
+    hasCannon: true,
+    cannonResist: 7, mgResist: 75,
+    cannonPower: 1.20, mgDamageMult: 1.10, mgRate: 84,
+    speed: 2.70, reloadTime: 1880,
+    dronesCount: 2, apsCount: 1, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Abrams-transparent.png',
+    facesRightInImg: false,
+    bodyColor: '#56694a', turretColor: '#46573b', accentColor: '#2e3827'
+  },
+  {
+    id: 'arjun_mk1a',
+    name: 'Arjun Mk1A',
+    country: 'Índia',
+    flag: '🇮🇳',
+    category: 'MBT',
+    weightTons: 68,
+    caliberDesc: '120mm Raiado (HESH/FSAPDS) • 68t • Blindagem Kanchan + ERA',
+    hasCannon: true,
+    cannonResist: 8, mgResist: 86,
+    cannonPower: 1.24, mgDamageMult: 1.10, mgRate: 85,
+    speed: 2.45, reloadTime: 1950,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Leopard 2A6.png',
+    facesRightInImg: false,
+    bodyColor: '#7a6f4d', turretColor: '#635a3e', accentColor: '#453e2b'
+  },
+  {
+    id: 'ariete',
+    name: 'Ariete C2 AMV',
+    country: 'Itália',
+    flag: '🇮🇹',
+    category: 'MBT',
+    weightTons: 62,
+    caliberDesc: '120mm OTO Breda L/44 • 62t • 1500 hp • Blindagem Modular PSO/WAR',
+    hasCannon: true,
+    cannonResist: 7, mgResist: 76,
+    cannonPower: 1.20, mgDamageMult: 1.08, mgRate: 85,
+    speed: 2.72, reloadTime: 1850,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Ariete Italy.png',
+    facesRightInImg: false,
+    bodyColor: '#4b5c43', turretColor: '#3f4f38', accentColor: '#2c3827'
+  },
+  {
+    id: 'pt91_twardy',
+    name: 'PT-91 Twardy',
+    country: 'Polônia',
+    flag: '🇵🇱',
+    category: 'MBT',
+    weightTons: 46,
+    caliberDesc: '125mm 2A46MS • 46t • Blindagem Reativa ERAWA + Obra-3 Laser',
+    hasCannon: true,
+    cannonResist: 6, mgResist: 68,
+    cannonPower: 1.18, mgDamageMult: 1.05, mgRate: 86,
+    speed: 2.62, reloadTime: 1900,
+    dronesCount: 1, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: '14_T-72B3M.png',
+    facesRightInImg: false,
+    bodyColor: '#4b593e', turretColor: '#3c4731', accentColor: '#283021'
+  },
+  {
+    id: 't84_oplot',
+    name: 'T-84 Oplot-M',
+    country: 'Ucrânia',
+    flag: '🇺🇦',
+    category: 'MBT',
+    weightTons: 51,
+    caliberDesc: '125mm KBA-3 • 51t • Blindagem Reativa Duplet + Varta APS',
+    hasCannon: true,
+    cannonResist: 7, mgResist: 76,
+    cannonPower: 1.24, mgDamageMult: 1.12, mgRate: 84,
+    speed: 2.82, reloadTime: 1820,
+    dronesCount: 3, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'T-80BVM.png',
+    facesRightInImg: false,
+    bodyColor: '#576944', turretColor: '#465436', accentColor: '#2e3824'
+  },
+  {
+    id: 'm84as1',
+    name: 'M-84AS1',
+    country: 'Sérvia',
+    flag: '🇷🇸',
+    category: 'MBT',
+    weightTons: 46,
+    caliberDesc: '125mm 2A46M • 46t • Blindagem Reativa ERA ERO-19 + RWS',
+    hasCannon: true,
+    cannonResist: 6, mgResist: 68,
+    cannonPower: 1.18, mgDamageMult: 1.08, mgRate: 85,
+    speed: 2.72, reloadTime: 1880,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Modified M-84 tank, one of the few that were sent to Kuwait before the invasion.png',
+    facesRightInImg: false,
+    bodyColor: '#8c7d59', turretColor: '#736648', accentColor: '#4f4631'
+  },
+  {
+    id: 'armata',
+    name: 'T-14 Armata',
+    country: 'Rússia',
+    flag: '🇷🇺',
+    category: 'MBT',
+    weightTons: 55,
+    caliberDesc: '125mm 2A82-1M Alta Energia • 55t • Torre Remota + Afganit APS',
+    hasCannon: true,
+    cannonResist: 8, mgResist: 80,
+    cannonPower: 1.34, mgDamageMult: 1.12, mgRate: 82,
+    speed: 2.95, reloadTime: 1750,
+    dronesCount: 3, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'T-14-Armata.png',
+    facesRightInImg: false,
+    bodyColor: '#5c6649', turretColor: '#4b543b', accentColor: '#353b29'
+  },
+  {
+    id: 'kf51_panther',
+    name: 'KF51 Panther',
+    country: 'Alemanha',
+    flag: '🇩🇪',
+    category: 'MBT',
+    weightTons: 59,
+    caliberDesc: 'Canhão 130mm Future Gun L/51 • 59t • StrikeShield APS + Drones HERO',
+    hasCannon: true,
+    cannonResist: 8, mgResist: 84,
+    cannonPower: 1.48, mgDamageMult: 1.20, mgRate: 80,
+    speed: 2.78, reloadTime: 1850,
+    dronesCount: 3, apsCount: 2, fragCount: 3, bunkerCount: 3,
+    spriteSrc: '24_KF51_Panther.png',
+    facesRightInImg: false,
+    bodyColor: '#4c5942', turretColor: '#3d4735', accentColor: '#262e21'
+  },
+  {
+    id: 'm1e3_abrams',
+    name: 'M1E3 Abrams (Next-Gen)',
+    country: 'Estados Unidos',
+    flag: '🇺🇸',
+    category: 'MBT',
+    weightTons: 60,
+    caliberDesc: '120mm Next-Gen Autoloader • 60t • Híbrido + APS Integrado',
+    hasCannon: true,
+    cannonResist: 8, mgResist: 86,
+    cannonPower: 1.35, mgDamageMult: 1.20, mgRate: 78,
+    speed: 2.85, reloadTime: 1750,
+    dronesCount: 3, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: '25_M1E3_Abrams.png',
+    facesRightInImg: false,
+    bodyColor: '#bba677', turretColor: '#a69265', accentColor: '#756645'
+  },
+
+  // ==================== CATÁLOGO OFICIAL 50 BLINDADOS 2026 (26 a 40: IFVs) ====================
+  {
+    id: 'cv90_mkiv',
+    name: 'CV90 MkIV',
+    country: 'Suécia',
+    flag: '🇸🇪',
+    category: 'IFV',
+    weightTons: 37,
+    caliberDesc: 'Autocanhão 35/40mm Bofors • 37t • 1000 hp • Iron Fist APS',
+    hasCannon: false,
+    cannonResist: 5, mgResist: 58,
+    cannonPower: 0, mgDamageMult: 2.70, mgRate: 48,
+    speed: 3.35, reloadTime: 1000,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Lynx_KF41.png',
+    facesRightInImg: false,
+    bodyColor: '#485942', turretColor: '#394734', accentColor: '#252e21'
+  },
+  {
+    id: 'puma_ifv',
+    name: 'Puma IFV',
+    country: 'Alemanha',
+    flag: '🇩🇪',
+    category: 'IFV',
+    weightTons: 43,
+    caliberDesc: 'Autocanhão 30mm MK30-2/ABM • 43t • Proteção Ativa MUSS APS',
+    hasCannon: false,
+    cannonResist: 6, mgResist: 64,
+    cannonPower: 0, mgDamageMult: 2.55, mgRate: 46,
+    speed: 3.30, reloadTime: 1000,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Lynx_KF41.png',
+    facesRightInImg: false,
+    bodyColor: '#4e5c45', turretColor: '#3f4a37', accentColor: '#293024'
+  },
+  {
+    id: 'lynx_kf41',
+    name: 'Lynx KF41',
+    country: 'Alemanha',
+    flag: '🇩🇪',
+    category: 'IFV',
+    weightTons: 44,
+    caliberDesc: 'Autocanhão 35mm Wotan • 44t • 1140 hp • Blindagem Modular + APS',
+    hasCannon: false,
+    cannonResist: 6, mgResist: 65,
+    cannonPower: 0, mgDamageMult: 2.65, mgRate: 46,
+    speed: 3.30, reloadTime: 1000,
+    dronesCount: 3, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Lynx_KF41.png',
+    facesRightInImg: false,
+    bodyColor: '#526149', turretColor: '#424f3b', accentColor: '#2d3628'
+  },
+  {
+    id: 'm2a4_bradley',
+    name: 'M2A4 Bradley',
+    country: 'Estados Unidos',
+    flag: '🇺🇸',
+    category: 'IFV',
+    weightTons: 36,
+    caliberDesc: '25mm M242 Bushmaster + Míssil TOW • 36t • Iron Fist APS',
+    hasCannon: false,
+    cannonResist: 5, mgResist: 58,
+    cannonPower: 0, mgDamageMult: 2.50, mgRate: 46,
+    speed: 3.15, reloadTime: 1000,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Lynx_KF41.png',
+    facesRightInImg: false,
+    bodyColor: '#c9b483', turretColor: '#b5a070', accentColor: '#85744e'
+  },
+  {
+    id: 'bmp3',
+    name: 'BMP-3',
+    country: 'Rússia',
+    flag: '🇷🇺',
+    category: 'IFV',
+    weightTons: 19,
+    caliberDesc: 'Canhão 100mm 2A70 + Autocanhão 30mm 2A72 • 19t Anfíbio Veloz',
+    hasCannon: true,
+    cannonResist: 4, mgResist: 46,
+    cannonPower: 0.94, mgDamageMult: 2.05, mgRate: 50,
+    speed: 3.45, reloadTime: 1550,
+    dronesCount: 2, apsCount: 1, fragCount: 4, bunkerCount: 2,
+    spriteSrc: 'Kurganetz-25.png',
+    facesRightInImg: false,
+    bodyColor: '#48593a', turretColor: '#39472e', accentColor: '#252e1e'
+  },
+  {
+    id: 'k21_ifv',
+    name: 'K21 IFV',
+    country: 'Coreia do Sul',
+    flag: '🇰🇷',
+    category: 'IFV',
+    weightTons: 26,
+    caliberDesc: 'Autocanhão 40mm Bofors • 26t • Blindagem Composta Fibra/Cerâmica',
+    hasCannon: false,
+    cannonResist: 5, mgResist: 52,
+    cannonPower: 0, mgDamageMult: 2.68, mgRate: 48,
+    speed: 3.40, reloadTime: 1000,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Borsuk.png',
+    facesRightInImg: false,
+    bodyColor: '#4e6146', turretColor: '#3e4f38', accentColor: '#293325'
+  },
+  {
+    id: 'zbd04a',
+    name: 'ZBD-04A',
+    country: 'China',
+    flag: '🇨🇳',
+    category: 'IFV',
+    weightTons: 25,
+    caliberDesc: 'Canhão 100mm + Autocanhão 30mm • 25t • Blindagem Modular Adicional',
+    hasCannon: true,
+    cannonResist: 5, mgResist: 52,
+    cannonPower: 0.95, mgDamageMult: 2.10, mgRate: 50,
+    speed: 3.35, reloadTime: 1550,
+    dronesCount: 2, apsCount: 1, fragCount: 4, bunkerCount: 2,
+    spriteSrc: 'ZBD-04A.png',
+    facesRightInImg: false,
+    bodyColor: '#566949', turretColor: '#46573b', accentColor: '#2e3827'
+  },
+  {
+    id: 'borsuk',
+    name: 'Borsuk IFV',
+    country: 'Polônia',
+    flag: '🇵🇱',
+    category: 'IFV',
+    weightTons: 28,
+    caliberDesc: 'Autocanhão 30mm Mk44S Bushmaster II • 28t Anfíbio • Torre ZSSW-30',
+    hasCannon: false,
+    cannonResist: 5, mgResist: 54,
+    cannonPower: 0, mgDamageMult: 2.50, mgRate: 46,
+    speed: 3.35, reloadTime: 1000,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Borsuk.png',
+    facesRightInImg: false,
+    bodyColor: '#4e5e44', turretColor: '#3f4d36', accentColor: '#293324'
+  },
+  {
+    id: 'ascod2',
+    name: 'ASCOD 2 (Pizarro / Ulan)',
+    country: 'Áustria / Espanha',
+    flag: '🇪🇸',
+    category: 'IFV',
+    weightTons: 35,
+    caliberDesc: 'Autocanhão 30/40mm • 35t • 800 hp • Blindagem Modular Pesada',
+    hasCannon: false,
+    cannonResist: 5, mgResist: 58,
+    cannonPower: 0, mgDamageMult: 2.58, mgRate: 47,
+    speed: 3.30, reloadTime: 1000,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Lynx_KF41.png',
+    facesRightInImg: false,
+    bodyColor: '#576b48', turretColor: '#465739', accentColor: '#2e3826'
+  },
+  {
+    id: 'ajax_uk',
+    name: 'Ajax Reconhecimento',
+    country: 'Reino Unido',
+    flag: '🇬🇧',
+    category: 'IFV',
+    weightTons: 38,
+    caliberDesc: 'Canhão 40mm CT40 Telescópico • 38t • Sensores ISTAR Avançados',
+    hasCannon: false,
+    cannonResist: 6, mgResist: 60,
+    cannonPower: 0, mgDamageMult: 2.72, mgRate: 47,
+    speed: 3.30, reloadTime: 1000,
+    dronesCount: 3, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Borsuk.png',
+    facesRightInImg: false,
+    bodyColor: '#596348', turretColor: '#474f39', accentColor: '#2f3626'
+  },
+
+  {
+    id: 'vbci2',
+    name: 'VBCI 2 (T40)',
+    country: 'França',
+    flag: '🇫🇷',
+    category: 'IFV',
+    weightTons: 32,
+    caliberDesc: 'Autocanhão 40mm CT40 8x8 • 32t • 100 km/h • Blindagem Modular',
+    hasCannon: false,
+    cannonResist: 5, mgResist: 55,
+    cannonPower: 0, mgDamageMult: 2.68, mgRate: 47,
+    speed: 3.65, reloadTime: 1000,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Boxer_RCT30.png',
+    facesRightInImg: false,
+    bodyColor: '#546349', turretColor: '#434f3a', accentColor: '#2b3325'
+  },
+  {
+    id: 'freccia_ifv',
+    name: 'VBM Freccia 8x8',
+    country: 'Itália',
+    flag: '🇮🇹',
+    category: 'IFV',
+    weightTons: 28,
+    caliberDesc: 'Autocanhão 25mm Oerlikon KBA • 28t • 110 km/h Ultra Veloz',
+    hasCannon: false,
+    cannonResist: 5, mgResist: 52,
+    cannonPower: 0, mgDamageMult: 2.42, mgRate: 44,
+    speed: 3.80, reloadTime: 1000,
+    dronesCount: 2, apsCount: 1, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Patria_AMV_XP.png',
+    facesRightInImg: false,
+    bodyColor: '#4b5c43', turretColor: '#3f4f38', accentColor: '#2c3827'
+  },
+  {
+    id: 'boxer_rct30',
+    name: 'Boxer RCT30 8x8',
+    country: 'Alemanha',
+    flag: '🇩🇪',
+    category: 'IFV',
+    weightTons: 38,
+    caliberDesc: 'Autocanhão 30mm MK30-2/ABM • 38t • 100 km/h • Blindagem Modular',
+    hasCannon: false,
+    cannonResist: 6, mgResist: 62,
+    cannonPower: 0, mgDamageMult: 2.55, mgRate: 46,
+    speed: 3.60, reloadTime: 1000,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Boxer_RCT30.png',
+    facesRightInImg: false,
+    bodyColor: '#4e5b47', turretColor: '#3f4a39', accentColor: '#293025'
+  },
+  {
+    id: 't15_armata',
+    name: 'T-15 Armata IFV Pesado',
+    country: 'Rússia',
+    flag: '🇷🇺',
+    category: 'IFV',
+    weightTons: 48,
+    caliberDesc: 'Autocanhão 30mm + Mísseis Kornet • 48t (Chassi MBT) • Afganit APS',
+    hasCannon: false,
+    cannonResist: 7, mgResist: 76,
+    cannonPower: 0, mgDamageMult: 2.62, mgRate: 48,
+    speed: 3.05, reloadTime: 1000,
+    dronesCount: 3, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'T-15-Armata.png',
+    facesRightInImg: false,
+    bodyColor: '#556142', turretColor: '#444f35', accentColor: '#2e3624'
+  },
+  {
+    id: 'namer_ifv',
+    name: 'Namer CEV / IFV (30mm)',
+    country: 'Israel',
+    flag: '🇮🇱',
+    category: 'IFV',
+    weightTons: 60,
+    caliberDesc: 'Torre Remota 30mm + Spike • 60t (Mais Protegido do Mundo!) + Trophy APS',
+    hasCannon: false,
+    cannonResist: 8, mgResist: 88,
+    cannonPower: 0, mgDamageMult: 2.58, mgRate: 47,
+    speed: 2.65, reloadTime: 1000,
+    dronesCount: 3, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Namer.png',
+    facesRightInImg: false,
+    bodyColor: '#8d8868', turretColor: '#7b7759', accentColor: '#56533d'
+  },
+
+  // ==================== CATÁLOGO OFICIAL 50 BLINDADOS 2026 (41 a 47: APCs) ====================
+  {
+    id: 'namer_apc',
+    name: 'Namer APC Pesado',
+    country: 'Israel',
+    flag: '🇮🇱',
+    category: 'APC',
+    weightTons: 60,
+    caliberDesc: 'RWS 12.7mm Katlanit + Morteiro • 60t Blindagem Nível Merkava 4 + Trophy APS',
+    hasCannon: false,
+    cannonResist: 9, mgResist: 92,
+    cannonPower: 0, mgDamageMult: 2.25, mgRate: 42,
+    speed: 2.70, reloadTime: 1000,
+    dronesCount: 3, apsCount: 2, fragCount: 4, bunkerCount: 2,
+    spriteSrc: 'Namer.png',
+    facesRightInImg: false,
+    bodyColor: '#827e60', turretColor: '#706c52', accentColor: '#4d4a38'
+  },
+  {
+    id: 'eitan_8x8',
+    name: 'Eitan 8x8',
+    country: 'Israel',
+    flag: '🇮🇱',
+    category: 'APC',
+    weightTons: 35,
+    caliberDesc: 'Torre 30mm / 12.7mm • 35t (90 km/h) • Proteção Ativa Iron Fist APS',
+    hasCannon: false,
+    cannonResist: 6, mgResist: 64,
+    cannonPower: 0, mgDamageMult: 2.48, mgRate: 45,
+    speed: 3.55, reloadTime: 1000,
+    dronesCount: 3, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Eitan.png',
+    facesRightInImg: false,
+    bodyColor: '#8a8465', turretColor: '#757054', accentColor: '#524e3a'
+  },
+  {
+    id: 'patria_amv_xp',
+    name: 'Patria AMV XP 8x8',
+    country: 'Finlândia',
+    flag: '🇫🇮',
+    category: 'APC',
+    weightTons: 32,
+    caliberDesc: 'Autocanhão 30mm • 32t (100 km/h) • Blindagem Modular Ártica',
+    hasCannon: false,
+    cannonResist: 5, mgResist: 58,
+    cannonPower: 0, mgDamageMult: 2.48, mgRate: 46,
+    speed: 3.65, reloadTime: 1000,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Patria_AMV_XP.png',
+    facesRightInImg: false,
+    bodyColor: '#4a5c44', turretColor: '#3b4a36', accentColor: '#263023'
+  },
+  {
+    id: 'gtk_boxer_apc',
+    name: 'GTK Boxer APC 8x8',
+    country: 'Alemanha / Países Baixos',
+    flag: '🇩🇪',
+    category: 'APC',
+    weightTons: 36,
+    caliberDesc: 'Estação Remota 12.7mm FLW 200 • 36t (100 km/h) • Casco Modular Triplo',
+    hasCannon: false,
+    cannonResist: 6, mgResist: 66,
+    cannonPower: 0, mgDamageMult: 2.28, mgRate: 42,
+    speed: 3.65, reloadTime: 1000,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Boxer_RCT30.png',
+    facesRightInImg: false,
+    bodyColor: '#4c5942', turretColor: '#3d4735', accentColor: '#262e21'
+  },
+  {
+    id: 'stryker_dvh_a1',
+    name: 'Stryker DVH A1 8x8',
+    country: 'Estados Unidos',
+    flag: '🇺🇸',
+    category: 'APC',
+    weightTons: 25,
+    caliberDesc: '30mm Dragoon / 12.7mm CROWS-J • 25t (100 km/h) • Casco Duplo em V',
+    hasCannon: false,
+    cannonResist: 5, mgResist: 54,
+    cannonPower: 0, mgDamageMult: 2.42, mgRate: 45,
+    speed: 3.70, reloadTime: 1000,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Stryker_DVH_A1.png',
+    facesRightInImg: false,
+    bodyColor: '#526149', turretColor: '#424f3b', accentColor: '#2d3628'
+  },
+  {
+    id: 'piranha_v',
+    name: 'Mowag Piranha V 8x8',
+    country: 'Suíça',
+    flag: '🇨🇭',
+    category: 'APC',
+    weightTons: 30,
+    caliberDesc: '30mm / 12.7mm RWS • 30t (100 km/h) • Proteção Modular Multicamada',
+    hasCannon: false,
+    cannonResist: 5, mgResist: 58,
+    cannonPower: 0, mgDamageMult: 2.44, mgRate: 45,
+    speed: 3.65, reloadTime: 1000,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Piranha_V.png',
+    facesRightInImg: false,
+    bodyColor: '#4f5e46', turretColor: '#3f4c38', accentColor: '#293324'
+  },
+  {
+    id: 'vbci_1',
+    name: 'VBCI 8x8',
+    country: 'França',
+    flag: '🇫🇷',
+    category: 'IFV',
+    weightTons: 29,
+    caliberDesc: 'Torre 25mm Dragar • 29t (100 km/h) • Blindagem Titânio/Alumínio',
+    hasCannon: false,
+    cannonResist: 5, mgResist: 54,
+    cannonPower: 0, mgDamageMult: 2.40, mgRate: 44,
+    speed: 3.68, reloadTime: 1000,
+    dronesCount: 2, apsCount: 1, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Patria_AMV_XP.png',
+    facesRightInImg: false,
+    bodyColor: '#57664b', turretColor: '#46523c', accentColor: '#2e3627'
+  },
+
+  // ==================== CATÁLOGO OFICIAL 50 BLINDADOS 2026 (48 a 50: Recon / Caça-Tanques) ====================
+  {
+    id: 'ebrc_jaguar',
+    name: 'EBRC Jaguar 6x6',
+    country: 'França',
+    flag: '🇫🇷',
+    category: 'TD',
+    weightTons: 25,
+    caliberDesc: 'Canhão 40mm CT40 + Mísseis Akeron MP • 25t (90 km/h) • Reconhecimento',
+    hasCannon: false,
+    cannonResist: 5, mgResist: 52,
+    cannonPower: 0, mgDamageMult: 2.75, mgRate: 45,
+    speed: 3.65, reloadTime: 1000,
+    dronesCount: 3, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'EBRC_Jaguar.png',
+    facesRightInImg: false,
+    bodyColor: '#5c6649', turretColor: '#4b543b', accentColor: '#353b29'
+  },
+  {
+    id: 'centauro_ii',
+    name: 'Centauro II MGS 8x8',
+    country: 'Itália',
+    flag: '🇮🇹',
+    category: 'TD',
+    weightTons: 30,
+    caliberDesc: 'Canhão 120mm L/45 Alta Pressão • 30t (105 km/h!) • Caça-Tanques 8x8',
+    hasCannon: true,
+    cannonResist: 5, mgResist: 56,
+    cannonPower: 1.24, mgDamageMult: 1.12, mgRate: 82,
+    speed: 3.75, reloadTime: 1600,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Centauro_II.png',
+    facesRightInImg: false,
+    bodyColor: '#4e5e44', turretColor: '#3e4c37', accentColor: '#283324'
+  },
+  {
+    id: 'amx10_rc',
+    name: 'AMX-10 RCR 6x6',
+    country: 'França',
+    flag: '🇫🇷',
+    category: 'TD',
+    weightTons: 17,
+    caliberDesc: 'Canhão 105mm F2 MECA • 17t (85 km/h) • Reconhecimento Rápido',
+    hasCannon: true,
+    cannonResist: 4, mgResist: 44,
+    cannonPower: 1.05, mgDamageMult: 1.05, mgRate: 85,
+    speed: 3.60, reloadTime: 1650,
+    dronesCount: 2, apsCount: 1, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'EBRC_Jaguar.png',
+    facesRightInImg: false,
+    bodyColor: '#5e6b4c', turretColor: '#4c573d', accentColor: '#333b29'
+  },
+
+  // ==================== BLINDADOS CLÁSSICOS, HISTÓRICOS E ESPECIAIS DA PASTA ====================
+  {
     id: 'merkava3',
     name: 'Merkava Mk.3D Baz',
+    country: 'Israel',
     flag: '🇮🇱',
     category: 'MBT',
-    caliberDesc: 'Canhão 120mm IMI + Correntes Anti-RPG + 2 Drones',
+    weightTons: 65,
+    caliberDesc: 'Canhão 120mm IMI + Correntes Anti-RPG • 65t • 2 Drones',
     hasCannon: true,
-    cannonResist: 7,
-    mgResist: 76,
-    cannonPower: 1.14,
-    mgDamageMult: 1.1,
-    mgRate: 80,
-    speed: 2.65,
-    reloadTime: 1850,
-    dronesCount: 2,
-    apsCount: 2,
+    cannonResist: 7, mgResist: 78,
+    cannonPower: 1.18, mgDamageMult: 1.10, mgRate: 80,
+    speed: 2.60, reloadTime: 1850,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
     spriteSrc: 'Merkava 3 baz.jpeg',
-    removeWhiteBg: true,
     facesRightInImg: false,
     bodyColor: '#767c5c', turretColor: '#676d4f', accentColor: '#484d36'
   },
   {
     id: 'merkava2',
     name: 'Merkava Mk.2B Dor Dalet',
+    country: 'Israel',
     flag: '🇮🇱',
     category: 'MBT',
-    caliberDesc: 'Canhão 105mm M68 + Morteiro 60mm + 1 Drone',
+    weightTons: 60,
+    caliberDesc: 'Canhão 105mm M68 + Morteiro Interno 60mm • 60t',
     hasCannon: true,
-    cannonResist: 7,
-    mgResist: 72,
-    cannonPower: 1.06,
-    mgDamageMult: 1.05,
-    mgRate: 82,
-    speed: 2.5,
-    reloadTime: 1850,
-    dronesCount: 1,
-    apsCount: 2,
+    cannonResist: 7, mgResist: 72,
+    cannonPower: 1.06, mgDamageMult: 1.05, mgRate: 82,
+    speed: 2.50, reloadTime: 1850,
+    dronesCount: 1, apsCount: 2, fragCount: 3, bunkerCount: 2,
     spriteSrc: 'merkava-2.webp',
-    removeWhiteBg: true,
     facesRightInImg: false,
     bodyColor: '#7d806c', turretColor: '#6d705e', accentColor: '#4d4f42'
   },
   {
     id: 'merkava1',
     name: 'Merkava Mk.1 Clássico',
+    country: 'Israel',
     flag: '🇮🇱',
     category: 'MBT',
-    caliberDesc: 'Canhão 105mm M68 + Motor Frontal Protetor',
+    weightTons: 60,
+    caliberDesc: 'Canhão 105mm M68 + Motor Frontal Protetor • 60t',
     hasCannon: true,
-    cannonResist: 6,
-    mgResist: 68,
-    cannonPower: 1.02,
-    mgDamageMult: 1.0,
-    mgRate: 85,
-    speed: 2.4,
-    reloadTime: 1900,
-    dronesCount: 0,
-    apsCount: 1,
-    spriteSrc: 'merkava 3.webp',
-    removeWhiteBg: true,
+    cannonResist: 6, mgResist: 68,
+    cannonPower: 1.02, mgDamageMult: 1.00, mgRate: 85,
+    speed: 2.40, reloadTime: 1900,
+    dronesCount: 0, apsCount: 1, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Merkava 1.jpeg',
     facesRightInImg: false,
     bodyColor: '#a8966e', turretColor: '#91805c', accentColor: '#665a3f'
   },
   {
     id: 'magach6b',
     name: 'Magach 6B Gal Batash',
+    country: 'Israel',
     flag: '🇮🇱',
     category: 'MBT',
-    caliberDesc: 'Canhão 105mm M68 + Blindagem Reativa Blazer',
+    weightTons: 55,
+    caliberDesc: 'Canhão 105mm M68 + Blindagem Reativa Blazer • 55t',
     hasCannon: true,
-    cannonResist: 7,
-    mgResist: 72,
-    cannonPower: 1.0,
-    mgDamageMult: 1.0,
-    mgRate: 85,
-    speed: 2.4,
-    reloadTime: 1900,
-    dronesCount: 0,
-    apsCount: 2,
+    cannonResist: 7, mgResist: 72,
+    cannonPower: 1.04, mgDamageMult: 1.00, mgRate: 85,
+    speed: 2.45, reloadTime: 1900,
+    dronesCount: 0, apsCount: 2, fragCount: 3, bunkerCount: 2,
     spriteSrc: 'Magach 6B Gal Batash.png',
     facesRightInImg: false,
     bodyColor: '#7f7860', turretColor: '#6d6751', accentColor: '#4f4a39'
   },
-
-  // --- TANQUES NORTE-AMERICANOS ---
-  {
-    id: 'm1a2_tusk',
-    name: 'M1A2 Abrams SEP TUSK II',
-    flag: '🇺🇸',
-    category: 'MBT',
-    caliberDesc: 'Canhão 120mm M256 + TUSK ERA + 3 Drones Switchblade',
-    hasCannon: true,
-    cannonResist: 8,
-    mgResist: 88,
-    cannonPower: 1.22,
-    mgDamageMult: 1.15,
-    mgRate: 85,
-    speed: 2.6,
-    reloadTime: 1950,
-    dronesCount: 3,
-    apsCount: 2,
-    spriteSrc: 'M1A2_SEP_TUSK-II.png',
-    facesRightInImg: false,
-    bodyColor: '#cbb682', turretColor: '#bda672', accentColor: '#8f7b4f'
-  },
   {
     id: 'm1a1_ha',
     name: 'M1A1 Abrams Heavy Armor',
+    country: 'Estados Unidos',
     flag: '🇺🇸',
     category: 'MBT',
-    caliberDesc: 'Canhão 120mm L/44 + Blindagem Pesada + 1 Drone',
+    weightTons: 63,
+    caliberDesc: 'Canhão 120mm L/44 + Malha de Urânio Empobrecido (73 Easting)',
     hasCannon: true,
-    cannonResist: 7,
-    mgResist: 80,
-    cannonPower: 1.18,
-    mgDamageMult: 1.0,
-    mgRate: 90,
-    speed: 2.7,
-    reloadTime: 1950,
-    dronesCount: 1,
-    apsCount: 2,
-    spriteSrc: 'Abrams-transparent.png',
+    cannonResist: 7, mgResist: 80,
+    cannonPower: 1.20, mgDamageMult: 1.05, mgRate: 88,
+    speed: 2.70, reloadTime: 1920,
+    dronesCount: 1, apsCount: 2, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'M1A1-HA_1stPl-ACo-EgtCombTeam1.png',
     facesRightInImg: false,
     bodyColor: '#d2be96', turretColor: '#c4af85', accentColor: '#9c8861'
   },
   {
     id: 'm60a1_era',
     name: 'M60A1 USMC (Blazer ERA)',
+    country: 'Estados Unidos',
     flag: '🇺🇸',
     category: 'MBT',
-    caliberDesc: 'Canhão 105mm M68 + Tijolos Reativos ERA (2 Usos)',
+    weightTons: 52,
+    caliberDesc: 'Canhão 105mm M68 + Tijolos Reativos ERA (Guerra do Golfo)',
     hasCannon: true,
-    cannonResist: 6,
-    mgResist: 68,
-    cannonPower: 1.0,
-    mgDamageMult: 1.0,
-    mgRate: 95,
-    speed: 2.35,
-    reloadTime: 1900,
-    dronesCount: 0,
-    apsCount: 2,
+    cannonResist: 6, mgResist: 68,
+    cannonPower: 1.04, mgDamageMult: 1.00, mgRate: 92,
+    speed: 2.40, reloadTime: 1900,
+    dronesCount: 0, apsCount: 2, fragCount: 3, bunkerCount: 2,
     spriteSrc: 'M601 ERA of the USMC at the battle of Kuwait Airport.png',
     facesRightInImg: false,
     bodyColor: '#c5a976', turretColor: '#b39664', accentColor: '#856d43'
   },
-
-  // --- TANQUES EUROPEUS ---
-  {
-    id: 'leopard2a6',
-    name: 'Leopard 2A6 / 2A8',
-    flag: '🇩🇪',
-    category: 'MBT',
-    caliberDesc: 'Canhão 120mm Rheinmetall L/55 + APS + 2 Drones',
-    hasCannon: true,
-    cannonResist: 7,
-    mgResist: 75,
-    cannonPower: 1.28,
-    mgDamageMult: 1.0,
-    mgRate: 90,
-    speed: 2.75,
-    reloadTime: 1950,
-    dronesCount: 2,
-    apsCount: 2,
-    spriteSrc: 'Leopard 2A6.png',
-    facesRightInImg: false,
-    bodyColor: '#4e5b47', turretColor: '#3f4a39', accentColor: '#293025'
-  },
   {
     id: 'leopard2e',
-    name: 'Leopard 2A4 (Espanha)',
+    name: 'Leopard 2A4 / 2E',
+    country: 'Espanha / Alemanha',
     flag: '🇪🇸',
     category: 'MBT',
-    caliberDesc: 'Canhão 120mm Rheinmetall L/44 + 1 Drone',
+    weightTons: 55,
+    caliberDesc: 'Canhão 120mm Rheinmetall L/44 • 55t • Camuflagem OTAN',
     hasCannon: true,
-    cannonResist: 6,
-    mgResist: 68,
-    cannonPower: 1.15,
-    mgDamageMult: 1.0,
-    mgRate: 85,
-    speed: 2.8,
-    reloadTime: 1850,
-    dronesCount: 1,
-    apsCount: 2,
+    cannonResist: 6, mgResist: 70,
+    cannonPower: 1.18, mgDamageMult: 1.02, mgRate: 85,
+    speed: 2.80, reloadTime: 1850,
+    dronesCount: 1, apsCount: 2, fragCount: 3, bunkerCount: 2,
     spriteSrc: 'Camouflaged Leopard 2A4 in Spanish Service.png',
     facesRightInImg: false,
     bodyColor: '#576b48', turretColor: '#465739', accentColor: '#2e3826'
   },
   {
-    id: 'ariete',
-    name: 'C1 Ariete',
-    flag: '🇮🇹',
-    category: 'MBT',
-    caliberDesc: 'Canhão 120mm OTO Breda L/44 + Kit PSO + 1 Drone',
-    hasCannon: true,
-    cannonResist: 6,
-    mgResist: 64,
-    cannonPower: 1.15,
-    mgDamageMult: 1.0,
-    mgRate: 85,
-    speed: 2.85,
-    reloadTime: 1850,
-    dronesCount: 1,
-    apsCount: 2,
-    spriteSrc: 'Ariete Italy.png',
-    facesRightInImg: false,
-    bodyColor: '#4b5c43', turretColor: '#3f4f38', accentColor: '#2c3827'
-  },
-
-  // --- TANQUES ASIÁTICOS ---
-  {
-    id: 'type10',
-    name: 'Type 10 Hitomaru',
-    flag: '🇯🇵',
-    category: 'MBT',
-    caliberDesc: 'Canhão 120mm JSW Autoloader + 3 Drones Táticos',
-    hasCannon: true,
-    cannonResist: 6,
-    mgResist: 62,
-    cannonPower: 1.18,
-    mgDamageMult: 1.0,
-    mgRate: 85,
-    speed: 2.95,
-    reloadTime: 1450,
-    dronesCount: 3,
-    apsCount: 2,
-    spriteSrc: 'Hitomaru Main Battle Tank.png',
-    facesRightInImg: false,
-    bodyColor: '#526348', turretColor: '#45543c', accentColor: '#2e3828'
-  },
-  {
     id: 'type90',
     name: 'Type 90 Kyu-maru',
+    country: 'Japão',
     flag: '🇯🇵',
     category: 'MBT',
-    caliberDesc: 'Canhão 120mm Rheinmetall + Autoloader + 1 Drone',
+    weightTons: 50,
+    caliberDesc: 'Canhão 120mm Rheinmetall L/44 + Autoloader • 50t',
     hasCannon: true,
-    cannonResist: 6,
-    mgResist: 65,
-    cannonPower: 1.16,
-    mgDamageMult: 1.0,
-    mgRate: 88,
-    speed: 2.8,
-    reloadTime: 1550,
-    dronesCount: 1,
-    apsCount: 2,
+    cannonResist: 6, mgResist: 68,
+    cannonPower: 1.18, mgDamageMult: 1.02, mgRate: 86,
+    speed: 2.82, reloadTime: 1550,
+    dronesCount: 1, apsCount: 2, fragCount: 3, bunkerCount: 2,
     spriteSrc: 'Type-90_MBT-late-1 japan.png',
     facesRightInImg: false,
     bodyColor: '#5d6b52', turretColor: '#4c5942', accentColor: '#353d2e'
   },
   {
-    id: 'type96',
-    name: 'ZTZ-96A (Type 96)',
-    flag: '🇨🇳',
-    category: 'MBT',
-    caliberDesc: 'Canhão 125mm + Blindagem Reativa FY-4 + 2 Drones',
-    hasCannon: true,
-    cannonResist: 6,
-    mgResist: 66,
-    cannonPower: 1.18,
-    mgDamageMult: 1.0,
-    mgRate: 90,
-    speed: 2.65,
-    reloadTime: 1850,
-    dronesCount: 2,
-    apsCount: 2,
-    spriteSrc: 'Type 96 of the 71st Group Army during live firing exercises, May 2022.png',
-    facesRightInImg: false,
-    bodyColor: '#5c6e49', turretColor: '#4b593b', accentColor: '#333d28'
-  },
-  {
     id: 'chonma2',
     name: 'Ch\'onma-2 (M2020)',
+    country: 'Coreia do Norte',
     flag: '🇰🇵',
     category: 'MBT',
-    caliberDesc: 'Canhão 125mm + APS Afghanit-K + 2 Drones',
+    weightTons: 55,
+    caliberDesc: 'Canhão 125mm + Mísseis Bulsae-3 + APS • 55t',
     hasCannon: true,
-    cannonResist: 6,
-    mgResist: 65,
-    cannonPower: 1.2,
-    mgDamageMult: 1.15,
-    mgRate: 85,
-    speed: 2.55,
-    reloadTime: 1950,
-    dronesCount: 2,
-    apsCount: 2,
+    cannonResist: 6, mgResist: 68,
+    cannonPower: 1.22, mgDamageMult: 1.15, mgRate: 85,
+    speed: 2.60, reloadTime: 1920,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
     spriteSrc: 'The Ch\u2019\u014Fnma-2 Model 2023 with the new armor package and new three tone camouflage.png',
     facesRightInImg: false,
     bodyColor: '#9c8c64', turretColor: '#7a6d4c', accentColor: '#4d442e'
   },
-
-  // --- TANQUES RUSSOS / SOVIÉTICOS / ORIENTE MÉDIO ---
   {
-    id: 'armata',
-    name: 'T-14 Armata',
-    flag: '🇷🇺',
+    id: 't62_syria',
+    name: 'T-62M Exército Sírio',
+    country: 'Síria / URSS',
+    flag: '🇸🇾',
     category: 'MBT',
-    caliberDesc: 'Canhão 125mm 2A82 + Defesa Afghanit + 3 Drones Lancet',
+    weightTons: 40,
+    caliberDesc: 'Canhão 115mm U-5TS Alma Lisa (Vale das Lágrimas 1973)',
     hasCannon: true,
-    cannonResist: 7,
-    mgResist: 75,
-    cannonPower: 1.26,
-    mgDamageMult: 1.05,
-    mgRate: 85,
-    speed: 2.85,
-    reloadTime: 1800,
-    dronesCount: 3,
-    apsCount: 2,
-    spriteSrc: 'T-14-Armata.png',
+    cannonResist: 5, mgResist: 56,
+    cannonPower: 1.10, mgDamageMult: 1.00, mgRate: 88,
+    speed: 2.55, reloadTime: 1950,
+    dronesCount: 0, apsCount: 1, fragCount: 3, bunkerCount: 2,
+    spriteSrc: '68 in service with the Syrian Arab Army.png',
     facesRightInImg: false,
-    bodyColor: '#5c6649', turretColor: '#4b543b', accentColor: '#353b29'
-  },
-  {
-    id: 't90m',
-    name: 'T-90 Omsk / Proryv',
-    flag: '🇷🇺',
-    category: 'MBT',
-    caliberDesc: 'Canhão 125mm + Blindagem Reativa Relikt + 2 Drones',
-    hasCannon: true,
-    cannonResist: 6,
-    mgResist: 68,
-    cannonPower: 1.2,
-    mgDamageMult: 1.05,
-    mgRate: 85,
-    speed: 2.7,
-    reloadTime: 1850,
-    dronesCount: 2,
-    apsCount: 2,
-    spriteSrc: 'T-90-Omsk_VTTV_exhibition1999.png',
-    facesRightInImg: false,
-    bodyColor: '#48593a', turretColor: '#3c4a30', accentColor: '#293320'
-  },
-  {
-    id: 'karrar',
-    name: 'Karrar / T-72M Rakhsh',
-    flag: '🇮🇷',
-    category: 'MBT',
-    caliberDesc: 'Canhão 125mm + ERA Relikt + 2 Drones Shahed',
-    hasCannon: true,
-    cannonResist: 6,
-    mgResist: 65,
-    cannonPower: 1.16,
-    mgDamageMult: 1.0,
-    mgRate: 88,
-    speed: 2.6,
-    reloadTime: 1900,
-    dronesCount: 2,
-    apsCount: 2,
-    spriteSrc: 'The Karrar Main Battle tank.png',
-    facesRightInImg: false,
-    bodyColor: '#b39f74', turretColor: '#9c8960', accentColor: '#6e6041'
+    bodyColor: '#9e8c62', turretColor: '#82734f', accentColor: '#574c33'
   },
   {
     id: 'm84_kuwait',
-    name: 'M-84 / T-62AGM Upgrade',
+    name: 'T-62AGM Modernizado',
+    country: 'Ucrânia / Kuwait',
     flag: '🇰🇼',
     category: 'MBT',
-    caliberDesc: 'Canhão 125mm + Defesa Reativa Nozh (2 Usos)',
+    weightTons: 43,
+    caliberDesc: 'Canhão 125mm KBA-3 + Blindagem Reativa Nozh • 43t',
     hasCannon: true,
-    cannonResist: 5,
-    mgResist: 58,
-    cannonPower: 1.12,
-    mgDamageMult: 1.0,
-    mgRate: 85,
-    speed: 2.75,
-    reloadTime: 1850,
-    dronesCount: 1,
-    apsCount: 2,
+    cannonResist: 6, mgResist: 62,
+    cannonPower: 1.16, mgDamageMult: 1.02, mgRate: 85,
+    speed: 2.70, reloadTime: 1850,
+    dronesCount: 1, apsCount: 2, fragCount: 3, bunkerCount: 2,
     spriteSrc: 'T-62AGM with three-tone digit camouflage. Illustration done by Ardhya \u2018Vesp\u2019 Anargha.png',
     facesRightInImg: false,
     bodyColor: '#a69168', turretColor: '#8c7954', accentColor: '#5e5136'
   },
-
-  // --- 💥 ARTILHARIA MÓVEL (SPG) ---
   {
     id: 'pzh2000',
     name: 'Panzerhaubitze 2000 (155mm)',
+    country: 'Alemanha',
     flag: '🇩🇪',
     category: 'SPG',
-    caliberDesc: 'Obuseiro 155mm L/52 Devastador + 2 Drones Busca-Alvo',
+    weightTons: 57,
+    caliberDesc: 'Obuseiro 155mm L/52 Devastador • 57t • +3 Perfura-Bunkers!',
     hasCannon: true,
-    cannonResist: 5,
-    mgResist: 50,
-    cannonPower: 1.75,
-    mgDamageMult: 0.9,
-    mgRate: 100,
-    speed: 1.55,
-    reloadTime: 2550,
-    dronesCount: 2,
-    apsCount: 0,
+    cannonResist: 5, mgResist: 54,
+    cannonPower: 1.80, mgDamageMult: 0.95, mgRate: 95,
+    speed: 1.65, reloadTime: 2450,
+    dronesCount: 2, apsCount: 0, fragCount: 4, bunkerCount: 3,
     spriteSrc: 'Panzerhaubitze 2000.png',
     facesRightInImg: false,
     bodyColor: '#4a593d', turretColor: '#3b4731', accentColor: '#252e1e'
   },
   {
     id: 'm1989_koksan',
-    name: 'M-1992 / Koksan Artilharia',
+    name: 'M-1989 Koksan (170mm)',
+    country: 'Coreia do Norte',
     flag: '🇰🇵',
     category: 'SPG',
-    caliberDesc: 'Artilharia Móvel Pesada + Radar (Alto Poder)',
+    weightTons: 40,
+    caliberDesc: 'Canhão de Artilharia Pesada 170mm • Longo Alcance + 3 Bunkers',
     hasCannon: true,
-    cannonResist: 4,
-    mgResist: 45,
-    cannonPower: 1.65,
-    mgDamageMult: 1.35,
-    mgRate: 70,
-    speed: 1.5,
-    reloadTime: 2450,
-    dronesCount: 1,
-    apsCount: 0,
+    cannonResist: 4, mgResist: 48,
+    cannonPower: 1.72, mgDamageMult: 1.30, mgRate: 72,
+    speed: 1.60, reloadTime: 2400,
+    dronesCount: 1, apsCount: 0, fragCount: 4, bunkerCount: 3,
     spriteSrc: 'M-1989 M-1992.png',
     facesRightInImg: false,
     bodyColor: '#485735', turretColor: '#3b472b', accentColor: '#252e1b'
   },
-
-  // --- 🎯 CAÇA-TANQUES E ENGENHARIA (TD) ---
   {
     id: 'type16_mcv',
     name: 'Type 16 MCV 8x8',
+    country: 'Japão',
     flag: '🇯🇵',
     category: 'TD',
-    caliberDesc: 'Canhão 105mm 8x8 Veloz + 2 Drones de Ataque',
+    weightTons: 26,
+    caliberDesc: 'Canhão 105mm JSW 8x8 • 26t (100 km/h) • Caça-Tanques Veloz',
     hasCannon: true,
-    cannonResist: 4,
-    mgResist: 45,
-    cannonPower: 1.05,
-    mgDamageMult: 1.0,
-    mgRate: 85,
-    speed: 3.55,
-    reloadTime: 1650,
-    dronesCount: 2,
-    apsCount: 2,
+    cannonResist: 4, mgResist: 48,
+    cannonPower: 1.08, mgDamageMult: 1.05, mgRate: 84,
+    speed: 3.65, reloadTime: 1620,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
     spriteSrc: 'Type 16.png',
     facesRightInImg: false,
     bodyColor: '#4e634c', turretColor: '#3d4f3b', accentColor: '#283327'
@@ -1864,19 +2581,16 @@ const VEHICLES = [
   {
     id: 'stryker_m1128',
     name: 'M1128 Stryker Mobile Gun',
+    country: 'Estados Unidos',
     flag: '🇺🇸',
     category: 'TD',
-    caliberDesc: 'Canhão 105mm Remoto + 2 Drones Switchblade',
+    weightTons: 21,
+    caliberDesc: 'Canhão 105mm M68A1E4 Autoloader • 21t • 2 Drones Switchblade',
     hasCannon: true,
-    cannonResist: 4,
-    mgResist: 45,
-    cannonPower: 1.05,
-    mgDamageMult: 1.0,
-    mgRate: 85,
-    speed: 3.5,
-    reloadTime: 1600,
-    dronesCount: 2,
-    apsCount: 2,
+    cannonResist: 4, mgResist: 46,
+    cannonPower: 1.06, mgDamageMult: 1.05, mgRate: 84,
+    speed: 3.55, reloadTime: 1600,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
     spriteSrc: 'The M1128 Mobile Gun System is the latest Stryker-based vehicle in use with the US military. The main armament consists of a remotely operated autoloading 105-mm main gun..png',
     facesRightInImg: true,
     bodyColor: '#526149', turretColor: '#424f3b', accentColor: '#2d3628'
@@ -1884,101 +2598,84 @@ const VEHICLES = [
   {
     id: 'm1150_abv',
     name: 'M1150 Assault Breacher',
+    country: 'Estados Unidos',
     flag: '🇺🇸',
     category: 'TD',
-    caliberDesc: 'Demolição Pesada + ERA (2 Usos) + 1 Drone',
+    weightTons: 72,
+    caliberDesc: 'Morteiro de Demolição MICLIC + ERA • 72t • 3 Perfura-Bunkers!',
     hasCannon: true,
-    cannonResist: 9,
-    mgResist: 95,
-    cannonPower: 1.45,
-    mgDamageMult: 1.1,
-    mgRate: 85,
-    speed: 1.85,
-    reloadTime: 2300,
-    dronesCount: 1,
-    apsCount: 2,
+    cannonResist: 9, mgResist: 95,
+    cannonPower: 1.46, mgDamageMult: 1.12, mgRate: 84,
+    speed: 1.95, reloadTime: 2250,
+    dronesCount: 1, apsCount: 2, fragCount: 3, bunkerCount: 3,
     spriteSrc: 'M1150 Assault Breacher Vehicle.png',
     facesRightInImg: false,
     bodyColor: '#cbb682', turretColor: '#bda672', accentColor: '#8f7b4f'
   },
-
-  // --- 🔥 BLINDADOS SEM CANHÃO PESADO (IFV / APC) ---
+  {
+    id: 'te_alacran',
+    name: 'TE Alacrán AEV Engenharia',
+    country: 'Espanha',
+    flag: '🇪🇸',
+    category: 'TD',
+    weightTons: 52,
+    caliberDesc: 'Canhão de Demolição + Lâmina Bulldozer • 52t • 3 Perfura-Bunkers!',
+    hasCannon: true,
+    cannonResist: 8, mgResist: 82,
+    cannonPower: 1.38, mgDamageMult: 1.10, mgRate: 85,
+    speed: 2.15, reloadTime: 2150,
+    dronesCount: 1, apsCount: 2, fragCount: 3, bunkerCount: 3,
+    spriteSrc: 'TE_Alacran_AEV_Fin-1024x411.png',
+    facesRightInImg: false,
+    bodyColor: '#576b48', turretColor: '#465739', accentColor: '#2e3826'
+  },
   {
     id: 'ee11_urutu',
     name: 'EE-11 Urutu Modernizado',
+    country: 'Brasil',
     flag: '🇧🇷',
-    category: 'IFV',
-    caliberDesc: 'SEM CANHÃO • Torre 30mm/.50 + 2 Drones + Defesa APS',
+    category: 'APC',
+    weightTons: 14,
+    caliberDesc: 'Torre Remota 30mm / .50 • 14t 6x6 Anfíbio • Engesa Brasil',
     hasCannon: false,
-    cannonResist: 4,
-    mgResist: 45,
-    cannonPower: 0,
-    mgDamageMult: 2.35,
-    mgRate: 55,
-    speed: 3.65,
-    reloadTime: 1000,
-    dronesCount: 2,
-    apsCount: 2,
+    cannonResist: 4, mgResist: 46,
+    cannonPower: 0, mgDamageMult: 2.38, mgRate: 52,
+    speed: 3.65, reloadTime: 1000,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
     spriteSrc: 'EE-11 Urutu Q.T. Modernization. Illustration by Ardhya \u2018Vesp\u2019 Anargha..png',
     facesRightInImg: false,
     bodyColor: '#485c3a', turretColor: '#394a2e', accentColor: '#25301d'
   },
   {
     id: 'btr90',
-    name: 'BTR-90 Blindado 8x8',
+    name: 'BTR-90 Rostok 8x8',
+    country: 'Rússia',
     flag: '🇷🇺',
-    category: 'IFV',
-    caliberDesc: 'SEM CANHÃO • Autocanhão 30mm 2A42 + 2 Drones',
+    category: 'APC',
+    weightTons: 21,
+    caliberDesc: 'Autocanhão 30mm 2A42 + AGS-17 • 21t Anfíbio 8x8',
     hasCannon: false,
-    cannonResist: 4,
-    mgResist: 48,
-    cannonPower: 0,
-    mgDamageMult: 2.45,
-    mgRate: 52,
-    speed: 3.6,
-    reloadTime: 1000,
-    dronesCount: 2,
-    apsCount: 0,
+    cannonResist: 4, mgResist: 48,
+    cannonPower: 0, mgDamageMult: 2.45, mgRate: 50,
+    speed: 3.60, reloadTime: 1000,
+    dronesCount: 2, apsCount: 1, fragCount: 3, bunkerCount: 2,
     spriteSrc: 'BTR-90.png',
     facesRightInImg: false,
     bodyColor: '#4a5738', turretColor: '#3b452c', accentColor: '#282e1e'
   },
   {
-    id: 't15_armata',
-    name: 'T-15 Armata IFV Pesado',
-    flag: '🇷🇺',
-    category: 'IFV',
-    caliberDesc: 'SEM CANHÃO • Autocanhão 30mm + APS Afghanit (2) + 3 Drones',
-    hasCannon: false,
-    cannonResist: 7,
-    mgResist: 75,
-    cannonPower: 0,
-    mgDamageMult: 2.6,
-    mgRate: 55,
-    speed: 2.95,
-    reloadTime: 1000,
-    dronesCount: 3,
-    apsCount: 2,
-    spriteSrc: 'T-15-Armata.png',
-    facesRightInImg: false,
-    bodyColor: '#556142', turretColor: '#444f35', accentColor: '#2e3624'
-  },
-  {
     id: 'kurganets25',
-    name: 'Kurganets-25 IFV',
+    name: 'Kurganets-25 B-11',
+    country: 'Rússia',
     flag: '🇷🇺',
     category: 'IFV',
-    caliberDesc: 'SEM CANHÃO • Autocanhão 30mm + APS (2) + 2 Drones',
+    weightTons: 25,
+    caliberDesc: 'Autocanhão 30mm + Kornet-EM • 25t • APS Afganit Leve',
     hasCannon: false,
-    cannonResist: 4,
-    mgResist: 46,
-    cannonPower: 0,
-    mgDamageMult: 2.35,
-    mgRate: 54,
-    speed: 3.4,
-    reloadTime: 1000,
-    dronesCount: 2,
-    apsCount: 2,
+    cannonResist: 5, mgResist: 52,
+    cannonPower: 0, mgDamageMult: 2.45, mgRate: 50,
+    speed: 3.45, reloadTime: 1000,
+    dronesCount: 2, apsCount: 2, fragCount: 3, bunkerCount: 2,
     spriteSrc: 'Kurganetz-25.png',
     facesRightInImg: false,
     bodyColor: '#3d5234', turretColor: '#314229', accentColor: '#d9531e'
@@ -1986,19 +2683,16 @@ const VEHICLES = [
   {
     id: 'bpm97',
     name: 'BPM-97 Vystrel 4x4',
+    country: 'Rússia',
     flag: '🇷🇺',
-    category: 'IFV',
-    caliberDesc: 'SEM CANHÃO • Metralhadora KPVT 14.5mm + 1 Drone',
+    category: 'APC',
+    weightTons: 11,
+    caliberDesc: 'Metralhadora Pesada KPVT 14.5mm • 11t 4x4 Veloz',
     hasCannon: false,
-    cannonResist: 3,
-    mgResist: 36,
-    cannonPower: 0,
-    mgDamageMult: 2.15,
-    mgRate: 50,
-    speed: 3.85,
-    reloadTime: 1000,
-    dronesCount: 1,
-    apsCount: 0,
+    cannonResist: 3, mgResist: 38,
+    cannonPower: 0, mgDamageMult: 2.18, mgRate: 48,
+    speed: 3.85, reloadTime: 1000,
+    dronesCount: 1, apsCount: 0, fragCount: 3, bunkerCount: 2,
     spriteSrc: 'BPM-97-Vystrel.png',
     facesRightInImg: false,
     bodyColor: '#4b593e', turretColor: '#3c4731', accentColor: '#283021'
@@ -2006,40 +2700,78 @@ const VEHICLES = [
   {
     id: 'puma4x4',
     name: 'Puma 4x4 Reconhecimento',
+    country: 'Itália',
     flag: '🇮🇹',
-    category: 'IFV',
-    caliberDesc: 'SEM CANHÃO • Ultra Veloz + 2 Drones Espiões/Kamikaze',
+    category: 'APC',
+    weightTons: 8,
+    caliberDesc: 'Torre .50 / 7.62mm • 8t Ultra Veloz + 2 Drones Kamikaze',
     hasCannon: false,
-    cannonResist: 3,
-    mgResist: 34,
-    cannonPower: 0,
-    mgDamageMult: 2.1,
-    mgRate: 46,
-    speed: 4.1,
-    reloadTime: 1000,
-    dronesCount: 2,
-    apsCount: 0,
+    cannonResist: 3, mgResist: 36,
+    cannonPower: 0, mgDamageMult: 2.12, mgRate: 44,
+    speed: 4.10, reloadTime: 1000,
+    dronesCount: 2, apsCount: 0, fragCount: 3, bunkerCount: 2,
     spriteSrc: 'Puma-4x4.png',
     facesRightInImg: false,
     bodyColor: '#48543c', turretColor: '#37402e', accentColor: '#242b1e'
+  },
+  {
+    id: 'alvis_shadow',
+    name: 'Alvis Shadow RCV',
+    country: 'Reino Unido',
+    flag: '🇬🇧',
+    category: 'APC',
+    weightTons: 10,
+    caliberDesc: 'Estação RWS .50 + Reconhecimento Tático • 10t Ultra Leve',
+    hasCannon: false,
+    cannonResist: 3, mgResist: 38,
+    cannonPower: 0, mgDamageMult: 2.18, mgRate: 44,
+    speed: 4.05, reloadTime: 1000,
+    dronesCount: 3, apsCount: 1, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Alvis Shadow.png',
+    facesRightInImg: false,
+    bodyColor: '#bda778', turretColor: '#a69062', accentColor: '#756542'
+  },
+  {
+    id: 'ibero_smv20',
+    name: 'Ibero SMV20 Tático',
+    country: 'Espanha',
+    flag: '🇪🇸',
+    category: 'APC',
+    weightTons: 15,
+    caliberDesc: 'Torre Tática 20mm/12.7mm • 15t • Mobilidade Off-Road',
+    hasCannon: false,
+    cannonResist: 4, mgResist: 44,
+    cannonPower: 0, mgDamageMult: 2.28, mgRate: 46,
+    speed: 3.75, reloadTime: 1000,
+    dronesCount: 2, apsCount: 1, fragCount: 3, bunkerCount: 2,
+    spriteSrc: 'Ibero_SMV20TXT.png',
+    facesRightInImg: false,
+    bodyColor: '#546347', turretColor: '#424f38', accentColor: '#2a3324'
   }
 ];
 
 const VEHICLE_MAP = {};
 VEHICLES.forEach(v => { VEHICLE_MAP[v.id] = v; });
+VEHICLE_MAP['m1a2_tusk'] = VEHICLE_MAP['m1a2_sepv3'] || VEHICLE_MAP['m1a2_tusk'];
+VEHICLE_MAP['leopard2a6'] = VEHICLE_MAP['leopard2a8'] || VEHICLE_MAP['leopard2a6'];
 
-// Remove qualquer fundo branco/claro automaticamente (tanto no campo de batalha quanto nos cards do menu!)
+// Remove qualquer fundo branco/claro automaticamente E recorta margens vazias (auto-crop)
 const loadedSprites = {};
 const transparentDataUrls = {};
 
-function makeImageTransparentCanvas(img) {
-  const w = img.naturalWidth || img.width;
-  const h = img.naturalHeight || img.height;
+function makeImageTransparentCanvas(img, autoCrop = true) {
+  const srcW = img.naturalWidth || img.width;
+  const srcH = img.naturalHeight || img.height;
+  const maxDim = 900;
+  const scale = Math.max(srcW, srcH) > maxDim ? (maxDim / Math.max(srcW, srcH)) : 1;
+  const w = Math.max(1, Math.round(srcW * scale));
+  const h = Math.max(1, Math.round(srcH * scale));
+
   const off = document.createElement('canvas');
   off.width = w;
   off.height = h;
   const octx = off.getContext('2d');
-  octx.drawImage(img, 0, 0);
+  octx.drawImage(img, 0, 0, w, h);
   const imgData = octx.getImageData(0, 0, w, h);
   const d = imgData.data;
 
@@ -2049,11 +2781,9 @@ function makeImageTransparentCanvas(img) {
     const r = d[idx], g = d[idx + 1], b = d[idx + 2];
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
-    // Pixels brancos ou quase brancos com baixa saturação
-    return (r > 218 && g > 218 && b > 218 && (max - min) < 32);
+    return (r > 198 && g > 198 && b > 198 && (max - min) < 26);
   };
 
-  // Flood-fill a partir de todas as bordas da imagem para remover 100% do fundo branco sem apagar detalhes internos
   const visited = new Uint8Array(w * h);
   const queue = new Int32Array(w * h);
   let head = 0, tail = 0;
@@ -2080,7 +2810,7 @@ function makeImageTransparentCanvas(img) {
   while (head < tail) {
     const p = queue[head++];
     const idx = p * 4;
-    d[idx + 3] = 0; // Totalmente transparente
+    d[idx + 3] = 0;
 
     const x = p % w;
     const y = (p - x) / w;
@@ -2090,17 +2820,18 @@ function makeImageTransparentCanvas(img) {
     if (y < h - 1) pushIfBg(x, y + 1);
   }
 
-  // Remove também qualquer pixel branco puro residual (ex: dentro das rodas/lagartas) e suaviza bordas (anti-halo branco)
+  let minX = w, minY = h, maxX = 0, maxY = 0;
   for (let p = 0; p < w * h; p++) {
     const i = p * 4;
     if (d[i + 3] === 0) continue;
     const r = d[i], g = d[i + 1], b = d[i + 2];
+    const x = p % w;
+    const y = (p - x) / w;
+
     if (r > 238 && g > 238 && b > 238) {
       d[i + 3] = 0;
-    } else if (r > 205 && g > 205 && b > 205 && Math.max(r, g, b) - Math.min(r, g, b) < 28) {
-      // Se for vizinho de pixel transparente, suaviza a borda para nunca ficar contorno branco
-      const x = p % w;
-      const y = (p - x) / w;
+      continue;
+    } else if (r > 195 && g > 195 && b > 195 && Math.max(r, g, b) - Math.min(r, g, b) < 28) {
       const hasTransNeighbor =
         (x > 0 && visited[p - 1]) ||
         (x < w - 1 && visited[p + 1]) ||
@@ -2108,29 +2839,70 @@ function makeImageTransparentCanvas(img) {
         (y < h - 1 && visited[p + w]);
       if (hasTransNeighbor) {
         const brightness = (r + g + b) / 3;
-        d[i + 3] = Math.max(0, Math.min(255, Math.round((240 - brightness) * 5)));
+        d[i + 3] = Math.max(0, Math.min(255, Math.round((235 - brightness) * 5)));
       }
+    }
+
+    if (d[i + 3] > 28) {
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
     }
   }
 
   octx.putImageData(imgData, 0, 0);
+
+  if (autoCrop && maxX > minX && maxY > minY) {
+    const pad = 2;
+    const cx = Math.max(0, minX - pad);
+    const cy = Math.max(0, minY - pad);
+    const cw = Math.min(w - cx, (maxX - minX + 1) + pad * 2);
+    const ch = Math.min(h - cy, (maxY - minY + 1) + pad * 2);
+    const cropped = document.createElement('canvas');
+    cropped.width = cw;
+    cropped.height = ch;
+    cropped.getContext('2d').drawImage(off, cx, cy, cw, ch, 0, 0, cw, ch);
+    return cropped;
+  }
+
   return off;
 }
 
+const spriteFileCache = {};
 VEHICLES.forEach(v => {
+  if (spriteFileCache[v.spriteSrc]) {
+    const cached = spriteFileCache[v.spriteSrc];
+    if (cached.canvas) {
+      loadedSprites[v.id] = cached.canvas;
+      transparentDataUrls[v.id] = cached.dataUrl;
+    } else {
+      cached.waiters.push(v.id);
+      loadedSprites[v.id] = cached.img;
+    }
+    return;
+  }
+
   const img = new Image();
+  const entry = { img, canvas: null, dataUrl: null, waiters: [v.id] };
+  spriteFileCache[v.spriteSrc] = entry;
+
   img.onload = () => {
     try {
-      const off = makeImageTransparentCanvas(img);
-      loadedSprites[v.id] = off;
-      transparentDataUrls[v.id] = off.toDataURL('image/png');
-      // Atualiza imediatamente as miniaturas do menu que já estiverem na tela
-      document.querySelectorAll(`img[data-vehicle-img="${v.id}"]`).forEach(el => {
-        el.src = transparentDataUrls[v.id];
+      const off = makeImageTransparentCanvas(img, true);
+      const dUrl = off.toDataURL('image/png');
+      entry.canvas = off;
+      entry.dataUrl = dUrl;
+      entry.waiters.forEach(vid => {
+        loadedSprites[vid] = off;
+        transparentDataUrls[vid] = dUrl;
+        document.querySelectorAll(`img[data-vehicle-img="${vid}"]`).forEach(el => {
+          el.src = dUrl;
+        });
       });
       return;
     } catch (e) {}
-    loadedSprites[v.id] = img;
+    entry.waiters.forEach(vid => { loadedSprites[vid] = img; });
   };
   img.src = encodeURI(v.spriteSrc);
   loadedSprites[v.id] = img;
@@ -2854,7 +3626,7 @@ function handleNetworkData(data) {
     enemy.x = (1 - data.nx) * W;
     enemy.y = getTerrainY(enemy.x);
     enemy.turretAngle = Math.PI - data.turretAngle;
-    fireCannon(enemy, false, data.chargeRatio, true);
+    fireCannon(enemy, false, data.chargeRatio, true, data.shellType || 'cannon');
   } else if (data.type === 'fire_mg') {
     if (!enemy || gameState !== 'playing') return;
     enemy.x = (1 - data.nx) * W;
@@ -2908,6 +3680,9 @@ function handleNetworkData(data) {
 // ============================================================================
 function initMenus() {
   renderProfileUI();
+
+  const tabAll = document.getElementById('tab-all-count');
+  if (tabAll) tabAll.textContent = `Todos (${VEHICLES.length})`;
 
   const unitsGrid = document.getElementById('units-grid');
   unitsGrid.innerHTML = '';
@@ -2980,28 +3755,41 @@ function renderVehicleGrid() {
       broadcastProfileToPeer();
     };
 
-    const catTagClass = tank.category === 'MBT' ? 'class-mbt' : tank.category === 'SPG' ? 'class-spg' : tank.category === 'IFV' ? 'class-ifv' : 'class-td';
-    const catLabel = tank.category === 'MBT' ? 'Tanque MBT' : tank.category === 'SPG' ? 'Artilharia' : tank.category === 'IFV' ? 'Sem Canhão' : 'Caça-Tanque';
+    const catTagClass =
+      tank.category === 'MBT' ? 'class-mbt' :
+      tank.category === 'SPG' ? 'class-spg' :
+      tank.category === 'IFV' ? 'class-ifv' :
+      tank.category === 'APC' ? 'class-apc' : 'class-td';
+
+    const catLabel =
+      tank.category === 'MBT' ? 'Tanque MBT' :
+      tank.category === 'SPG' ? 'Artilharia' :
+      tank.category === 'IFV' ? 'VCI / IFV' :
+      tank.category === 'APC' ? 'Blindado APC' : 'Caça-Tanque';
 
     const fireDesc = tank.hasCannon
       ? `💥 Canhão: ${Math.round(tank.cannonPower * 100)}%`
       : `🔥 Autocanhão (${Math.round(tank.mgDamageMult * 100)}%)`;
 
-    const techDesc = `✈️ ${tank.dronesCount || 0} Drones • 🛡️ ${tank.apsCount || 0} APS`;
+    const techDesc = `💣${tank.fragCount ?? 3} Frag • 🕳️${tank.bunkerCount ?? 2} Bunker • ✈️${tank.dronesCount || 0} • 🛡️${tank.apsCount || 0}`;
+    const countryName = tank.country || 'Internacional';
+    const weightInfo = tank.weightTons ? ` • ${tank.weightTons}t` : '';
 
     const imgSrc = transparentDataUrls[tank.id] || encodeURI(tank.spriteSrc);
 
     card.innerHTML = `
+      <span class="country-tag">${tank.flag} ${countryName}</span>
       <span class="class-tag ${catTagClass}">${catLabel}</span>
       <div class="tank-card-preview">
-        <img data-vehicle-img="${tank.id}" src="${imgSrc}" style="max-width:186px; max-height:76px; object-fit:contain; background:transparent; transform: scaleX(${tank.facesRightInImg ? 1 : -1});" />
+        <img data-vehicle-img="${tank.id}" src="${imgSrc}" style="max-width:186px; max-height:74px; object-fit:contain; background:transparent; transform: scaleX(${tank.facesRightInImg ? 1 : -1});" />
       </div>
-      <div class="tank-card-title">${tank.flag} ${tank.name}</div>
+      <div class="tank-card-title">${tank.name}</div>
+      <div class="tank-card-country-line">🌍 País: ${tank.flag} ${countryName}${weightInfo}</div>
       <div class="tank-card-origin">${tank.caliberDesc}</div>
       <div class="tank-stats">
         <div class="stat-row"><span>Poder de Fogo:</span><span class="stat-val">${fireDesc}</span></div>
-        <div class="stat-row"><span>Blindagem:</span><span class="stat-val">${tank.cannonResist} Canhões / ${tank.mgResist} Metr.</span></div>
-        <div class="stat-row"><span>Tecnologia:</span><span class="stat-val modern">${techDesc}</span></div>
+        <div class="stat-row"><span>Resistência:</span><span class="stat-val">${tank.cannonResist} Canhões / ${tank.mgResist} Metr.</span></div>
+        <div class="stat-row"><span>Munições Esp.:</span><span class="stat-val modern">${techDesc}</span></div>
       </div>
     `;
     grid.appendChild(card);
@@ -3022,13 +3810,23 @@ function setDifficulty(diff, btnEl) {
 }
 
 function selectWeapon(w) {
-  if (player && !player.spec.hasCannon && w === 'cannon') {
-    addFloatingText(player.x, player.y - 55, '⚠️ Este blindado não tem canhão pesado! Usa Autocanhão Rápido!', '#facc15');
-    w = 'mg';
+  if (player) {
+    if (w === 'cannon' && !player.spec.hasCannon) {
+      addFloatingText(player.x, player.y - 55, '⚠️ Sem canhão pesado! Use Autocanhão [2], Frag [3] ou Bunker [4]!', '#facc15');
+      w = 'mg';
+    } else if (w === 'frag' && player.fragLeft <= 0) {
+      addFloatingText(player.x, player.y - 55, '⚠️ Munição de Fragmentação esgotada!', '#f87171');
+      w = player.spec.hasCannon ? 'cannon' : 'mg';
+    } else if (w === 'bunker' && player.bunkerLeft <= 0) {
+      addFloatingText(player.x, player.y - 55, '⚠️ Munição Perfura-Bunker esgotada!', '#f87171');
+      w = player.spec.hasCannon ? 'cannon' : 'mg';
+    }
   }
   currentWeapon = w;
-  document.getElementById('btn-w-cannon').classList.toggle('active', w === 'cannon');
-  document.getElementById('btn-w-mg').classList.toggle('active', w === 'mg');
+  document.getElementById('btn-w-cannon')?.classList.toggle('active', w === 'cannon');
+  document.getElementById('btn-w-mg')?.classList.toggle('active', w === 'mg');
+  document.getElementById('btn-w-frag')?.classList.toggle('active', w === 'frag');
+  document.getElementById('btn-w-bunker')?.classList.toggle('active', w === 'bunker');
 }
 
 function openGarage() {
@@ -3275,14 +4073,14 @@ function getTerrainAngle(x) {
   return Math.atan2(terrain[x2] - terrain[x1], x2 - x1);
 }
 
-function deformTerrain(cx, cy, radius) {
+function deformTerrain(cx, cy, radius, depthMult = 0.52) {
   const startX = Math.max(0, Math.floor(cx - radius));
   const endX = Math.min(W, Math.ceil(cx + radius));
   for (let x = startX; x <= endX; x++) {
     const dx = x - cx;
-    const depth = Math.sqrt(Math.max(0, radius * radius - dx * dx)) * 0.52;
-    if (terrain[x] < cy + radius) {
-      terrain[x] = Math.min(H * 0.92, Math.max(terrain[x], terrain[x] + depth));
+    const depth = Math.sqrt(Math.max(0, radius * radius - dx * dx)) * depthMult;
+    if (terrain[x] < cy + radius * 1.15) {
+      terrain[x] = Math.min(H * 0.93, Math.max(terrain[x], terrain[x] + depth));
     }
   }
 }
@@ -3331,6 +4129,8 @@ function createFighter(vehicleId, x, facing, isAI) {
     dronesLeft: spec.dronesCount || 0,
     apsLeft: spec.apsCount || 0,
     apsArmed: (spec.apsCount || 0) > 0,
+    fragLeft: spec.fragCount ?? 3,
+    bunkerLeft: spec.bunkerCount ?? 2,
     lastCannonShot: -10000,
     lastMgShot: 0,
     lastDroneTime: -10000,
@@ -3406,7 +4206,6 @@ function setupMatchWeaponsAndReset(scen, playerStartsFirst = true) {
   const touchCannonBtn = document.getElementById('t-cannon');
   if (!player.spec.hasCannon) {
     cannonBtn.classList.add('disabled');
-    touchCannonBtn.style.opacity = '0.35';
     selectWeapon('mg');
   } else {
     cannonBtn.classList.remove('disabled');
@@ -3587,7 +4386,7 @@ function updateHUD() {
 
   // Jogador
   document.getElementById('p-unit-img').src = transparentUnitUrls[unitObj.img] || encodeURI(unitObj.img);
-  document.getElementById('p-name').textContent = `${player.spec.flag} ${player.spec.name}`;
+  document.getElementById('p-name').textContent = `${player.spec.flag} ${player.spec.name} • ${player.spec.country || ''}`;
   document.getElementById('p-commander-rank').textContent = `🎖️ ${playerProfile.commanderName} (${rankObj.code}) • ${unitObj.name}`;
 
   const pHp = Math.max(0, player.hp);
@@ -3602,7 +4401,23 @@ function updateHUD() {
   document.getElementById('p-aps-left').textContent = `🛡️ APS: ${player.apsLeft}`;
   document.getElementById('p-drone-left').textContent = `✈️ Drones: ${player.dronesLeft}`;
 
-  // Botões de Drone e APS no centro e Mobile
+  // Botões de Munições Especiais (Fragmentação e Perfura-Bunker), Drone e APS no centro e Mobile
+  const btnFrag = document.getElementById('btn-w-frag');
+  if (btnFrag) {
+    btnFrag.textContent = `[3] 💣 FRAG (${player.fragLeft})`;
+    btnFrag.classList.toggle('disabled', player.fragLeft <= 0);
+  }
+  const tFragSpan = document.getElementById('t-frag-span');
+  if (tFragSpan) tFragSpan.textContent = `${player.fragLeft} Unid.`;
+
+  const btnBunker = document.getElementById('btn-w-bunker');
+  if (btnBunker) {
+    btnBunker.textContent = `[4] 🕳️ BUNKER (${player.bunkerLeft})`;
+    btnBunker.classList.toggle('disabled', player.bunkerLeft <= 0);
+  }
+  const tBunkerSpan = document.getElementById('t-bunker-span');
+  if (tBunkerSpan) tBunkerSpan.textContent = `${player.bunkerLeft} Unid.`;
+
   const btnDrone = document.getElementById('btn-w-drone');
   btnDrone.textContent = `[Q] ✈️ DRONE (${player.dronesLeft})`;
   btnDrone.classList.toggle('disabled', player.dronesLeft <= 0);
@@ -3618,7 +4433,7 @@ function updateHUD() {
   const oppUnitObj = mpState.active ? (MILITARY_UNITS.find(u => u.id === mpState.remoteUnitId) || MILITARY_UNITS[0]) : null;
   const oppInsigniaFile = oppUnitObj ? oppUnitObj.img : scen.enemyUnitImg;
   document.getElementById('e-unit-img').src = transparentUnitUrls[oppInsigniaFile] || encodeURI(oppInsigniaFile);
-  document.getElementById('e-name').textContent = `${enemy.spec.flag} ${enemy.spec.name}`;
+  document.getElementById('e-name').textContent = `${enemy.spec.flag} ${enemy.spec.name} • ${enemy.spec.country || ''}`;
   document.getElementById('e-unit-name').textContent = mpState.active
     ? `🌐 ${mpState.remoteCommander} • ${oppUnitObj ? oppUnitObj.name : enemy.spec.caliberDesc}`
     : `${scen.factions || ''} • ${enemy.spec.caliberDesc}`;
@@ -3637,7 +4452,7 @@ function updateHUD() {
 }
 
 // ============================================================================
-// 11. BALÍSTICA LONGA DA METRALHADORA, CANHÃO, DRONES TELEGUIADOS E DEFESA REATIVA (APS)
+// 11. BALÍSTICA LONGA DA METRALHADORA, CANHÃO, FRAGMENTAÇÃO, PERFURA-BUNKER, DRONES E APS
 // ============================================================================
 const MG_INITIAL_SPEED = 22.8;
 const MG_GRAVITY = 0.105;
@@ -3655,10 +4470,15 @@ function canShooterActInWorms(isPlayer, fromNetwork) {
   return true;
 }
 
-function fireCannon(shooter, isPlayer, chargeRatio = 0.72, fromNetwork = false) {
+function fireCannon(shooter, isPlayer, chargeRatio = 0.72, fromNetwork = false, forcedShellType = null) {
   if (!canShooterActInWorms(isPlayer, fromNetwork)) return;
 
-  if (!shooter.spec.hasCannon) {
+  let shellType = forcedShellType || (isPlayer ? currentWeapon : 'cannon');
+  if (shellType !== 'cannon' && shellType !== 'frag' && shellType !== 'bunker') {
+    shellType = 'cannon';
+  }
+
+  if (shellType === 'cannon' && !shooter.spec.hasCannon) {
     if (battleMode === 'turns' && !fromNetwork) {
       startWormsMgBurst(shooter, isPlayer);
     } else {
@@ -3667,22 +4487,59 @@ function fireCannon(shooter, isPlayer, chargeRatio = 0.72, fromNetwork = false) 
     return;
   }
 
+  if (!fromNetwork) {
+    if (shellType === 'frag') {
+      if (shooter.fragLeft <= 0) {
+        if (isPlayer) {
+          addFloatingText(shooter.x, shooter.y - 60, '⚠️ Sem Munição de Fragmentação!', '#f87171');
+          selectWeapon(shooter.spec.hasCannon ? 'cannon' : 'mg');
+        }
+        return;
+      }
+      shooter.fragLeft--;
+    } else if (shellType === 'bunker') {
+      if (shooter.bunkerLeft <= 0) {
+        if (isPlayer) {
+          addFloatingText(shooter.x, shooter.y - 60, '⚠️ Sem Projéteis Perfura-Bunker!', '#f87171');
+          selectWeapon(shooter.spec.hasCannon ? 'cannon' : 'mg');
+        }
+        return;
+      }
+      shooter.bunkerLeft--;
+    }
+  } else {
+    if (shellType === 'frag' && shooter.fragLeft > 0) shooter.fragLeft--;
+    if (shellType === 'bunker' && shooter.bunkerLeft > 0) shooter.bunkerLeft--;
+  }
+
   const now = performance.now();
   if (!fromNetwork && battleMode !== 'turns' && now - shooter.lastCannonShot < shooter.spec.reloadTime) return;
   shooter.lastCannonShot = now;
-  shooter.recoil = 13 * shooter.spec.cannonPower;
+  const effPower = shooter.spec.hasCannon ? shooter.spec.cannonPower : 1.05;
+  shooter.recoil = (shellType === 'bunker' ? 17 : 13) * effPower;
 
   if (isPlayer && mpState.active && !fromNetwork) {
     sendNet({
       type: 'fire_cannon',
       nx: shooter.x / W,
       turretAngle: shooter.turretAngle,
-      chargeRatio
+      chargeRatio,
+      shellType
     });
   }
 
-  sfx.playCannon(shooter.spec.cannonPower);
-  screenShake = Math.max(screenShake, 7 * shooter.spec.cannonPower);
+  sfx.playCannon(shellType === 'bunker' ? effPower * 1.35 : effPower);
+  screenShake = Math.max(screenShake, (shellType === 'bunker' ? 11 : 7) * effPower);
+  updateHUD();
+
+  // Se a munição especial acabou para o jogador, volta automaticamente para a arma principal
+  if (isPlayer && !fromNetwork) {
+    if (shellType === 'frag' && shooter.fragLeft <= 0) {
+      selectWeapon(shooter.spec.hasCannon ? 'cannon' : 'mg');
+    } else if (shellType === 'bunker' && shooter.bunkerLeft <= 0) {
+      selectWeapon(shooter.spec.hasCannon ? 'cannon' : 'mg');
+    }
+  }
 
   const turretX = shooter.x;
   const turretY = shooter.y - 26;
@@ -3691,22 +4548,28 @@ function fireCannon(shooter, isPlayer, chargeRatio = 0.72, fromNetwork = false) 
   const my = turretY + Math.sin(shooter.turretAngle) * barrelLen;
 
   const minSpeed = 5.8;
-  const maxSpeed = 19.5 * Math.pow(shooter.spec.cannonPower, 0.25);
+  const maxSpeed = 19.5 * Math.pow(effPower, 0.25);
   const speed = minSpeed + chargeRatio * (maxSpeed - minSpeed);
 
   projectiles.push({
-    type: 'cannon',
+    type: shellType,
     owner: isPlayer ? 'player' : 'enemy',
     x: mx,
     y: my,
     vx: Math.cos(shooter.turretAngle) * speed + shooter.vx * 0.2,
     vy: Math.sin(shooter.turretAngle) * speed,
-    power: shooter.spec.cannonPower,
+    power: effPower,
     isArtillery: shooter.spec.category === 'SPG',
     trail: []
   });
 
-  const pCount = shooter.spec.category === 'SPG' ? 28 : 18;
+  if (shellType === 'frag') {
+    addFloatingText(shooter.x, shooter.y - 60, '💣 PROJÉTIL DE FRAGMENTAÇÃO DISPARADO!', '#38bdf8');
+  } else if (shellType === 'bunker') {
+    addFloatingText(shooter.x, shooter.y - 60, '🕳️ OGIVA PERFURA-BUNKER DISPARADA!', '#fb923c');
+  }
+
+  const pCount = shellType === 'bunker' ? 32 : shooter.spec.category === 'SPG' ? 28 : 18;
   for (let i = 0; i < pCount; i++) {
     const a = shooter.turretAngle + (Math.random() - 0.5) * 0.65;
     const sp = 2 + Math.random() * 7;
@@ -3715,7 +4578,7 @@ function fireCannon(shooter, isPlayer, chargeRatio = 0.72, fromNetwork = false) 
       vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
       life: 1, decay: 0.04 + Math.random() * 0.04,
       size: 4 + Math.random() * 6,
-      color: i % 2 === 0 ? '#facc15' : '#ea580c'
+      color: shellType === 'frag' ? (i % 2 === 0 ? '#38bdf8' : '#facc15') : (i % 2 === 0 ? '#facc15' : '#ea580c')
     });
   }
 
@@ -4046,7 +4909,8 @@ function startChargingShot() {
   if (gameState !== 'playing' || !player) return;
   if (!canShooterActInWorms(true, false)) return;
 
-  if (currentWeapon === 'mg' || !player.spec.hasCannon) {
+  const isSpecialShell = currentWeapon === 'frag' || currentWeapon === 'bunker';
+  if (currentWeapon === 'mg' || (!isSpecialShell && !player.spec.hasCannon)) {
     fireMG(player, true);
     return;
   }
@@ -4065,6 +4929,82 @@ function releaseChargedShot() {
   lastChosenPowerRatio = currentChargeRatio;
   updatePowerBarUI(lastChosenPowerRatio, false);
   fireCannon(player, true, lastChosenPowerRatio);
+}
+
+// 💣 Detona Projétil de Fragmentação em Nuvem de Estilhaços (Airburst ou Impacto!)
+function detonateFragCluster(p, isAirburst = false) {
+  sfx.playExplosion(true);
+  screenShake = Math.max(screenShake, 12);
+  spawnExplosion(p.x, p.y, 32, '#38bdf8');
+  addFloatingText(
+    p.x,
+    p.y - 38,
+    isAirburst ? '💣 FRAGMENTAÇÃO AÉREA (ESTILHAÇOS)!' : '💣 EXPLOSÃO DE FRAGMENTAÇÃO!',
+    '#38bdf8'
+  );
+
+  const count = 16;
+  for (let k = 0; k < count; k++) {
+    const baseAngle = isAirburst ? (Math.PI * 0.15 + (k / (count - 1)) * Math.PI * 0.7) : (-Math.PI * 0.92 + (k / (count - 1)) * Math.PI * 0.84);
+    const angle = baseAngle + (Math.random() - 0.5) * 0.14;
+    const sp = 6.5 + Math.random() * 6.5;
+    projectiles.push({
+      type: 'frag_shrapnel',
+      owner: p.owner,
+      x: p.x,
+      y: p.y - 4,
+      vx: Math.cos(angle) * sp + p.vx * 0.18,
+      vy: Math.sin(angle) * sp + (isAirburst ? 1.8 : -2.2),
+      power: p.power,
+      trail: []
+    });
+  }
+}
+
+// 🕳️ Detona Ogiva Perfura-Bunker: Abre CRATERA GIGANTE no solo/penhasco + Onda Sísmica!
+function detonateBunkerBuster(p, impactY, directHitTarget = null) {
+  sfx.playExplosion(true);
+  screenShake = 22;
+
+  // Abre uma CRATERA GIGANTE (88px de raio e profundidade 0.86 — quase 3x maior que canhão comum!)
+  const craterY = Math.max(impactY, getTerrainY(p.x));
+  deformTerrain(p.x, craterY, 88, 0.86);
+
+  spawnExplosion(p.x, impactY, 58, '#ea580c');
+  spawnExplosion(p.x, impactY - 12, 34, '#facc15');
+  addFloatingText(p.x, impactY - 64, '🕳️ PERFURA-BUNKER! CRATERA GIGANTE!', '#fb923c');
+
+  if (directHitTarget) {
+    const directDmg = directHitTarget.baseCannonDamageTaken * p.power * 1.42;
+    directHitTarget.hp = Math.max(0, directHitTarget.hp - directDmg);
+    directHitTarget.cannonHitsTaken++;
+  }
+
+  // Onda de choque sísmica de longo alcance (118px)
+  const splashRadius = 118;
+  [player, enemy].forEach(t => {
+    if (!t || t === directHitTarget) return;
+    const dist = Math.hypot(p.x - t.x, impactY - t.y);
+    if (dist < splashRadius) {
+      const factor = 1 - (dist / splashRadius) * 0.55;
+      const splashDmg = t.baseCannonDamageTaken * p.power * 0.68 * factor;
+      t.hp = Math.max(0, t.hp - splashDmg);
+      addFloatingText(t.x, t.y - 48, `💥 Onda Sísmica Bunker! -${Math.round(splashDmg)}%`, '#f97316');
+    }
+  });
+
+  updateHUD();
+  if (enemy.hp <= 0) {
+    spawnExplosion(enemy.x, enemy.y - 20, 75, '#ef4444');
+    endMatch(true);
+    return true;
+  }
+  if (player.hp <= 0) {
+    spawnExplosion(player.x, player.y - 20, 75, '#ef4444');
+    endMatch(false);
+    return true;
+  }
+  return false;
 }
 
 // Aplica gravidade vertical nos Penhascos (Dano de Queda!) e Submersão na Água
@@ -4260,11 +5200,12 @@ function update() {
   }
 
   // Disparo de Metralhadora / Autocanhão
+  const isSpecialSelected = currentWeapon === 'frag' || currentWeapon === 'bunker';
   if (
     keys['KeyE'] ||
     mouse.rightDown ||
     touchState.mg ||
-    ((keys['Space'] || mouse.leftDown) && (currentWeapon === 'mg' || !player.spec.hasCannon))
+    ((keys['Space'] || mouse.leftDown) && (currentWeapon === 'mg' || (!isSpecialSelected && !player.spec.hasCannon)))
   ) {
     fireMG(player, true);
   }
@@ -4358,18 +5299,22 @@ function update() {
     }
   }
 
-  // 6. ATUALIZAR PROJÉTEIS (COM INTERCEPTAÇÃO DE DRONES, ÁGUA E DEFESA REATIVA APS!)
+  // 6. ATUALIZAR PROJÉTEIS (CANHÃO, FRAGMENTAÇÃO, PERFURA-BUNKER, MG, DRONES, ÁGUA E APS!)
   for (let i = projectiles.length - 1; i >= 0; i--) {
     const p = projectiles[i];
+    const isHeavyShell = p.type === 'cannon' || p.type === 'frag' || p.type === 'bunker';
     p.trail.push({ x: p.x, y: p.y });
-    if (p.trail.length > (p.type === 'cannon' ? 18 : 12)) p.trail.shift();
+    if (p.trail.length > (isHeavyShell ? 18 : 10)) p.trail.shift();
 
     p.x += p.vx;
     p.y += p.vy;
 
-    if (p.type === 'cannon') {
+    if (isHeavyShell) {
       p.vy += 0.24;
       p.vx += wind;
+    } else if (p.type === 'frag_shrapnel') {
+      p.vy += 0.21;
+      p.vx *= 0.992;
     } else {
       p.vx *= MG_AIR_DRAG;
       p.vy = p.vy * MG_AIR_DRAG + MG_GRAVITY;
@@ -4381,12 +5326,12 @@ function update() {
       continue;
     }
 
-    // A) VERIFICAR SE TIRO DE METRALHADORA ABATEU UM DRONE INIMIGO NO AR!
+    // A) VERIFICAR SE PROJÉTIL OU ESTILHAÇO ABATEU UM DRONE INIMIGO NO AR!
     let hitDrone = false;
     for (let j = drones.length - 1; j >= 0; j--) {
       const d = drones[j];
       if (d.owner !== p.owner && Math.hypot(p.x - d.x, p.y - d.y) < 28) {
-        d.hp -= (p.type === 'cannon' ? 3 : 1);
+        d.hp -= (isHeavyShell ? 3 : p.type === 'frag_shrapnel' ? 2 : 1);
         spawnExplosion(p.x, p.y, 8, '#fde047');
         if (d.hp <= 0) {
           sfx.playExplosion(false);
@@ -4405,8 +5350,20 @@ function update() {
 
     const target = p.owner === 'player' ? enemy : player;
 
-    // B) 🛡️ DEFESA REATIVA (APS / TROPHY): Intercepta tiros de CANHÃO antes de baterem no tanque! (2 Usos)
-    if (p.type === 'cannon' && target.apsArmed && target.apsLeft > 0) {
+    // A2) 💣 DETONAÇÃO AÉREA POR PROXIMIDADE (AIRBURST) DO PROJÉTIL DE FRAGMENTAÇÃO!
+    if (p.type === 'frag' && p.vy > 0.5) {
+      const dxAir = Math.abs(p.x - target.x);
+      const dyAir = (target.y - 22) - p.y;
+      if (dxAir < 82 && dyAir > 24 && dyAir < 105) {
+        detonateFragCluster(p, true);
+        projectiles.splice(i, 1);
+        continue;
+      }
+    }
+
+    // B) 🛡️ DEFESA REATIVA (APS / TROPHY): Intercepta tiros de CANHÃO / FRAG antes de baterem no tanque!
+    // Nota: O Perfura-Bunker (bunker) é pesado demais para o APS comum, a menos que o tanque tenha 2 cargas e gaste 1 reduzindo o impacto!
+    if ((p.type === 'cannon' || p.type === 'frag') && target.apsArmed && target.apsLeft > 0) {
       const distToTank = Math.hypot(p.x - target.x, p.y - (target.y - 24));
       if (distToTank < 78) {
         target.apsLeft--;
@@ -4421,19 +5378,33 @@ function update() {
           life: 1.0
         });
         spawnExplosion(p.x, p.y, 24, '#38bdf8');
-        addFloatingText(target.x, target.y - 68, `🛡️ DEFESA REATIVA APS BLOQUEOU O CANHÃO! (${target.apsLeft} rest.)`, '#4ade80');
+        addFloatingText(target.x, target.y - 68, `🛡️ DEFESA REATIVA APS INTERCEPTOU! (${target.apsLeft} rest.)`, '#4ade80');
         updateHUD();
         projectiles.splice(i, 1);
         continue;
       }
     }
 
-    // C) Colisão normal com o tanque alvo
+    // C) Colisão direta com o tanque alvo
     const hitDx = p.x - target.x;
     const hitDy = p.y - (target.y - 22);
 
     if (Math.abs(hitDx) < 42 && Math.abs(hitDy) < 26) {
-      if (p.type === 'cannon') {
+      if (p.type === 'bunker') {
+        projectiles.splice(i, 1);
+        if (detonateBunkerBuster(p, p.y, target)) return;
+        continue;
+      } else if (p.type === 'frag') {
+        const directDmg = target.baseCannonDamageTaken * p.power * 0.65;
+        target.hp = Math.max(0, target.hp - directDmg);
+        detonateFragCluster(p, false);
+      } else if (p.type === 'frag_shrapnel') {
+        const dmg = target.baseCannonDamageTaken * p.power * 0.16;
+        target.hp = Math.max(0, target.hp - dmg);
+        sfx.playExplosion(false);
+        spawnExplosion(p.x, p.y, 9, '#38bdf8');
+        addFloatingText(target.x + (Math.random() - 0.5) * 36, target.y - 52, `💣 Estilhaço!`, '#38bdf8');
+      } else if (p.type === 'cannon') {
         const dmg = target.baseCannonDamageTaken * p.power;
         target.hp = Math.max(0, target.hp - dmg);
         target.cannonHitsTaken++;
@@ -4466,15 +5437,38 @@ function update() {
     // D) Impacto na superfície da Água (Gera coluna de espuma/splash!)
     if (scen.hasWater && p.x >= waterStartPx && p.x <= waterEndPx && p.y >= waterLevel) {
       sfx.playExplosion(false);
-      spawnExplosion(p.x, waterLevel, p.type === 'cannon' ? 24 : 6, '#38bdf8');
+      spawnExplosion(p.x, waterLevel, isHeavyShell ? 24 : 6, '#38bdf8');
       projectiles.splice(i, 1);
       continue;
     }
 
-    // E) Colisão com o terreno (Pode abrir cratera no penhasco e derrubar o tanque oponente!)
+    // E) Colisão com o terreno (Perfura-Bunker abre CRATERA GIGANTE; Fragmentação espalha estilhaços!)
     const groundY = getTerrainY(p.x);
     if (p.y >= groundY) {
-      if (p.type === 'cannon') {
+      if (p.type === 'bunker') {
+        projectiles.splice(i, 1);
+        if (detonateBunkerBuster(p, groundY, null)) return;
+        continue;
+      } else if (p.type === 'frag') {
+        deformTerrain(p.x, groundY, 26, 0.55);
+        detonateFragCluster(p, false);
+        projectiles.splice(i, 1);
+        continue;
+      } else if (p.type === 'frag_shrapnel') {
+        deformTerrain(p.x, groundY, 10, 0.42);
+        spawnExplosion(p.x, groundY, 7, '#38bdf8');
+        [player, enemy].forEach(t => {
+          const dist = Math.hypot(p.x - t.x, groundY - t.y);
+          if (dist < 38) {
+            const sDmg = t.baseCannonDamageTaken * p.power * 0.11;
+            t.hp = Math.max(0, t.hp - sDmg);
+            updateHUD();
+            if (t.hp <= 0) endMatch(t === enemy);
+          }
+        });
+        projectiles.splice(i, 1);
+        continue;
+      } else if (p.type === 'cannon') {
         sfx.playExplosion(true);
         const craterRadius = p.isArtillery ? 42 : 30;
         deformTerrain(p.x, groundY, craterRadius);
@@ -5207,11 +6201,25 @@ function draw() {
     ctx.restore();
   });
 
-  // 8. Projéteis
+  // 8. Projéteis (Canhão, Fragmentação, Estilhaços, Perfura-Bunker e Metralhadora)
   projectiles.forEach(p => {
     if (p.trail.length > 1) {
-      ctx.strokeStyle = p.type === 'cannon' ? 'rgba(251, 191, 36, 0.65)' : 'rgba(254, 240, 138, 0.85)';
-      ctx.lineWidth = p.isArtillery ? 5.5 : p.type === 'cannon' ? 4 : 2.4;
+      if (p.type === 'bunker') {
+        ctx.strokeStyle = 'rgba(234, 88, 12, 0.85)';
+        ctx.lineWidth = 6.5;
+      } else if (p.type === 'frag') {
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.85)';
+        ctx.lineWidth = 5;
+      } else if (p.type === 'frag_shrapnel') {
+        ctx.strokeStyle = 'rgba(125, 211, 252, 0.88)';
+        ctx.lineWidth = 2.6;
+      } else if (p.type === 'cannon') {
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.65)';
+        ctx.lineWidth = p.isArtillery ? 5.5 : 4;
+      } else {
+        ctx.strokeStyle = 'rgba(254, 240, 138, 0.85)';
+        ctx.lineWidth = 2.4;
+      }
       ctx.beginPath();
       p.trail.forEach((pt, idx) => {
         if (idx === 0) ctx.moveTo(pt.x, pt.y);
@@ -5219,10 +6227,36 @@ function draw() {
       });
       ctx.stroke();
     }
-    ctx.fillStyle = p.type === 'cannon' ? '#f97316' : '#fef08a';
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.isArtillery ? 7 : p.type === 'cannon' ? 5.5 : 3.2, 0, Math.PI * 2);
-    ctx.fill();
+
+    if (p.type === 'bunker') {
+      ctx.fillStyle = '#ea580c';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 7.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fef08a';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 3.8, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (p.type === 'frag') {
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 6.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 3.0, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (p.type === 'frag_shrapnel') {
+      ctx.fillStyle = '#7dd3fc';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 3.4, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.fillStyle = p.type === 'cannon' ? '#f97316' : '#fef08a';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.isArtillery ? 7 : p.type === 'cannon' ? 5.5 : 3.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
   });
 
   // 9. Fumaça e Explosões
@@ -5302,19 +6336,21 @@ function cLineTo(context, x, y) {
   context.lineTo(x, y);
 }
 
-// Linha Pontilhada de Mira: Mostra a trajetória longa e descendente da Metralhadora e a parábola do Canhão!
+// Linha Pontilhada de Mira: Mostra a trajetória longa e descendente da Metralhadora e a parábola do Canhão / Fragmentação / Perfura-Bunker!
 function drawAimDots(shooter) {
   const barrelLen = 52;
   let sx = shooter.x + Math.cos(shooter.turretAngle) * barrelLen;
   let sy = (shooter.y - 26) + Math.sin(shooter.turretAngle) * barrelLen;
 
-  const isCannon = currentWeapon === 'cannon' && shooter.spec.hasCannon;
+  const isSpecialShell = currentWeapon === 'frag' || currentWeapon === 'bunker';
+  const isCannon = isSpecialShell || (currentWeapon === 'cannon' && shooter.spec.hasCannon);
   const activeRatio = isChargingCannon ? currentChargeRatio : lastChosenPowerRatio;
+  const effPower = shooter.spec.hasCannon ? shooter.spec.cannonPower : 1.05;
 
   let speed;
   if (isCannon) {
     const minSpeed = 5.8;
-    const maxSpeed = 19.5 * Math.pow(shooter.spec.cannonPower, 0.25);
+    const maxSpeed = 19.5 * Math.pow(effPower, 0.25);
     speed = minSpeed + activeRatio * (maxSpeed - minSpeed);
   } else {
     const isAutocannon = !shooter.spec.hasCannon;
@@ -5325,7 +6361,18 @@ function drawAimDots(shooter) {
   let vx = Math.cos(shooter.turretAngle) * speed + shooter.vx * 0.2;
   let vy = Math.sin(shooter.turretAngle) * speed;
 
-  ctx.fillStyle = isChargingCannon ? 'rgba(250, 204, 21, 0.92)' : isCannon ? 'rgba(56, 189, 248, 0.8)' : 'rgba(251, 146, 60, 0.82)';
+  if (isChargingCannon) {
+    ctx.fillStyle = 'rgba(250, 204, 21, 0.92)';
+  } else if (currentWeapon === 'bunker') {
+    ctx.fillStyle = 'rgba(249, 115, 22, 0.88)';
+  } else if (currentWeapon === 'frag') {
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.9)';
+  } else if (isCannon) {
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.8)';
+  } else {
+    ctx.fillStyle = 'rgba(251, 146, 60, 0.82)';
+  }
+
   const maxSteps = selectedDifficulty === 'hard' ? 28 : 54;
 
   for (let step = 0; step < maxSteps; step++) {
@@ -5358,6 +6405,8 @@ window.addEventListener('keydown', e => {
   keys[e.code] = true;
   if (e.code === 'Digit1') selectWeapon('cannon');
   if (e.code === 'Digit2') selectWeapon('mg');
+  if (e.code === 'Digit3') selectWeapon('frag');
+  if (e.code === 'Digit4') selectWeapon('bunker');
   if (e.code === 'KeyQ' && !e.repeat) launchDrone(player, true);
   if (e.code === 'KeyR' && !e.repeat) toggleAPS(player);
   if (e.code === 'Space' && !e.repeat) {
@@ -5436,6 +6485,26 @@ bindTouchButton('t-mg',       () => { touchState.mg = true; },      () => { touc
 bindTouchButton('t-smoke',    () => { if (player) deploySmoke(player); }, null);
 bindTouchButton('t-drone',    () => { if (player) launchDrone(player, true); }, null);
 bindTouchButton('t-aps',      () => { if (player) toggleAPS(player); }, null);
+bindTouchButton(
+  't-frag',
+  () => {
+    selectWeapon('frag');
+    if (player && player.fragLeft > 0) startChargingShot();
+  },
+  () => {
+    releaseChargedShot();
+  }
+);
+bindTouchButton(
+  't-bunker',
+  () => {
+    selectWeapon('bunker');
+    if (player && player.bunkerLeft > 0) startChargingShot();
+  },
+  () => {
+    releaseChargedShot();
+  }
+);
 bindTouchButton(
   't-cannon',
   () => {
